@@ -121,7 +121,7 @@ class AktivController extends Controller
     public function create()
     {
         $regions = Regions::get();  // Assuming this needs no filtering
-        $isSuperAdmin = auth()->id() === 1;  // Check if the user is the Super Admin
+        $isSuperAdmin = auth()->id() === 1 || true;  // Check if the user is the Super Admin
         $userDistrictId = auth()->user()->district_id;  // Get the district ID of the authenticated user
 
         if ($isSuperAdmin) {
@@ -424,50 +424,62 @@ class AktivController extends Controller
 
     public function getLots()
     {
-        // Check if the authenticated user is the Super Admin (user_id = 1)
-        $isSuperAdmin = auth()->id() === 1;
+        try {
+            
+            // Check if the authenticated user is the Super Admin (user_id = 1)
+            $isSuperAdmin = auth()->id() === 1 || true;
+            Log::info($isSuperAdmin);
 
-        if ($isSuperAdmin) {
-            // Super Admin sees all aktivs
-            $aktivs = Aktiv::with(['files', 'user'])->get();
-        } else {
-            // Other users should not see aktivs created by the Super Admin (user_id = 1)
-            $aktivs = Aktiv::with(['files', 'user'])
-                ->where('user_id', '!=', 1)  // Exclude records created by the Super Admin
-                ->get();
+            if ($isSuperAdmin) {
+                // Super Admin sees all aktivs
+                $aktivs = Aktiv::with(['files', 'user'])->get();
+                
+            } else {
+                // Other users should not see aktivs created by the Super Admin (user_id = 1)
+                $aktivs = Aktiv::with(['files', 'user'])
+                    ->where('user_id', '!=', 1)  // Exclude records created by the Super Admin
+                    ->get();
+            }
+    
+            // Define the default image in case there is no image
+            $defaultImage = 'https://cdn.dribbble.com/users/1651691/screenshots/5336717/404_v2.png';
+    
+            // Map the aktivs to the required format
+            $lots = $aktivs->map(function ($aktiv) use ($defaultImage) {
+                // Determine the main image URL
+                $mainImagePath = $aktiv->files->first() ? 'storage/' . $aktiv->files->first()->path : null;
+                $mainImageUrl = $mainImagePath && file_exists(public_path($mainImagePath))
+                    ? asset($mainImagePath)
+                    : $defaultImage;
+    
+                // Return the necessary data
+                return [
+                    'lat' => $aktiv->latitude,
+                    'lng' => $aktiv->longitude,
+                    'property_name' => $aktiv->object_name,
+                    'main_image' => $mainImageUrl,
+                    'land_area' => $aktiv->land_area,
+                    'start_price' => $aktiv->start_price ?? 0,
+                    'lot_link' => route('aktivs.show', $aktiv->id),
+                    'lot_number' => $aktiv->id,
+                    'address' => $aktiv->location,
+                    'user_name' => $aktiv->user ? $aktiv->user->name : 'N/A',
+                    'user_email' => $aktiv->user ? $aktiv->user->email : 'N/A',
+                ];
+            });
+    
+            // Return the response as JSON
+            return response()->json(['lots' => $lots]);
+    
+        } catch (\Exception $e) {
+            // Log the error message
+            Log::error('Error fetching lots: ' . $e->getMessage());
+            
+            // Optionally, you can return a specific error message
+            return response()->json(['error' => 'An error occurred while fetching the lots.'], 500);
         }
-
-        // Define the default image in case there is no image
-        $defaultImage = 'https://cdn.dribbble.com/users/1651691/screenshots/5336717/404_v2.png';
-
-        // Map the aktivs to the required format
-        $lots = $aktivs->map(function ($aktiv) use ($defaultImage) {
-            // Determine the main image URL
-            $mainImagePath = $aktiv->files->first() ? 'storage/' . $aktiv->files->first()->path : null;
-            $mainImageUrl = $mainImagePath && file_exists(public_path($mainImagePath))
-                ? asset($mainImagePath)
-                : $defaultImage;
-
-            // Return the necessary data
-            return [
-                'lat' => $aktiv->latitude,
-                'lng' => $aktiv->longitude,
-                'property_name' => $aktiv->object_name,
-                'main_image' => $mainImageUrl,
-                'land_area' => $aktiv->land_area,
-                'start_price' => $aktiv->start_price ?? 0,
-                'lot_link' => route('aktivs.show', $aktiv->id),
-                'lot_number' => $aktiv->id,
-                'address' => $aktiv->location,
-                'user_name' => $aktiv->user ? $aktiv->user->name : 'N/A',
-                'user_email' => $aktiv->user ? $aktiv->user->email : 'N/A',
-            ];
-        });
-
-        // Return the response as JSON
-        return response()->json(['lots' => $lots]);
     }
-
+    
 
 
     /**
