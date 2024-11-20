@@ -3,7 +3,7 @@
 
         <div class="m-header">
             <a href="#!" class="b-brand text-primary">
-                <img src="{{ asset('assets/images/light_logo.png') }}"alt="" style="width:140px;" class="logo">
+                <img src="https://projects.toshkentinvest.uz/assets/logo.png" alt="" style="width:140px;" class="logo">
             </a>
         </div>
 
@@ -12,6 +12,11 @@
                 <li class="pc-item pc-caption">
                     <label>Меню</label>
                     <i class="ph-duotone ph-gauge"></i>
+                </li>
+                <li class="pc-item">
+                    <a class="pc-link" href="{{ route('aktivs.myMap') }}">
+                        Харита
+                    </a>
                 </li>
                 <li class="pc-item">
                     <a class="pc-link" href="{{ route('userIndex') }}">
@@ -24,7 +29,7 @@
                     </a>
                 </li>
 
-                @if (auth()->user()->roles[0]->name == 'Super Admin' || auth()->user()->roles[0]->name == 'Manager')
+                {{-- @if (auth()->user()->roles[0]->name == 'Super Admin' || auth()->user()->roles[0]->name == 'Manager')
                     <li class="pc-item">
                         <a class="pc-link" href="{{ route('aktivs.userAktivCounts') }}">
                             Фойдаланувчилар Активлари
@@ -35,10 +40,10 @@
                             Туман Активлари
                         </a>
                     </li>
-                @endif
+                @endif --}}
 
 
-
+{{-- 
                 <li class="pc-item">
                     <a class="pc-link btn btn-primary text-light mt-3" target="_blank" href="https://t.me/az_etc">
                         Қоллаб қуватлаш
@@ -66,7 +71,7 @@
                             <button type="submit" class="btn btn-primary">Update User Names</button>
                         </form>
                     </li>
-                @endif
+                @endif --}}
 
             </ul>
 

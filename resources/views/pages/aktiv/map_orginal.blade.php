@@ -278,14 +278,18 @@
         <div class="navbar-wrapper">
             <div class="m-header">
                 <a href="{{ route('aktivs.index') }}" class="b-brand text-primary">
-                    <img src="{{ asset('assets/projects-map/logo.png') }}" class="img-fluid logo-lg custom_logo"
+                    <img src="{{ asset('assets/projects-map/images/logo.png') }}" class="img-fluid logo-lg custom_logo"
                         alt="logo" />
                 </a>
             </div>
             <div class="navbar-content">
                 <ul class="pc-navbar">
-                    <li class="pc-item pc-caption"><label>Xarita</label>
-                        <a class="pc-link" href="{{ route('aktivs.index') }}">Xarita</a>
+            
+                    <li class="pc-item">
+                        <a class="pc-link" href="{{ route('aktivs.create') }}">Yaratisih</a>
+                    </li>
+                    <li class="pc-item">
+                        <a class="pc-link" href="{{ route('aktivs.index') }}">Ortga</a>
                     </li>
                 </ul>
                 <!-- District Information -->
