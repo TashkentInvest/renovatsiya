@@ -578,7 +578,6 @@
         <span class="close-btn">&times;</span>
         <div class="info-content">
             <img class="custom_sidebar_image" src="${markerData.main_image}" alt="Marker Image"/>
-            <button id="toggle-currency-btn">${isInUSD ? 'Valyutani tahrirlash UZS' : 'Valyutani tahrirlash USD'}</button>
             <h4 class="custom_sidebar_title"><b>${markerData.property_name || 'No Title'}</b></h4>
             <table>
                 <tr>
