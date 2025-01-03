@@ -107,9 +107,9 @@
 
                 <!-- 11) Сақланадиган кўкаламзорлаштириш маълумот -->
                 <div class="mb-3">
-                    <label for="saklanadigan_kokalamzor_info">Сақланадиган кўкаламзорлаштириш маълумот</label>
-                    <textarea class="form-control" name="saklanadigan_kokalamzor_info" id="saklanadigan_kokalamzor_info" rows="2">{{ old('saklanadigan_kokalamzor_info', $aktiv->saklanadigan_kokalamzor_info) }}</textarea>
-                    @error('saklanadigan_kokalamzor_info')
+                    <label for="saqlanadigan_kokalamzor_info">Сақланадиган кўкаламзорлаштириш маълумот</label>
+                    <textarea class="form-control" name="saqlanadigan_kokalamzor_info" id="saqlanadigan_kokalamzor_info" rows="2">{{ old('saqlanadigan_kokalamzor_info', $aktiv->saqlanadigan_kokalamzor_info) }}</textarea>
+                    @error('saqlanadigan_kokalamzor_info')
                         <div class="text-danger">{{ $message }}</div>
                     @enderror
                 </div>
@@ -127,11 +127,11 @@
 
                 <!-- 13) Сақланиб қолинадиган муҳандислик-коммуникация тармоқлари -->
                 <div class="mb-3">
-                    <label for="saklanadigan_muhandislik_tarmoqlari_info">Сақланадиган муҳандислик-коммуникация
+                    <label for="saqlanadigan_muhandislik_tarmoqlari_info">Сақланадиган муҳандислик-коммуникация
                         тармоқлари</label>
-                    <textarea class="form-control" name="saklanadigan_muhandislik_tarmoqlari_info"
-                        id="saklanadigan_muhandislik_tarmoqlari_info" rows="2">{{ old('saklanadigan_muhandislik_tarmoqlari_info', $aktiv->saklanadigan_muhandislik_tarmoqlari_info) }}</textarea>
-                    @error('saklanadigan_muhandislik_tarmoqlari_info')
+                    <textarea class="form-control" name="saqlanadigan_muhandislik_tarmoqlari_info"
+                        id="saqlanadigan_muhandislik_tarmoqlari_info" rows="2">{{ old('saqlanadigan_muhandislik_tarmoqlari_info', $aktiv->saqlanadigan_muhandislik_tarmoqlari_info) }}</textarea>
+                    @error('saqlanadigan_muhandislik_tarmoqlari_info')
                         <div class="text-danger">{{ $message }}</div>
                     @enderror
                 </div>
@@ -149,9 +149,9 @@
 
                 <!-- 15) Сақланиб қолинадиган йўллар ва йўлаклар -->
                 <div class="mb-3">
-                    <label for="saklanadigan_yollar_info">Сақланадиган йўллар ва йўлаклар</label>
-                    <textarea class="form-control" name="saklanadigan_yollar_info" id="saklanadigan_yollar_info" rows="2">{{ old('saklanadigan_yollar_info', $aktiv->saklanadigan_yollar_info) }}</textarea>
-                    @error('saklanadigan_yollar_info')
+                    <label for="saqlanadigan_yollar_info">Сақланадиган йўллар ва йўлаклар</label>
+                    <textarea class="form-control" name="saqlanadigan_yollar_info" id="saqlanadigan_yollar_info" rows="2">{{ old('saqlanadigan_yollar_info', $aktiv->saqlanadigan_yollar_info) }}</textarea>
+                    @error('saqlanadigan_yollar_info')
                         <div class="text-danger">{{ $message }}</div>
                     @enderror
                 </div>

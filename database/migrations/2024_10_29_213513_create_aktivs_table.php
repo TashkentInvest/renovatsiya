@@ -48,11 +48,11 @@ class CreateAktivsTable extends Migration
             $table->text('ambulator_tibbiyot_info')->nullable();
             $table->text('diniy_muassasa_info')->nullable();
             $table->text('sport_soglomlashtirish_info')->nullable();
-            $table->text('saklanadigan_kokalamzor_info')->nullable();
+            $table->text('saqlanadigan_kokalamzor_info')->nullable();
             $table->text('yangidan_tashkil_kokalamzor_info')->nullable();
-            $table->text('saklanadigan_muhandislik_tarmoqlari_info')->nullable();
+            $table->text('saqlanadigan_muhandislik_tarmoqlari_info')->nullable();
             $table->text('yangidan_quriladigan_muhandislik_tarmoqlari_info')->nullable();
-            $table->text('saklanadigan_yollar_info')->nullable();
+            $table->text('saqlanadigan_yollar_info')->nullable();
             $table->text('yangidan_quriladigan_yollar_info')->nullable();
             $table->timestamps();
         });

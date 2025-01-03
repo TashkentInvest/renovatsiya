@@ -284,7 +284,7 @@
             </div>
             <div class="navbar-content">
                 <ul class="pc-navbar">
-            
+
                     <li class="pc-item">
                         <a class="pc-link" href="{{ route('aktivs.create') }}">Yaratisih</a>
                     </li>
@@ -593,14 +593,14 @@
                     <td>${markerData.land_area || 'N/A'}</td>
                 </tr>
                 ${priceUZS > 0 ? `
-                    <tr>
-                        <th class="sidebar_key">Boshlang'ich narxi</th>
-                        <td id="price-td">${lotPriceFormatted}</td>
-                    </tr>
-                    <tr>
-                        <th class="sidebar_key">1 sotix uchun narx</th>
-                        <td>${lotPricePerSotixFormatted}</td>
-                    </tr>` : ''}
+                        <tr>
+                            <th class="sidebar_key">Boshlang'ich narxi</th>
+                            <td id="price-td">${lotPriceFormatted}</td>
+                        </tr>
+                        <tr>
+                            <th class="sidebar_key">1 sotix uchun narx</th>
+                            <td>${lotPricePerSotixFormatted}</td>
+                        </tr>` : ''}
                 <tr>
                     <th class="sidebar_key">Yaratilgan foydalanuvchi</th>
                     <td>${markerData.user_name || 'N/A'}</td>
@@ -609,6 +609,72 @@
                     <th class="sidebar_key">Email</th>
                     <td>${markerData.user_email || 'N/A'}</td>
                 </tr>
+
+                <tr>
+                    <th class="sidebar_key">Turar joy maydoni</th>
+                    <td>${markerData.turar_joy_maydoni || 'N/A'}</td>
+                </tr>
+                <tr>
+                    <th class="sidebar_key">Noturar joy maydoni</th>
+                    <td>${markerData.noturar_joy_maydoni || 'N/A'}</td>
+                </tr>
+                <tr>
+                    <th class="sidebar_key">Vaqtinchalik parking info</th>
+                    <td>${markerData.vaqtinchalik_parking_info || 'N/A'}</td>
+                </tr>
+                <tr>
+                    <th class="sidebar_key">Doimiy parking info</th>
+                    <td>${markerData.doimiy_parking_info || 'N/A'}</td>
+                </tr>
+                <tr>
+                    <th class="sidebar_key">Maktabgacha tashkilot info</th>
+                    <td>${markerData.maktabgacha_tashkilot_info || 'N/A'}</td>
+                </tr>
+                <tr>
+                    <th class="sidebar_key">Umumta'lim maktab info</th>
+                    <td>${markerData.umumtaolim_maktab_info || 'N/A'}</td>
+                </tr>
+                <tr>
+                    <th class="sidebar_key">Stasionar tibbiyot info</th>
+                    <td>${markerData.stasionar_tibbiyot_info || 'N/A'}</td>
+                </tr>
+                <tr>
+                    <th class="sidebar_key">Ambulator tibbiyot info</th>
+                    <td>${markerData.ambulator_tibbiyot_info || 'N/A'}</td>
+                </tr>
+                <tr>
+                    <th class="sidebar_key">Diniy muassasa info</th>
+                    <td>${markerData.diniy_muassasa_info || 'N/A'}</td>
+                </tr>
+                <tr>
+                    <th class="sidebar_key">Sport sog'lomlashtirish info</th>
+                    <td>${markerData.sport_soglomlashtirish_info || 'N/A'}</td>
+                </tr>
+                <tr>
+                    <th class="sidebar_key">Saqlanadigan kokalamzor info</th>
+                    <td>${markerData.saqlanadigan_kokalamzor_info || 'N/A'}</td>
+                </tr>
+                <tr>
+                    <th class="sidebar_key">Yangidan tashkil kokalamzor info</th>
+                    <td>${markerData.yangidan_tashkil_kokalamzor_info || 'N/A'}</td>
+                </tr>
+                <tr>
+                    <th class="sidebar_key">Saqlanadigan muhandislik tarmoqlari info</th>
+                    <td>${markerData.saqlanadigan_muhandislik_tarmoqlari_info || 'N/A'}</td>
+                </tr>
+                <tr>
+                    <th class="sidebar_key">Yangidan quriladigan muhandislik tarmoqlari info</th>
+                    <td>${markerData.yangidan_quriladigan_muhandislik_tarmoqlari_info || 'N/A'}</td>
+                </tr>
+                <tr>
+                    <th class="sidebar_key">Saqlanadigan yo'llar info</th>
+                    <td>${markerData.saqlanadigan_yollar_info || 'N/A'}</td>
+                </tr>
+                <tr>
+                    <th class="sidebar_key">Yangidan quriladigan yo'llar info</th>
+                    <td>${markerData.yangidan_quriladigan_yollar_info || 'N/A'}</td>
+                </tr>
+
             </table>
            
             <a target="_blank" href="${markerData.lot_link || '#'}" class="btn-link">Batafsil ko'rish</a>

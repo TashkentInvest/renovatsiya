@@ -182,11 +182,11 @@ class AktivController extends Controller
             'ambulator_tibbiyot_info'                   => 'nullable',
             'diniy_muassasa_info'                       => 'nullable',
             'sport_soglomlashtirish_info'               => 'nullable',
-            'saklanadigan_kokalamzor_info'              => 'nullable',
+            'saqlanadigan_kokalamzor_info'              => 'nullable',
             'yangidan_tashkil_kokalamzor_info'          => 'nullable',
-            'saklanadigan_muhandislik_tarmoqlari_info'  => 'nullable',
+            'saqlanadigan_muhandislik_tarmoqlari_info'  => 'nullable',
             'yangidan_quriladigan_muhandislik_tarmoqlari_info' => 'nullable',
-            'saklanadigan_yollar_info'                  => 'nullable',
+            'saqlanadigan_yollar_info'                  => 'nullable',
             'yangidan_quriladigan_yollar_info'          => 'nullable',
         ]);
         // $request->validate([
@@ -293,11 +293,11 @@ class AktivController extends Controller
             'ambulator_tibbiyot_info'                   => 'nullable',
             'diniy_muassasa_info'                       => 'nullable',
             'sport_soglomlashtirish_info'               => 'nullable',
-            'saklanadigan_kokalamzor_info'              => 'nullable',
+            'saqlanadigan_kokalamzor_info'              => 'nullable',
             'yangidan_tashkil_kokalamzor_info'          => 'nullable',
-            'saklanadigan_muhandislik_tarmoqlari_info'  => 'nullable',
+            'saqlanadigan_muhandislik_tarmoqlari_info'  => 'nullable',
             'yangidan_quriladigan_muhandislik_tarmoqlari_info' => 'nullable',
-            'saklanadigan_yollar_info'                  => 'nullable',
+            'saqlanadigan_yollar_info'                  => 'nullable',
             'yangidan_quriladigan_yollar_info'          => 'nullable',
 
             'user_id'          => 'nullable'
@@ -500,6 +500,23 @@ class AktivController extends Controller
                     'address' => $aktiv->location,
                     'user_name' => $aktiv->user ? $aktiv->user->name : 'N/A',
                     'user_email' => $aktiv->user ? $aktiv->user->email : 'N/A',
+
+                    'turar_joy_maydoni' => $aktiv->turar_joy_maydoni ?? '',
+                    'noturar_joy_maydoni' => $aktiv->noturar_joy_maydoni ?? '',
+                    'vaqtinchalik_parking_info' => $aktiv->vaqtinchalik_parking_info ?? '',
+                    'doimiy_parking_info' => $aktiv->doimiy_parking_info ?? '',
+                    'maktabgacha_tashkilot_info' => $aktiv->maktabgacha_tashkilot_info ?? '',
+                    'umumtaolim_maktab_info' => $aktiv->umumtaolim_maktab_info ?? '',
+                    'stasionar_tibbiyot_info' => $aktiv->stasionar_tibbiyot_info ?? '',
+                    'ambulator_tibbiyot_info' => $aktiv->ambulator_tibbiyot_info ?? '',
+                    'diniy_muassasa_info' => $aktiv->diniy_muassasa_info ?? '',
+                    'sport_soglomlashtirish_info' => $aktiv->sport_soglomlashtirish_info ?? '',
+                    'saqlanadigan_kokalamzor_info' => $aktiv->saqlanadigan_kokalamzor_info ?? '',
+                    'yangidan_tashkil_kokalamzor_info' => $aktiv->yangidan_tashkil_kokalamzor_info ?? '',
+                    'saqlanadigan_muhandislik_tarmoqlari_info' => $aktiv->saqlanadigan_muhandislik_tarmoqlari_info ?? '',
+                    'yangidan_quriladigan_muhandislik_tarmoqlari_info' => $aktiv->yangidan_quriladigan_muhandislik_tarmoqlari_info ?? '',
+                    'saqlanadigan_yollar_info' => $aktiv->saqlanadigan_yollar_info ?? '',
+                    'yangidan_quriladigan_yollar_info' => $aktiv->yangidan_quriladigan_yollar_info ?? '',
                 ];
             });
 

@@ -86,7 +86,7 @@
             <!-- 11) Сақланадиган кўкаламзорлаштириш маълумот -->
             <div class="mb-3">
                 <strong>Сақланадиган кўкаламзорлаштириш маълумот:</strong>
-                {{ $aktiv->saklanadigan_kokalamzor_info }}
+                {{ $aktiv->saqlanadigan_kokalamzor_info }}
             </div>
 
             <!-- 12) Янгидан ташкил қилинадиган кўкаламзорлаштириш маълумот -->
@@ -98,7 +98,7 @@
             <!-- 13) Сақланадиган муҳандислик-коммуникация тармоқлари -->
             <div class="mb-3">
                 <strong>Сақланадиган муҳандислик-коммуникация тармоқлари:</strong>
-                {{ $aktiv->saklanadigan_muhandislik_tarmoqlari_info }}
+                {{ $aktiv->saqlanadigan_muhandislik_tarmoqlari_info }}
             </div>
 
             <!-- 14) Янгидан қуриладиган муҳандислик-коммуникация тармоқлари -->
@@ -110,7 +110,7 @@
             <!-- 15) Сақланадиган йўллар ва йўлаклар -->
             <div class="mb-3">
                 <strong>Сақланадиган йўллар ва йўлаклар:</strong>
-                {{ $aktiv->saklanadigan_yollar_info }}
+                {{ $aktiv->saqlanadigan_yollar_info }}
             </div>
 
             <!-- 16) Янгидан қуриладиган йўллар ва йўлаклар -->

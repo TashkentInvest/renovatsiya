@@ -80,19 +80,19 @@ class Aktiv extends Model
         'sport_soglomlashtirish_info', // e.g. "1-спорт __ тагача; 2-спорт __ тагача; ..."
 
         // 2.1.1.9 — Saqlab qolinadigan (yoki rekonstruksiya qilinadigan) ko‘kalamzorlashtirish maydonlari
-        'saklanadigan_kokalamzor_info', // e.g. "1-майдон __ кв.м ... 2-майдон __ кв.м ..."
+        'saqlanadigan_kokalamzor_info', // e.g. "1-майдон __ кв.м ... 2-майдон __ кв.м ..."
 
         // 2.1.1.10 — Yangidan tashkil qilinadigan ko‘kalamzorlashtirish maydonlari
         'yangidan_tashkil_kokalamzor_info',
 
         // 2.1.1.11 — Saqlanib qol. muhandislik-kommunikatsiya tarmoqlari
-        'saklanadigan_muhandislik_tarmoqlari_info',
+        'saqlanadigan_muhandislik_tarmoqlari_info',
 
         // 2.1.1.12 — Yangidan quriladigan muhandislik-kommunikatsiya tarmoqlari
         'yangidan_quriladigan_muhandislik_tarmoqlari_info',
 
         // 2.1.1.13 — Saqlanib qol. yo‘llar va yo‘laklar
-        'saklanadigan_yollar_info',
+        'saqlanadigan_yollar_info',
 
         // 2.1.1.14 — Yangidan quriladigan yo‘llar va yo‘laklar
         'yangidan_quriladigan_yollar_info'
