@@ -221,7 +221,7 @@
                 </div>
                 
                 <div class="mb-3">
-                    <label for="zayavka">Zayavka</label>
+                    <label for="zayavka">Ariza</label>
                     <input class="form-control" type="file" name="zayavka" id="zayavka">
                     @error('zayavka')
                         <div class="text-danger">{{ $message }}</div>
