@@ -581,7 +581,7 @@
             <h4 class="custom_sidebar_title"><b>${markerData.property_name || 'No Title'}</b></h4>
             <table>
                 <tr>
-                    <th class="sidebar_key">Lot raqami</th>
+                    <th class="sidebar_key">№</th>
                     <td>${markerData.lot_number || 'N/A'}</td>
                 </tr>
                 <tr>
@@ -593,14 +593,14 @@
                     <td>${markerData.land_area || 'N/A'}</td>
                 </tr>
                 ${priceUZS > 0 ? `
-                        <tr>
-                            <th class="sidebar_key">Boshlang'ich narxi</th>
-                            <td id="price-td">${lotPriceFormatted}</td>
-                        </tr>
-                        <tr>
-                            <th class="sidebar_key">1 sotix uchun narx</th>
-                            <td>${lotPricePerSotixFormatted}</td>
-                        </tr>` : ''}
+                            <tr>
+                                <th class="sidebar_key">Boshlang'ich narxi</th>
+                                <td id="price-td">${lotPriceFormatted}</td>
+                            </tr>
+                            <tr>
+                                <th class="sidebar_key">1 sotix uchun narx</th>
+                                <td>${lotPricePerSotixFormatted}</td>
+                            </tr>` : ''}
                 <tr>
                     <th class="sidebar_key">Yaratilgan foydalanuvchi</th>
                     <td>${markerData.user_name || 'N/A'}</td>

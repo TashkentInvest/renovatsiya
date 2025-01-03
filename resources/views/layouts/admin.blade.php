@@ -37,7 +37,7 @@
 </head>
 
 <body data-sidebar="{{ auth()->user()->theme()['sidebar'] ?? '' }}"
-    data-layout-mode="{{ auth()->user()->theme()['body'] ?? '' }}">
+    data-layout-mode="{{ auth()->user()->theme()['body'] ?? '' }}" style="overflow-x: hidden">
 
     <div id="preloader">
         <div id="status">
