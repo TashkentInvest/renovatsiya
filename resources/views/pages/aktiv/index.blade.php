@@ -15,7 +15,7 @@
                     <tr>
                         <th scope="col"><i class="fas fa-user"></i> Фойдаланувчи</th>
                         <th scope="col" width="50"><i class="fas fa-building"></i> Объект номи</th>
-                        <th scope="col"><i class="fas fa-balance-scale"></i> Балансда сақловчи</th>
+                        {{-- <th scope="col"><i class="fas fa-balance-scale"></i> Балансда сақловчи</th> --}}
                         <th scope="col" width="100" style="width: 100px"><i class="fas fa-map-marker-alt"></i> Мфй /
                             Коча</th>
                         <th scope="col"><i class="fas fa-calendar-alt"></i> Сана</th>
@@ -43,7 +43,7 @@
                                  
                                 </style>
                             </td>
-                            <td>{{ $aktiv->balance_keeper }}</td>
+                            {{-- <td>{{ $aktiv->balance_keeper }}</td> --}}
                             <td style="width: 100px" class="text-truncate"
                                 title="{{ $aktiv->subStreet->district->name_uz ?? 'Маълумот йўқ' }}">
                                 {{ $aktiv->street->name ?? 'Маълумот йўқ' }},
@@ -61,7 +61,7 @@
                                             data-bs-toggle="tooltip" data-bs-placement="top" title="Таҳрирлаш">
                                             <i class="fas fa-edit"></i>
                                         </a>
-                                        <form action="{{ route('aktivs.destroy', $aktiv) }}" method="POST"
+                                        {{-- <form action="{{ route('aktivs.destroy', $aktiv) }}" method="POST"
                                             style="display:inline-block;">
                                             @csrf
                                             @method('DELETE')
@@ -70,7 +70,7 @@
                                                 onclick="return confirm('Сиз ростдан ҳам бу объектни ўчиришни истайсизми?');">
                                                 <i class="fas fa-trash-alt"></i>
                                             </button>
-                                        </form>
+                                        </form> --}}
                                     @endif
 
                                 </div>
