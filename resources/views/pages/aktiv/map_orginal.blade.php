@@ -588,10 +588,7 @@
                     <th class="sidebar_key">Manzili</th>
                     <td>${markerData.address || 'N/A'}</td>
                 </tr>
-                <tr>
-                    <th class="sidebar_key">Yer maydoni (ga)</th>
-                    <td>${markerData.land_area || 'N/A'}</td>
-                </tr>
+      
                 ${priceUZS > 0 ? `
                             <tr>
                                 <th class="sidebar_key">Boshlang'ich narxi</th>
