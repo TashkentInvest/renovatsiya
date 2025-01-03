@@ -7,10 +7,168 @@
         @csrf
         @method('PUT')
 
-        <input type="hidden" name="user_id" value="{{$aktiv->user_id}}">
+        <input type="hidden" name="user_id" value="{{ $aktiv->user_id }}">
         <div class="row my-3">
             <!-- Left Column -->
             <div class="col-md-6">
+
+                <p>Yangi ma'lumotlar</p>
+                <!-- 1) Турар жой майдони -->
+                <div class="mb-3">
+                    <label for="turar_joy_maydoni">Турар жой майдони</label>
+                    <input class="form-control" type="number" step="0.01" name="turar_joy_maydoni"
+                        id="turar_joy_maydoni" value="{{ old('turar_joy_maydoni', $aktiv->turar_joy_maydoni) }}">
+                    @error('turar_joy_maydoni')
+                        <div class="text-danger">{{ $message }}</div>
+                    @enderror
+                </div>
+
+                <!-- 2) Нотурар жой майдони -->
+                <div class="mb-3">
+                    <label for="noturar_joy_maydoni">Нотурар жой майдони</label>
+                    <input class="form-control" type="number" step="0.01" name="noturar_joy_maydoni"
+                        id="noturar_joy_maydoni" value="{{ old('noturar_joy_maydoni', $aktiv->noturar_joy_maydoni) }}">
+                    @error('noturar_joy_maydoni')
+                        <div class="text-danger">{{ $message }}</div>
+                    @enderror
+                </div>
+
+                <!-- 3) Вақтинчалик тўхташ жойи маълумот -->
+                <div class="mb-3">
+                    <label for="vaqtinchalik_parking_info">Вақтинчалик тўхташ жойи маълумот</label>
+                    <textarea class="form-control" name="vaqtinchalik_parking_info" id="vaqtinchalik_parking_info" rows="2">{{ old('vaqtinchalik_parking_info', $aktiv->vaqtinchalik_parking_info) }}</textarea>
+                    @error('vaqtinchalik_parking_info')
+                        <div class="text-danger">{{ $message }}</div>
+                    @enderror
+                </div>
+
+                <!-- 4) Доимий тўхташ жойи маълумот -->
+                <div class="mb-3">
+                    <label for="doimiy_parking_info">Доимий тўхташ жойи маълумот</label>
+                    <textarea class="form-control" name="doimiy_parking_info" id="doimiy_parking_info" rows="2">{{ old('doimiy_parking_info', $aktiv->doimiy_parking_info) }}</textarea>
+                    @error('doimiy_parking_info')
+                        <div class="text-danger">{{ $message }}</div>
+                    @enderror
+                </div>
+
+                <!-- 5) Мактабгача таълим ташкилоти маълумот -->
+                <div class="mb-3">
+                    <label for="maktabgacha_tashkilot_info">Мактабгача таълим ташкилоти маълумот</label>
+                    <textarea class="form-control" name="maktabgacha_tashkilot_info" id="maktabgacha_tashkilot_info" rows="2">{{ old('maktabgacha_tashkilot_info', $aktiv->maktabgacha_tashkilot_info) }}</textarea>
+                    @error('maktabgacha_tashkilot_info')
+                        <div class="text-danger">{{ $message }}</div>
+                    @enderror
+                </div>
+
+                <!-- 6) Умумтаълим мактаби маълумот -->
+                <div class="mb-3">
+                    <label for="umumtaolim_maktab_info">Умумтаълим мактаби маълумот</label>
+                    <textarea class="form-control" name="umumtaolim_maktab_info" id="umumtaolim_maktab_info" rows="2">{{ old('umumtaolim_maktab_info', $aktiv->umumtaolim_maktab_info) }}</textarea>
+                    @error('umumtaolim_maktab_info')
+                        <div class="text-danger">{{ $message }}</div>
+                    @enderror
+                </div>
+
+                <!-- 7) Стационар тиббиёт муассасаси маълумот -->
+                <div class="mb-3">
+                    <label for="stasionar_tibbiyot_info">Стационар тиббиёт муассасаси маълумот</label>
+                    <textarea class="form-control" name="stasionar_tibbiyot_info" id="stasionar_tibbiyot_info" rows="2">{{ old('stasionar_tibbiyot_info', $aktiv->stasionar_tibbiyot_info) }}</textarea>
+                    @error('stasionar_tibbiyot_info')
+                        <div class="text-danger">{{ $message }}</div>
+                    @enderror
+                </div>
+
+                <!-- 8) Амбулатор тиббиёт муассасаси маълумот -->
+                <div class="mb-3">
+                    <label for="ambulator_tibbiyot_info">Амбулатор тиббиёт муассасаси маълумот</label>
+                    <textarea class="form-control" name="ambulator_tibbiyot_info" id="ambulator_tibbiyot_info" rows="2">{{ old('ambulator_tibbiyot_info', $aktiv->ambulator_tibbiyot_info) }}</textarea>
+                    @error('ambulator_tibbiyot_info')
+                        <div class="text-danger">{{ $message }}</div>
+                    @enderror
+                </div>
+
+                <!-- 9) Диний муассасаси маълумот -->
+                <div class="mb-3">
+                    <label for="diniy_muassasa_info">Диний муассасаси маълумот</label>
+                    <textarea class="form-control" name="diniy_muassasa_info" id="diniy_muassasa_info" rows="2">{{ old('diniy_muassasa_info', $aktiv->diniy_muassasa_info) }}</textarea>
+                    @error('diniy_muassasa_info')
+                        <div class="text-danger">{{ $message }}</div>
+                    @enderror
+                </div>
+
+                <!-- 10) Спорт-соғломлаштириш муассасаси маълумот -->
+                <div class="mb-3">
+                    <label for="sport_soglomlashtirish_info">Спорт-соғломлаштириш муассасаси маълумот</label>
+                    <textarea class="form-control" name="sport_soglomlashtirish_info" id="sport_soglomlashtirish_info" rows="2">{{ old('sport_soglomlashtirish_info', $aktiv->sport_soglomlashtirish_info) }}</textarea>
+                    @error('sport_soglomlashtirish_info')
+                        <div class="text-danger">{{ $message }}</div>
+                    @enderror
+                </div>
+
+                <!-- 11) Сақланадиган кўкаламзорлаштириш маълумот -->
+                <div class="mb-3">
+                    <label for="saklanadigan_kokalamzor_info">Сақланадиган кўкаламзорлаштириш маълумот</label>
+                    <textarea class="form-control" name="saklanadigan_kokalamzor_info" id="saklanadigan_kokalamzor_info" rows="2">{{ old('saklanadigan_kokalamzor_info', $aktiv->saklanadigan_kokalamzor_info) }}</textarea>
+                    @error('saklanadigan_kokalamzor_info')
+                        <div class="text-danger">{{ $message }}</div>
+                    @enderror
+                </div>
+
+                <!-- 12) Янгидан ташкил қилинадиган кўкаламзорлаштириш маълумот -->
+                <div class="mb-3">
+                    <label for="yangidan_tashkil_kokalamzor_info">Янгидан ташкил қилинадиган кўкаламзорлаштириш
+                        маълумот</label>
+                    <textarea class="form-control" name="yangidan_tashkil_kokalamzor_info" id="yangidan_tashkil_kokalamzor_info"
+                        rows="2">{{ old('yangidan_tashkil_kokalamzor_info', $aktiv->yangidan_tashkil_kokalamzor_info) }}</textarea>
+                    @error('yangidan_tashkil_kokalamzor_info')
+                        <div class="text-danger">{{ $message }}</div>
+                    @enderror
+                </div>
+
+                <!-- 13) Сақланиб қолинадиган муҳандислик-коммуникация тармоқлари -->
+                <div class="mb-3">
+                    <label for="saklanadigan_muhandislik_tarmoqlari_info">Сақланадиган муҳандислик-коммуникация
+                        тармоқлари</label>
+                    <textarea class="form-control" name="saklanadigan_muhandislik_tarmoqlari_info"
+                        id="saklanadigan_muhandislik_tarmoqlari_info" rows="2">{{ old('saklanadigan_muhandislik_tarmoqlari_info', $aktiv->saklanadigan_muhandislik_tarmoqlari_info) }}</textarea>
+                    @error('saklanadigan_muhandislik_tarmoqlari_info')
+                        <div class="text-danger">{{ $message }}</div>
+                    @enderror
+                </div>
+
+                <!-- 14) Янгидан қуриладиган муҳандислик-коммуникация тармоқлари -->
+                <div class="mb-3">
+                    <label for="yangidan_quriladigan_muhandislik_tarmoqlari_info">Янгидан қуриладиган
+                        муҳандислик-коммуникация тармоқлари</label>
+                    <textarea class="form-control" name="yangidan_quriladigan_muhandislik_tarmoqlari_info"
+                        id="yangidan_quriladigan_muhandislik_tarmoqlari_info" rows="2">{{ old('yangidan_quriladigan_muhandislik_tarmoqlari_info', $aktiv->yangidan_quriladigan_muhandislik_tarmoqlari_info) }}</textarea>
+                    @error('yangidan_quriladigan_muhandislik_tarmoqlari_info')
+                        <div class="text-danger">{{ $message }}</div>
+                    @enderror
+                </div>
+
+                <!-- 15) Сақланиб қолинадиган йўллар ва йўлаклар -->
+                <div class="mb-3">
+                    <label for="saklanadigan_yollar_info">Сақланадиган йўллар ва йўлаклар</label>
+                    <textarea class="form-control" name="saklanadigan_yollar_info" id="saklanadigan_yollar_info" rows="2">{{ old('saklanadigan_yollar_info', $aktiv->saklanadigan_yollar_info) }}</textarea>
+                    @error('saklanadigan_yollar_info')
+                        <div class="text-danger">{{ $message }}</div>
+                    @enderror
+                </div>
+
+                <!-- 16) Янгидан қуриладиган йўллар ва йўлаклар -->
+                <div class="mb-3">
+                    <label for="yangidan_quriladigan_yollar_info">Янгидан қуриладиган йўллар ва йўлаклар</label>
+                    <textarea class="form-control" name="yangidan_quriladigan_yollar_info" id="yangidan_quriladigan_yollar_info"
+                        rows="2">{{ old('yangidan_quriladigan_yollar_info', $aktiv->yangidan_quriladigan_yollar_info) }}</textarea>
+                    @error('yangidan_quriladigan_yollar_info')
+                        <div class="text-danger">{{ $message }}</div>
+                    @enderror
+                </div>
+
+
+
+                {{-- end new fields ---------------- --}}
                 <!-- Form Inputs -->
                 <div class="mb-3">
                     <label for="object_name">Объект номи</label>
@@ -70,7 +228,8 @@
                 <label for="water">Сув</label>
                 <select class="form-control form-select mb-3" name="water" id="water">
                     <option value="Мавжуд" {{ old('water', $aktiv->water) == 'Мавжуд' ? 'selected' : '' }}>Мавжуд</option>
-                    <option value="Мавжуд эмас" {{ old('water', $aktiv->water) == 'Мавжуд эмас' ? 'selected' : '' }}>Мавжуд
+                    <option value="Мавжуд эмас" {{ old('water', $aktiv->water) == 'Мавжуд эмас' ? 'selected' : '' }}>
+                        Мавжуд
                         эмас</option>
                 </select>
                 @error('water')
@@ -97,6 +256,8 @@
                         <div class="text-danger">{{ $message }}</div>
                     @enderror
                 </div>
+
+
 
                 <!-- Region Information -->
                 <div class="mb-3">

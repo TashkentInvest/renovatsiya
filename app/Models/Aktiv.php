@@ -50,7 +50,52 @@ class Aktiv extends Model
         'longitude',
         'kadastr_raqami',
         'sub_street_id',
-        'street_id'
+        'street_id',
+
+         // Below are the newly added fields from the requirements
+
+        // 2.1.1.2 — Turar/noturar joy maydonlari
+        'turar_joy_maydoni',
+        'noturar_joy_maydoni',
+
+        // 2.1.1.3 — Transport vositalarining vaqtinchalik/doimiy to‘xtab turish joylari
+        // For simplicity, storing them as text. If you have multiple, you can store as JSON or separate fields:
+        'vaqtinchalik_parking_info', // e.g. "1-вақтинчалик: __ та жой; 2-вақтинчалик: __ та жой; ..."
+        'doimiy_parking_info',       // e.g. "1-доимий: __ та жой; 2-доимий: __ та жой; ..."
+
+        // 2.1.1.4 — Maktabgacha ta’lim
+        'maktabgacha_tashkilot_info', // e.g. "1-...__ ўринли; 2-...__ ўринли; ..."
+
+        // 2.1.1.5 — Umumta’lim maktablari
+        'umumtaolim_maktab_info', // e.g. "1-...__ ўринли; 2-...__ ўринли; ..."
+
+        // 2.1.1.6 — Tibbiyot muassasalari
+        'stasionar_tibbiyot_info',   // e.g. "1-стационар __ ўринли; 2-стационар __ ўринли; ..."
+        'ambulator_tibbiyot_info',   // e.g. "1-амбулатор __ тагача; 2-амбулатор __ тагача; ..."
+
+        // 2.1.1.7 — Diniy muassasalar
+        'diniy_muassasa_info', // e.g. "1-диний __ тагача; 2-диний __ тагача; ..."
+
+        // 2.1.1.8 — Sport-sog’lomlashtirish
+        'sport_soglomlashtirish_info', // e.g. "1-спорт __ тагача; 2-спорт __ тагача; ..."
+
+        // 2.1.1.9 — Saqlab qolinadigan (yoki rekonstruksiya qilinadigan) ko‘kalamzorlashtirish maydonlari
+        'saklanadigan_kokalamzor_info', // e.g. "1-майдон __ кв.м ... 2-майдон __ кв.м ..."
+
+        // 2.1.1.10 — Yangidan tashkil qilinadigan ko‘kalamzorlashtirish maydonlari
+        'yangidan_tashkil_kokalamzor_info',
+
+        // 2.1.1.11 — Saqlanib qol. muhandislik-kommunikatsiya tarmoqlari
+        'saklanadigan_muhandislik_tarmoqlari_info',
+
+        // 2.1.1.12 — Yangidan quriladigan muhandislik-kommunikatsiya tarmoqlari
+        'yangidan_quriladigan_muhandislik_tarmoqlari_info',
+
+        // 2.1.1.13 — Saqlanib qol. yo‘llar va yo‘laklar
+        'saklanadigan_yollar_info',
+
+        // 2.1.1.14 — Yangidan quriladigan yo‘llar va yo‘laklar
+        'yangidan_quriladigan_yollar_info'
     ];
 
     public function files()

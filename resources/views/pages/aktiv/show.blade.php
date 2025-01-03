@@ -19,6 +19,107 @@
         </div>
     </div>
 
+    <!-- Additional New Fields (Новые поля) -->
+    <div class="card shadow-sm p-4 mb-4">
+        <h5 class="card-title text-primary">Новые поля (Qo‘shimcha ma’lumotlar)</h5>
+        <div class="card-body">
+            <!-- 1) Турар жой майдони -->
+            <div class="mb-3">
+                <strong>Турар жой майдони:</strong>
+                {{ $aktiv->turar_joy_maydoni }}
+            </div>
+
+            <!-- 2) Нотурар жой майдони -->
+            <div class="mb-3">
+                <strong>Нотурар жой майдони:</strong>
+                {{ $aktiv->noturar_joy_maydoni }}
+            </div>
+
+            <!-- 3) Вақтинчалик тўхташ жойи маълумот -->
+            <div class="mb-3">
+                <strong>Вақтинчалик тўхташ жойи (Парковка) маълумот:</strong>
+                {{ $aktiv->vaqtinchalik_parking_info }}
+            </div>
+
+            <!-- 4) Доимий тўхташ жойи маълумот -->
+            <div class="mb-3">
+                <strong>Доимий тўхташ жойи (Парковка) маълумот:</strong>
+                {{ $aktiv->doimiy_parking_info }}
+            </div>
+
+            <!-- 5) Мактабгача таълим ташкилоти маълумот -->
+            <div class="mb-3">
+                <strong>Мактабгача таълим ташкилоти маълумот:</strong>
+                {{ $aktiv->maktabgacha_tashkilot_info }}
+            </div>
+
+            <!-- 6) Умумтаълим мактаби маълумот -->
+            <div class="mb-3">
+                <strong>Умумтаълим мактаби маълумот:</strong>
+                {{ $aktiv->umumtaolim_maktab_info }}
+            </div>
+
+            <!-- 7) Стационар тиббиёт муассасаси маълумот -->
+            <div class="mb-3">
+                <strong>Стационар тиббиёт муассасаси маълумот:</strong>
+                {{ $aktiv->stasionar_tibbiyot_info }}
+            </div>
+
+            <!-- 8) Амбулатор тиббиёт муассасаси маълумот -->
+            <div class="mb-3">
+                <strong>Амбулатор тиббиёт муассасаси маълумот:</strong>
+                {{ $aktiv->ambulator_tibbiyot_info }}
+            </div>
+
+            <!-- 9) Диний муассасаси маълумот -->
+            <div class="mb-3">
+                <strong>Диний муассасаси маълумот:</strong>
+                {{ $aktiv->diniy_muassasa_info }}
+            </div>
+
+            <!-- 10) Спорт-соғломлаштириш муассасаси маълумот -->
+            <div class="mb-3">
+                <strong>Спорт-соғломлаштириш муассасаси маълумот:</strong>
+                {{ $aktiv->sport_soglomlashtirish_info }}
+            </div>
+
+            <!-- 11) Сақланадиган кўкаламзорлаштириш маълумот -->
+            <div class="mb-3">
+                <strong>Сақланадиган кўкаламзорлаштириш маълумот:</strong>
+                {{ $aktiv->saklanadigan_kokalamzor_info }}
+            </div>
+
+            <!-- 12) Янгидан ташкил қилинадиган кўкаламзорлаштириш маълумот -->
+            <div class="mb-3">
+                <strong>Янгидан ташкил қилинадиган кўкаламзорлаштириш маълумот:</strong>
+                {{ $aktiv->yangidan_tashkil_kokalamzor_info }}
+            </div>
+
+            <!-- 13) Сақланадиган муҳандислик-коммуникация тармоқлари -->
+            <div class="mb-3">
+                <strong>Сақланадиган муҳандислик-коммуникация тармоқлари:</strong>
+                {{ $aktiv->saklanadigan_muhandislik_tarmoqlari_info }}
+            </div>
+
+            <!-- 14) Янгидан қуриладиган муҳандислик-коммуникация тармоқлари -->
+            <div class="mb-3">
+                <strong>Янгидан қуриладиган муҳандислик-коммуникация тармоқлари:</strong>
+                {{ $aktiv->yangidan_quriladigan_muhandislik_tarmoqlari_info }}
+            </div>
+
+            <!-- 15) Сақланадиган йўллар ва йўлаклар -->
+            <div class="mb-3">
+                <strong>Сақланадиган йўллар ва йўлаклар:</strong>
+                {{ $aktiv->saklanadigan_yollar_info }}
+            </div>
+
+            <!-- 16) Янгидан қуриладиган йўллар ва йўлаклар -->
+            <div class="mb-3">
+                <strong>Янгидан қуриладиган йўллар ва йўлаклар:</strong>
+                {{ $aktiv->yangidan_quriladigan_yollar_info }}
+            </div>
+        </div>
+    </div>
     <!-- Location Information -->
     <div class="card shadow-sm p-4 mb-4">
         <h5 class="card-title text-primary">Расположение</h5>

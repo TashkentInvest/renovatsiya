@@ -54,22 +54,22 @@ class AktivController extends Controller
         $user_id = $request->input('user_id');
         $district_id = $request->input('district_id');
         $userRole = auth()->user()->roles->first()->name;
-    
+
         // Only Super Admins and Managers can filter by user_id or district_id
         if ($userRole != 'Super Admin' && $userRole != 'Manager') {
             abort(403, 'Unauthorized access.');
         }
-    
+
         // Initialize the query builder for Aktivs
         $query = Aktiv::query();
-    
+
         // Only Super Admins and Managers can filter by user_id
         if ($userRole == 'Super Admin' || $userRole == 'Manager') {
             if ($user_id) {
                 // Filter aktivs by the specified user_id
                 $query->where('user_id', $user_id);
             }
-    
+
             // Apply district filter if provided
             if ($district_id) {
                 $query->whereHas('user', function ($q) use ($district_id) {
@@ -80,7 +80,7 @@ class AktivController extends Controller
             // If not Super Admin or Manager, show only the logged-in user's aktivs
             $query->where('user_id', auth()->id());
         }
-    
+
         // Get distinct districts by joining with users and selecting the distinct district_id
         $districts = Districts::select('districts.id', 'districts.name_uz') // select relevant columns
             ->distinct()
@@ -88,30 +88,30 @@ class AktivController extends Controller
             ->join('aktivs', 'users.id', '=', 'aktivs.user_id') // join with aktivs table
             ->whereIn('aktivs.id', $query->pluck('id')) // filter the aktivs based on the query
             ->get();
-    
+
         // Manually count aktivs for each district
         foreach ($districts as $district) {
             $aktivCount = Aktiv::query()
                 ->whereHas('user', function ($q) use ($district, $user_id) {
                     // Apply district filter if needed
                     $q->where('district_id', $district->id);
-    
+
                     // Apply user_id filter if provided
                     if ($user_id) {
                         $q->where('user_id', $user_id);
                     }
                 })
                 ->count(); // Get the count of aktivs for the current district
-    
+
             // Add the count to the district object
             $district->aktiv_count = $aktivCount;
         }
-    
+
         // Return the view with districts data
         return view('pages.aktiv.tuman_counts', compact('districts'));
     }
-    
-    
+
+
     // public function create()
     // {
     //     $regions = Regions::get();
@@ -169,7 +169,25 @@ class AktivController extends Controller
 
             'sub_street_id'    => 'required',
             'street_id'    => 'required',
-            'user_id'          => 'nullable'
+            'user_id'          => 'nullable',
+
+            // New fields validation (example: all nullable)
+            'turar_joy_maydoni'                         => 'nullable',
+            'noturar_joy_maydoni'                       => 'nullable',
+            'vaqtinchalik_parking_info'                 => 'nullable',
+            'doimiy_parking_info'                       => 'nullable',
+            'maktabgacha_tashkilot_info'                => 'nullable',
+            'umumtaolim_maktab_info'                    => 'nullable',
+            'stasionar_tibbiyot_info'                   => 'nullable',
+            'ambulator_tibbiyot_info'                   => 'nullable',
+            'diniy_muassasa_info'                       => 'nullable',
+            'sport_soglomlashtirish_info'               => 'nullable',
+            'saklanadigan_kokalamzor_info'              => 'nullable',
+            'yangidan_tashkil_kokalamzor_info'          => 'nullable',
+            'saklanadigan_muhandislik_tarmoqlari_info'  => 'nullable',
+            'yangidan_quriladigan_muhandislik_tarmoqlari_info' => 'nullable',
+            'saklanadigan_yollar_info'                  => 'nullable',
+            'yangidan_quriladigan_yollar_info'          => 'nullable',
         ]);
         // $request->validate([
         //     'files' => 'required|array|min:4', // Enforces at least 4 files
@@ -263,6 +281,24 @@ class AktivController extends Controller
             'files.*'          => 'required',
             'sub_street_id'    => 'required',
             'street_id'    => 'required',
+
+            // New fields validation (example: all nullable)
+            'turar_joy_maydoni'                         => 'nullable',
+            'noturar_joy_maydoni'                       => 'nullable',
+            'vaqtinchalik_parking_info'                 => 'nullable',
+            'doimiy_parking_info'                       => 'nullable',
+            'maktabgacha_tashkilot_info'                => 'nullable',
+            'umumtaolim_maktab_info'                    => 'nullable',
+            'stasionar_tibbiyot_info'                   => 'nullable',
+            'ambulator_tibbiyot_info'                   => 'nullable',
+            'diniy_muassasa_info'                       => 'nullable',
+            'sport_soglomlashtirish_info'               => 'nullable',
+            'saklanadigan_kokalamzor_info'              => 'nullable',
+            'yangidan_tashkil_kokalamzor_info'          => 'nullable',
+            'saklanadigan_muhandislik_tarmoqlari_info'  => 'nullable',
+            'yangidan_quriladigan_muhandislik_tarmoqlari_info' => 'nullable',
+            'saklanadigan_yollar_info'                  => 'nullable',
+            'yangidan_quriladigan_yollar_info'          => 'nullable',
 
             'user_id'          => 'nullable'
         ]);
@@ -425,7 +461,7 @@ class AktivController extends Controller
     public function getLots()
     {
         try {
-            
+
             // Check if the authenticated user is the Super Admin (user_id = 1)
             $isSuperAdmin = auth()->id() === 1 || true;
             Log::info($isSuperAdmin);
@@ -433,17 +469,16 @@ class AktivController extends Controller
             if ($isSuperAdmin) {
                 // Super Admin sees all aktivs
                 $aktivs = Aktiv::with(['files', 'user'])->get();
-                
             } else {
                 // Other users should not see aktivs created by the Super Admin (user_id = 1)
                 $aktivs = Aktiv::with(['files', 'user'])
                     ->where('user_id', '!=', 1)  // Exclude records created by the Super Admin
                     ->get();
             }
-    
+
             // Define the default image in case there is no image
             $defaultImage = 'https://cdn.dribbble.com/users/1651691/screenshots/5336717/404_v2.png';
-    
+
             // Map the aktivs to the required format
             $lots = $aktivs->map(function ($aktiv) use ($defaultImage) {
                 // Determine the main image URL
@@ -451,7 +486,7 @@ class AktivController extends Controller
                 $mainImageUrl = $mainImagePath && file_exists(public_path($mainImagePath))
                     ? asset($mainImagePath)
                     : $defaultImage;
-    
+
                 // Return the necessary data
                 return [
                     'lat' => $aktiv->latitude,
@@ -467,19 +502,18 @@ class AktivController extends Controller
                     'user_email' => $aktiv->user ? $aktiv->user->email : 'N/A',
                 ];
             });
-    
+
             // Return the response as JSON
             return response()->json(['lots' => $lots]);
-    
         } catch (\Exception $e) {
             // Log the error message
             Log::error('Error fetching lots: ' . $e->getMessage());
-            
+
             // Optionally, you can return a specific error message
             return response()->json(['error' => 'An error occurred while fetching the lots.'], 500);
         }
     }
-    
+
 
 
     /**

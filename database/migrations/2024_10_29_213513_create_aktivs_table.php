@@ -36,6 +36,24 @@ class CreateAktivsTable extends Migration
             $table->decimal('latitude', 10, 7);
             $table->decimal('longitude', 10, 7);
             $table->string('kadastr_raqami')->nullable();
+
+            // new fields
+            $table->string('turar_joy_maydoni', 12, 2)->nullable();
+            $table->decimal('noturar_joy_maydoni', 12, 2)->nullable();
+            $table->text('vaqtinchalik_parking_info')->nullable();
+            $table->text('doimiy_parking_info')->nullable();
+            $table->text('maktabgacha_tashkilot_info')->nullable();
+            $table->text('umumtaolim_maktab_info')->nullable();
+            $table->text('stasionar_tibbiyot_info')->nullable();
+            $table->text('ambulator_tibbiyot_info')->nullable();
+            $table->text('diniy_muassasa_info')->nullable();
+            $table->text('sport_soglomlashtirish_info')->nullable();
+            $table->text('saklanadigan_kokalamzor_info')->nullable();
+            $table->text('yangidan_tashkil_kokalamzor_info')->nullable();
+            $table->text('saklanadigan_muhandislik_tarmoqlari_info')->nullable();
+            $table->text('yangidan_quriladigan_muhandislik_tarmoqlari_info')->nullable();
+            $table->text('saklanadigan_yollar_info')->nullable();
+            $table->text('yangidan_quriladigan_yollar_info')->nullable();
             $table->timestamps();
         });
     }
