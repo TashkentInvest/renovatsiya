@@ -23,18 +23,18 @@ class CreateAktivsTable extends Migration
             $table->timestamp('action_timestamp')->nullable();
             $table->softDeletes();
 
-            $table->string('object_name');
-            $table->string('balance_keeper');
-            $table->string('location');
-            $table->decimal('land_area', 10, 2);
+            $table->string('object_name')->nullable();
+            $table->string('balance_keeper')->nullable();
+            $table->string('location')->nullable();
+            $table->decimal('land_area', 10, 2)->nullable();
             $table->decimal('building_area', 10, 2)->nullable();
-            $table->string('gas');
-            $table->string('water');
-            $table->string('electricity');
+            $table->string('gas')->nullable();
+            $table->string('water')->nullable();
+            $table->string('electricity')->nullable();
             $table->text('additional_info')->nullable();
-            $table->string('geolokatsiya');
-            $table->decimal('latitude', 10, 7);
-            $table->decimal('longitude', 10, 7);
+            $table->string('geolokatsiya')->nullable();
+            $table->decimal('latitude', 10, 7)->nullable();
+            $table->decimal('longitude', 10, 7)->nullable();
             $table->string('kadastr_raqami')->nullable();
 
             // new fields

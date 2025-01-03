@@ -189,14 +189,10 @@ class AktivController extends Controller
             'saqlanadigan_yollar_info'                  => 'nullable',
             'yangidan_quriladigan_yollar_info'          => 'nullable',
         ]);
-        // $request->validate([
-        //     'files' => 'required|array|min:4', // Enforces at least 4 files
-        //     'files.*' => 'required|file', // Ensures each file is valid
-        //     // other validations
-        // ]);
+
 
         $data = $request->except('files');
-        $data['user_id'] = auth()->id(); // Automatically set the authenticated user's ID
+        $data['user_id'] = auth()->id(); 
 
         $aktiv = Aktiv::create($data);
 
@@ -303,10 +299,6 @@ class AktivController extends Controller
             'user_id'          => 'nullable'
         ]);
 
-        // $totalFiles = $aktiv->files()->count() - count($request->delete_files ?? []) + count($request->file('files') ?? []);
-        // if ($totalFiles < 4) {
-        //     return back()->withErrors(['files' => 'Камида 4 та файл бўлиши шарт.'])->withInput();
-        // }
 
         if ($request->has('delete_files')) {
             foreach ($request->delete_files as $fileId) {
@@ -388,52 +380,6 @@ class AktivController extends Controller
         return view('pages.aktiv.user_counts', compact('users'));
     }
 
-    // public function userTumanlarCounts(Request $request)
-    // {
-    //     $userRole = auth()->user()->roles->first()->name;
-    //     $district_id = $request->input('district_id');
-    //     $user_id = $request->input('user_id');
-
-    //     // Only Super Admins and Managers can filter by user_id or district_id
-    //     if ($userRole != 'Super Admin' && $userRole != 'Manager') {
-    //         abort(403, 'Unauthorized access.');
-    //     }
-
-    //     // Initialize the query builder for Districts
-    //     $districtsQuery = Districts::query(); // Assuming you have a District model
-
-    //     // Apply district filter if provided
-    //     if ($district_id) {
-    //         $districtsQuery->where('id', $district_id);
-    //     }
-
-    //     // Get distinct districts
-    //     $districts = $districtsQuery->distinct()->get();
-
-    //     // Manually count aktivs for each district
-    //     foreach ($districts as $district) {
-    //         // Apply the filters and count aktivs for the current district
-    //         $aktivCount = Aktiv::query()
-    //             ->whereHas('user', function ($query) use ($district, $user_id) {
-    //                 // Apply the district filter if needed
-    //                 $query->where('district_id', $district->id);
-
-    //                 // Apply the user_id filter if provided
-    //                 if ($user_id) {
-    //                     $query->where('user_id', $user_id);
-    //                 }
-    //             })
-    //             ->count();
-
-    //         // Add the count to the district object
-    //         $district->aktiv_count = $aktivCount;
-    //     }
-
-    //     // Return the view with districts data
-    //     return view('pages.aktiv.tuman_counts', compact('districts'));
-    // }
-
-
 
     public function export()
     {
@@ -453,9 +399,6 @@ class AktivController extends Controller
     }
 
     // map code with source data
-
-
-
 
 
     public function getLots()
