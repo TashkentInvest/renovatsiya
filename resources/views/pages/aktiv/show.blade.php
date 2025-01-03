@@ -118,6 +118,18 @@
                 <strong>Янгидан қуриладиган йўллар ва йўлаклар:</strong>
                 {{ $aktiv->yangidan_quriladigan_yollar_info }}
             </div>
+
+            @foreach ($aktiv->docs as $doc)
+                <div class="mb-3">
+                    <label>{{ ucfirst(str_replace('_', ' ', $doc->doc_type)) }}</label>
+                    <div class="d-flex align-items-center">
+                        <a href="{{ asset('storage/' . $doc->path) }}" target="_blank">{{$doc->path ? 'View existing file' : ''}}</a>
+                        
+                    </div>
+                </div>
+            @endforeach
+
+          
         </div>
     </div>
     <!-- Location Information -->
