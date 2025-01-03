@@ -188,6 +188,63 @@
                     @enderror
                 </div>
 
+                <div class="mb-3">
+                    <label for="1-etap-protokol">1-etap protokol</label>
+                    <input class="form-control" type="file" name="1-etap-protokol" id="1-etap-protokol">
+                    @error('1-etap-protokol')
+                        <div class="text-danger">{{ $message }}</div>
+                    @enderror
+                </div>
+                
+                <div class="mb-3">
+                    <label for="2-etap-protokol">2-etap protokol</label>
+                    <input class="form-control" type="file" name="2-etap-protokol" id="2-etap-protokol">
+                    @error('2-etap-protokol')
+                        <div class="text-danger">{{ $message }}</div>
+                    @enderror
+                </div>
+                
+                <div class="mb-3">
+                    <label for="1-etap-elon">1-etap elon</label>
+                    <input class="form-control" type="file" name="1-etap-elon" id="1-etap-elon">
+                    @error('1-etap-elon')
+                        <div class="text-danger">{{ $message }}</div>
+                    @enderror
+                </div>
+                
+                <div class="mb-3">
+                    <label for="2-etap-elon">2-etap elon</label>
+                    <input class="form-control" type="file" name="2-etap-elon" id="2-etap-elon">
+                    @error('2-etap-elon')
+                        <div class="text-danger">{{ $message }}</div>
+                    @enderror
+                </div>
+                
+                <div class="mb-3">
+                    <label for="zayavka">Zayavka</label>
+                    <input class="form-control" type="file" name="zayavka" id="zayavka">
+                    @error('zayavka')
+                        <div class="text-danger">{{ $message }}</div>
+                    @enderror
+                </div>
+                
+                <div class="mb-3">
+                    <label for="hokim_qarori">Hokim qarori</label>
+                    <input class="form-control" type="file" name="hokim_qarori" id="hokim_qarori">
+                    @error('hokim_qarori')
+                        <div class="text-danger">{{ $message }}</div>
+                    @enderror
+                </div>
+                
+                <div class="mb-3">
+                    <label for="others">Boshqa hujjatlar</label>
+                    <input class="form-control" type="file" name="others" id="others">
+                    @error('others')
+                        <div class="text-danger">{{ $message }}</div>
+                    @enderror
+                </div>
+                
+
                 {{-- end new fields -------------------------- --}}
                 <!-- Form Inputs -->
                 <div class="mb-3">

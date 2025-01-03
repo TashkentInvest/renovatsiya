@@ -167,6 +167,14 @@ class AktivController extends Controller
             'files.*'          => 'required',
             'files' => 'required|array|min:4', // Enforces at least 4 files
 
+            // Docs (optional or required as you see fit)
+            'aktiv_docs'       => 'nullable|array',      // e.g. array of docs
+            'aktiv_docs.*'     => 'nullable',
+            // If you want doc_type selection:
+            // 'doc_types'     => 'nullable|array',
+            // 'doc_types.*'   => 'in:1-etap-protokol,2-etap-protokol,elon,zayavka,hokim_qarori,other',
+
+
             'sub_street_id'    => 'required',
             'street_id'    => 'required',
             'user_id'          => 'nullable',
@@ -191,8 +199,8 @@ class AktivController extends Controller
         ]);
 
 
-        $data = $request->except('files');
-        $data['user_id'] = auth()->id(); 
+        $data = $request->except(['files', 'aktiv_docs']);
+        $data['user_id'] = auth()->id();
 
         $aktiv = Aktiv::create($data);
 
@@ -202,6 +210,28 @@ class AktivController extends Controller
 
                 $aktiv->files()->create([
                     'path' => $path,
+                ]);
+            }
+        }
+
+        // Save docs (1-etap, 2-etap, elon, etc.)
+        $docTypes = [
+            '1-etap-protokol' => '1-etap-protokol',
+            '2-etap-protokol' => '2-etap-protokol',
+            '1-etap-elon' => '1-etap-elon',
+            '2-etap-elon' => '2-etap-elon',
+            'zayavka' => 'zayavka',
+            'hokim_qarori' => 'hokim_qarori',
+            'others' => 'other',
+        ];
+
+        foreach ($docTypes as $inputName => $docType) {
+            if ($request->hasFile($inputName)) {
+                $file = $request->file($inputName);
+                $path = $file->store('aktiv_docs', 'public');
+                $aktiv->docs()->create([
+                    'doc_type' => $docType,
+                    'path'     => $path,
                 ]);
             }
         }
@@ -216,7 +246,7 @@ class AktivController extends Controller
 
         // Load necessary relationships including the street to district relationship
         // It's crucial that subStreet is correctly mapped to district in your Aktiv model
-        $aktiv->load('subStreet.district.region', 'files');
+        $aktiv->load('subStreet.district.region', 'files', 'docs');
 
         $defaultImage = 'https://cdn.dribbble.com/users/1651691/screenshots/5336717/404_v2.png';
 
@@ -228,10 +258,10 @@ class AktivController extends Controller
 
         if (auth()->id() === 1 || true) {
             // Super Admin can see all aktivs
-            $aktivs = Aktiv::with('files')->get();
+            $aktivs = Aktiv::with(['files', 'docs'])->get();
         } else {
             // Regular users see only aktivs from their district and not created by Super Admin
-            $aktivs = Aktiv::with('files')
+            $aktivs = Aktiv::with(['files', 'docs'])
                 ->join('streets', 'aktivs.street_id', '=', 'streets.id')  // Ensure street is joined correctly
                 ->where('streets.district_id', $userDistrictId)  // Filter by user's district from street relationship
                 ->where('user_id', '!=', 1)  // Exclude aktivs created by Super Admin
@@ -253,6 +283,9 @@ class AktivController extends Controller
         $this->authorizeView($aktiv); // Check if the user can edit this Aktiv
 
         $regions = Regions::get();
+
+        $aktiv->load('docs');
+
         return view('pages.aktiv.edit', compact('aktiv', 'regions'));
     }
 
@@ -275,6 +308,9 @@ class AktivController extends Controller
             'longitude'        => 'required|numeric',
             'kadastr_raqami'   => 'nullable|string|max:255',
             'files.*'          => 'required',
+
+            'aktiv_docs.*'     => 'nullable',
+
             'sub_street_id'    => 'required',
             'street_id'    => 'required',
 
@@ -310,9 +346,22 @@ class AktivController extends Controller
             }
         }
 
+        // Handle doc deletions
+        // Delete selected files
+        if ($request->has('delete_docs')) {
+            foreach ($request->delete_docs as $docId) {
+                $doc = $aktiv->docs()->find($docId);
+                if ($doc) {
+                    \Storage::disk('public')->delete($doc->path);
+                    $doc->delete();
+                }
+            }
+        }
 
 
-        $data = $request->except('files');
+
+        $data = $request->except(['files', 'aktiv_docs', 'delete_files', 'delete_docs']);
+
         $aktiv->update($data);
 
         if ($request->hasFile('files')) {
@@ -323,6 +372,29 @@ class AktivController extends Controller
                 ]);
             }
         }
+
+        // Upload new specific documents
+        $docTypes = [
+            '1-etap-protokol' => '1-etap-protokol',
+            '2-etap-protokol' => '2-etap-protokol',
+            '1-etap-elon' => '1-etap-elon',
+            '2-etap-elon' => '2-etap-elon',
+            'zayavka' => 'zayavka',
+            'hokim_qarori' => 'hokim_qarori',
+            'others' => 'other',
+        ];
+
+        foreach ($docTypes as $inputName => $docType) {
+            if ($request->hasFile($inputName)) {
+                $file = $request->file($inputName);
+                $path = $file->store('aktiv_docs', 'public');
+                $aktiv->docs()->create([
+                    'doc_type' => $docType,
+                    'path'     => $path,
+                ]);
+            }
+        }
+
 
         return redirect()->route('aktivs.index')->with('success', 'Aktiv updated successfully.');
     }

@@ -166,6 +166,47 @@
                     @enderror
                 </div>
 
+              
+
+                @foreach ($aktiv->docs as $doc)
+                    <div class="mb-3">
+                        <label>{{ ucfirst(str_replace('_', ' ', $doc->doc_type)) }}</label>
+                        <div class="d-flex align-items-center">
+                            <a href="{{ asset('storage/' . $doc->path) }}" target="_blank">View existing file</a>
+                            <button type="button" class="btn btn-danger btn-sm ms-2 delete-doc-btn"
+                                data-doc-id="{{ $doc->id }}">Delete</button>
+                        </div>
+                    </div>
+                @endforeach
+
+                @foreach (['1-etap-protokol', '2-etap-protokol', '1-etap-elon', '2-etap-elon', 'zayavka', 'hokim_qarori', 'others'] as $inputName)
+                    <div class="mb-3">
+                        <label for="{{ $inputName }}">{{ ucfirst(str_replace('_', ' ', $inputName)) }}</label>
+                        <input class="form-control" type="file" name="{{ $inputName }}"
+                            id="{{ $inputName }}">
+                        @error($inputName)
+                            <div class="text-danger">{{ $message }}</div>
+                        @enderror
+                    </div>
+                @endforeach
+
+                <script>
+                    document.addEventListener('DOMContentLoaded', () => {
+                        document.querySelectorAll('.delete-doc-btn').forEach(button => {
+                            button.addEventListener('click', function() {
+                                const docId = this.dataset.docId;
+                                const deleteInput = document.createElement('input');
+                                deleteInput.type = 'hidden';
+                                deleteInput.name = 'delete_docs[]';
+                                deleteInput.value = docId;
+                                document.querySelector('form').appendChild(deleteInput);
+                                this.closest('.mb-3').remove();
+                            });
+                        });
+                    });
+                </script>
+
+
 
 
                 {{-- end new fields ---------------- --}}

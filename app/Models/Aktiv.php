@@ -52,7 +52,7 @@ class Aktiv extends Model
         'sub_street_id',
         'street_id',
 
-         // Below are the newly added fields from the requirements
+        // Below are the newly added fields from the requirements
 
         // 2.1.1.2 — Turar/noturar joy maydonlari
         'turar_joy_maydoni',
@@ -116,5 +116,10 @@ class Aktiv extends Model
     public function street()
     {
         return $this->belongsTo(Street::class, 'street_id', 'id');
+    }
+
+    public function docs()
+    {
+        return $this->hasMany(AktivDoc::class, 'aktiv_id', 'id');
     }
 }
