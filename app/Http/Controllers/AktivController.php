@@ -11,6 +11,8 @@ use App\Models\User;
 use Illuminate\Http\Request;
 use Maatwebsite\Excel\Facades\Excel;
 use Illuminate\Support\Facades\Log;
+use Illuminate\Support\Facades\Cache;
+
 
 class AktivController extends Controller
 {
@@ -560,86 +562,107 @@ class AktivController extends Controller
     // map code with source data
 
 
+    // clear cache
+    public function clearCache()
+    {
+        try {
+            Cache::forget('aktivs_data'); // Clear the specific cache
+            // Log::error('cleared ');
+
+            return redirect()->back()->with(['message' => 'Cache cleared successfully.']);
+            
+        } catch (\Exception $e) {
+            // Log the error message
+            Log::error('Error clearing cache: ' . $e->getMessage());
+            return response()->json(['error' => 'An error occurred while clearing the cache.'], 500);
+        }
+    }
+
 
     public function getLots()
     {
         try {
-            // Check if the authenticated user is the Super Admin (user_id = 1)
-            $isSuperAdmin = auth()->id() === 1 || true;
-            Log::info($isSuperAdmin);
-    
-            if ($isSuperAdmin) {
-                // Super Admin sees all aktivs
-                $aktivs = Aktiv::with(['files', 'user', 'polygonAktivs'])->get();
-            } else {
-                // Other users should not see aktivs created by the Super Admin (user_id = 1)
-                $aktivs = Aktiv::with(['files', 'user', 'polygonAktivs'])
-                    ->where('user_id', '!=', 1)  // Exclude records created by the Super Admin
-                    ->get();
-            }
-    
-            // Define the default image in case there is no image
-            $defaultImage = 'https://cdn.dribbble.com/users/1651691/screenshots/5336717/404_v2.png';
-    
-            // Map the aktivs to the required format
-            $lots = $aktivs->map(function ($aktiv) use ($defaultImage) {
-                // Determine the main image URL
-                $mainImagePath = $aktiv->files->first() ? 'storage/' . $aktiv->files->first()->path : null;
-                $mainImageUrl = $mainImagePath && file_exists(public_path($mainImagePath))
-                    ? asset($mainImagePath)
-                    : $defaultImage;
-    
-                // Return the necessary data
-                return [
-                    'lat' => $aktiv->latitude,
-                    'lng' => $aktiv->longitude,
-                    'property_name' => $aktiv->object_name,
-                    'main_image' => $mainImageUrl,
-                    'land_area' => $aktiv->land_area,
-                    'start_price' => $aktiv->start_price ?? 0,
-                    'lot_link' => route('aktivs.show', $aktiv->id),
-                    'lot_number' => $aktiv->id,
-                    'address' => $aktiv->location,
-                    'user_name' => $aktiv->user ? $aktiv->user->name : 'N/A',
-                    'user_email' => $aktiv->user ? $aktiv->user->email : 'N/A',
-                    'turar_joy_maydoni' => $aktiv->turar_joy_maydoni ?? '',
-                    'noturar_joy_maydoni' => $aktiv->noturar_joy_maydoni ?? '',
-                    'vaqtinchalik_parking_info' => $aktiv->vaqtinchalik_parking_info ?? '',
-                    'doimiy_parking_info' => $aktiv->doimiy_parking_info ?? '',
-                    'maktabgacha_tashkilot_info' => $aktiv->maktabgacha_tashkilot_info ?? '',
-                    'umumtaolim_maktab_info' => $aktiv->umumtaolim_maktab_info ?? '',
-                    'stasionar_tibbiyot_info' => $aktiv->stasionar_tibbiyot_info ?? '',
-                    'ambulator_tibbiyot_info' => $aktiv->ambulator_tibbiyot_info ?? '',
-                    'diniy_muassasa_info' => $aktiv->diniy_muassasa_info ?? '',
-                    'sport_soglomlashtirish_info' => $aktiv->sport_soglomlashtirish_info ?? '',
-                    'saqlanadigan_kokalamzor_info' => $aktiv->saqlanadigan_kokalamzor_info ?? '',
-                    'yangidan_tashkil_kokalamzor_info' => $aktiv->yangidan_tashkil_kokalamzor_info ?? '',
-                    'saqlanadigan_muhandislik_tarmoqlari_info' => $aktiv->saqlanadigan_muhandislik_tarmoqlari_info ?? '',
-                    'yangidan_quriladigan_muhandislik_tarmoqlari_info' => $aktiv->yangidan_quriladigan_muhandislik_tarmoqlari_info ?? '',
-                    'saqlanadigan_yollar_info' => $aktiv->saqlanadigan_yollar_info ?? '',
-                    'yangidan_quriladigan_yollar_info' => $aktiv->yangidan_quriladigan_yollar_info ?? '',
-                    'polygons' => $aktiv->polygonAktivs->map(function ($polygon) {
-                        return [
-                            'start_lat' => $polygon->start_lat,
-                            'start_lon' => $polygon->start_lon,
-                            'end_lat' => $polygon->end_lat,
-                            'end_lon' => $polygon->end_lon
-                        ];
-                    })
-                ];
+            // Define cache key
+            $cacheKey = 'aktivs_data';
+
+            // Check if data is cached
+            $lots = Cache::remember($cacheKey, 60 * 60, function () {
+                // Fetch the data from the database
+                $isSuperAdmin = auth()->id() === 1 || true;
+                Log::info($isSuperAdmin);
+
+                if ($isSuperAdmin) {
+                    // Super Admin sees all aktivs
+                    $aktivs = Aktiv::with(['files', 'user', 'polygonAktivs'])->get();
+                } else {
+                    // Other users should not see aktivs created by the Super Admin (user_id = 1)
+                    $aktivs = Aktiv::with(['files', 'user', 'polygonAktivs'])
+                        ->where('user_id', '!=', 1)  // Exclude records created by the Super Admin
+                        ->get();
+                }
+
+                // Define the default image in case there is no image
+                $defaultImage = 'https://cdn.dribbble.com/users/1651691/screenshots/5336717/404_v2.png';
+
+                // Map the aktivs to the required format
+                return $aktivs->map(function ($aktiv) use ($defaultImage) {
+                    // Determine the main image URL
+                    $mainImagePath = $aktiv->files->first() ? 'storage/' . $aktiv->files->first()->path : null;
+                    $mainImageUrl = $mainImagePath && file_exists(public_path($mainImagePath))
+                        ? asset($mainImagePath)
+                        : $defaultImage;
+
+                    // Return the necessary data
+                    return [
+                        'lat' => $aktiv->latitude,
+                        'lng' => $aktiv->longitude,
+                        'property_name' => $aktiv->object_name,
+                        'main_image' => $mainImageUrl,
+                        'land_area' => $aktiv->land_area,
+                        'start_price' => $aktiv->start_price ?? 0,
+                        'lot_link' => route('aktivs.show', $aktiv->id),
+                        'lot_number' => $aktiv->id,
+                        'address' => $aktiv->location,
+                        'user_name' => $aktiv->user ? $aktiv->user->name : 'N/A',
+                        'user_email' => $aktiv->user ? $aktiv->user->email : 'N/A',
+                        'turar_joy_maydoni' => $aktiv->turar_joy_maydoni ?? '',
+                        'noturar_joy_maydoni' => $aktiv->noturar_joy_maydoni ?? '',
+                        'vaqtinchalik_parking_info' => $aktiv->vaqtinchalik_parking_info ?? '',
+                        'doimiy_parking_info' => $aktiv->doimiy_parking_info ?? '',
+                        'maktabgacha_tashkilot_info' => $aktiv->maktabgacha_tashkilot_info ?? '',
+                        'umumtaolim_maktab_info' => $aktiv->umumtaolim_maktab_info ?? '',
+                        'stasionar_tibbiyot_info' => $aktiv->stasionar_tibbiyot_info ?? '',
+                        'ambulator_tibbiyot_info' => $aktiv->ambulator_tibbiyot_info ?? '',
+                        'diniy_muassasa_info' => $aktiv->diniy_muassasa_info ?? '',
+                        'sport_soglomlashtirish_info' => $aktiv->sport_soglomlashtirish_info ?? '',
+                        'saqlanadigan_kokalamzor_info' => $aktiv->saqlanadigan_kokalamzor_info ?? '',
+                        'yangidan_tashkil_kokalamzor_info' => $aktiv->yangidan_tashkil_kokalamzor_info ?? '',
+                        'saqlanadigan_muhandislik_tarmoqlari_info' => $aktiv->saqlanadigan_muhandislik_tarmoqlari_info ?? '',
+                        'yangidan_quriladigan_muhandislik_tarmoqlari_info' => $aktiv->yangidan_quriladigan_muhandislik_tarmoqlari_info ?? '',
+                        'saqlanadigan_yollar_info' => $aktiv->saqlanadigan_yollar_info ?? '',
+                        'yangidan_quriladigan_yollar_info' => $aktiv->yangidan_quriladigan_yollar_info ?? '',
+                        'polygons' => $aktiv->polygonAktivs->map(function ($polygon) {
+                            return [
+                                'start_lat' => $polygon->start_lat,
+                                'start_lon' => $polygon->start_lon,
+                                'end_lat' => $polygon->end_lat,
+                                'end_lon' => $polygon->end_lon
+                            ];
+                        })
+                    ];
+                });
             });
-    
+
             // Return the response as JSON
             return response()->json(['lots' => $lots]);
         } catch (\Exception $e) {
             // Log the error message
             Log::error('Error fetching lots: ' . $e->getMessage());
-    
+
             // Optionally, you can return a specific error message
             return response()->json(['error' => 'An error occurred while fetching the lots.'], 500);
         }
     }
-
 
     /**
      * Generate a QR code for the given lot's latitude and longitude

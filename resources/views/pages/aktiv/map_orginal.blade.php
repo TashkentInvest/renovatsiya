@@ -323,7 +323,15 @@
                                 <td id="savdodaTurganJamiSoni">---</td>
                             </tr>
                         </tbody>
+
                     </table>
+
+                    <form action="{{route('aktiv.clearCache')}}" method="POST">
+                        @csrf
+                        @method('POST')
+                        <button id="clear-cache-btn">Clear Cache</button>
+                        <div id="message"></div>
+                    </form>
                 </div>
             </div>
         </div>
@@ -422,7 +430,7 @@
             document.head.appendChild(script);
         });
 
-
+     
 
         function initMap() {
             const urlParams = new URLSearchParams(window.location.search);
@@ -484,7 +492,10 @@
                         const lng = parseFloat(markerData.lng);
 
                         if (!isNaN(lat) && !isNaN(lng)) {
-                            const position = { lat, lng };
+                            const position = {
+                                lat,
+                                lng
+                            };
                             const title = markerData.property_name || 'No Title';
 
                             const marker = new google.maps.Marker({
@@ -529,9 +540,14 @@
                 const endLng = dmsToDecimal(polygonCoords.end_lon);
 
                 if (startLat !== null && startLng !== null && endLat !== null && endLng !== null) {
-                    const polygonPath = [
-                        { lat: startLat, lng: startLng },
-                        { lat: endLat, lng: endLng }
+                    const polygonPath = [{
+                            lat: startLat,
+                            lng: startLng
+                        },
+                        {
+                            lat: endLat,
+                            lng: endLng
+                        }
                     ];
 
                     const polygon = new google.maps.Polygon({
@@ -612,14 +628,14 @@
                         <td>${markerData.address || 'N/A'}</td>
                     </tr>
                     ${priceUZS > 0 ? `
-                            <tr>
-                                <th class="sidebar_key">Boshlang'ich narxi</th>
-                                <td id="price-td">${lotPriceFormatted}</td>
-                            </tr>
-                            <tr>
-                                <th class="sidebar_key">1 sotix uchun narx</th>
-                                <td>${lotPricePerSotixFormatted}</td>
-                            </tr>` : ''}
+                                <tr>
+                                    <th class="sidebar_key">Boshlang'ich narxi</th>
+                                    <td id="price-td">${lotPriceFormatted}</td>
+                                </tr>
+                                <tr>
+                                    <th class="sidebar_key">1 sotix uchun narx</th>
+                                    <td>${lotPricePerSotixFormatted}</td>
+                                </tr>` : ''}
                     <tr>
                         <th class="sidebar_key">Yaratilgan foydalanuvchi</th>
                         <td>${markerData.user_name || 'N/A'}</td>

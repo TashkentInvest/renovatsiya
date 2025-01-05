@@ -472,6 +472,8 @@ Route::get('/aktivs/{aktiv_id}/polygons', [TestController::class, 'showPolygonDa
 Route::get('/mmm', function () {
     return view('pages.aktiv.showPolygon');
 });
+Route::post('/aktivs/clear-cache', [AktivController::class, 'clearCache'])->name('aktiv.clearCache');
+
 // custom routes
 // Route::get('/', function () {
 //     return redirect()->route('aktivs.index');
