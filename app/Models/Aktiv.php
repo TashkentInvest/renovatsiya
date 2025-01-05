@@ -95,8 +95,22 @@ class Aktiv extends Model
         'saqlanadigan_yollar_info',
 
         // 2.1.1.14 — Yangidan quriladigan yo‘llar va yo‘laklar
-        'yangidan_quriladigan_yollar_info'
+        'yangidan_quriladigan_yollar_info',
+
+        // polygon datas
+
+        // 'tr',
+        // 'start_lat',
+        // 'start_lon',
+        // 'end_lat',
+        // 'end_lon',
+        // 'distance',
     ];
+
+    public function polygonAktivs()
+    {
+        return $this->hasMany(PolygonAktiv::class, 'aktiv_id');
+    }
 
     public function files()
     {

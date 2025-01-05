@@ -166,7 +166,7 @@
                     @enderror
                 </div>
 
-              
+
 
                 @foreach ($aktiv->docs as $doc)
                     <div class="mb-3">
@@ -318,7 +318,14 @@
                 </div>
 
                 <!-- Include Address Partial -->
-                @include('inc.__address')
+                {{-- @include('inc.__address') --}}
+
+                {{-- cordinates --}}
+
+                <div>
+                    <label for="coordinates">Coordinates</label>
+                    <textarea id="coordinates" name="coordinates" rows="10" required>{{ $aktiv->coordinates_string }}</textarea>
+                </div>
 
             </div>
             <!-- Right Column -->

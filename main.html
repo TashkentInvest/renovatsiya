@@ -1,0 +1,215 @@
+<!DOCTYPE html>
+<html lang="en">
+  <head>
+    <meta charset="UTF-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+    <title>Coordinates Map</title>
+    <link
+      rel="stylesheet"
+      href="https://unpkg.com/leaflet@1.7.1/dist/leaflet.css"
+    />
+    <script src="https://unpkg.com/leaflet@1.7.1/dist/leaflet.js"></script>
+    <style>
+      #map {
+        height: 100vh;
+      }
+    </style>
+  </head>
+  <body>
+    <h2>Coordinates on the Map</h2>
+    <div id="map"></div>
+
+    <h2>Enter Your Data</h2>
+    <form id="dataForm">
+        <label for="userInput">Input:</label>
+        <input type="text" id="userInput" name="userInput" required>
+        <button type="submit">Submit</button>
+    </form>
+
+    <h2>Stored Data</h2>
+    <div id="storedData"></div>
+
+    <script>
+        // Function to store input data in local storage
+        function storeData(event) {
+            event.preventDefault(); // Prevent the form from submitting the traditional way
+            const userInput = document.getElementById("userInput").value; // Get the value from the input field
+
+            // Store the input data in local storage
+            localStorage.setItem("userInput", userInput);
+
+            // Display the stored data
+            displayStoredData();
+        }
+
+        // Function to display stored data
+        function displayStoredData() {
+            const storedDataDiv = document.getElementById("storedData");
+            const storedData = localStorage.getItem("userInput");
+
+            if (storedData) {
+                storedDataDiv.textContent = `Stored Data: ${storedData}`;
+            } else {
+                storedDataDiv.textContent = "No data stored.";
+            }
+        }
+
+        // Add an event listener to the form to handle the submit event
+        document.getElementById("dataForm").addEventListener("submit", storeData);
+
+        // Display stored data on page load
+        displayStoredData();
+    </script>
+
+    <script>
+      // Function to convert DMS to Decimal Degrees
+      function dmsToDecimal(dms) {
+        const parts = dms.match(/(\d+)[°](\d+)'([\d.]+)"/);
+        const degrees = parseFloat(parts[1]);
+        const minutes = parseFloat(parts[2]) / 60;
+        const seconds = parseFloat(parts[3]) / 3600;
+        return degrees + minutes + seconds;
+      }
+
+      // Raw coordinate data in DMS format from your data
+      const rawData = [
+        {
+          name: "Buyuk Ipak yo‘li MFY",
+          points: [
+            { lat: "41°19'45.92\"С", lon: "69°19'32.39\"В" },
+            { lat: "41°19'46.21\"С", lon: "69°19'35.82\"В" },
+            { lat: "41°19'51.21\"С", lon: "69°19'35.24\"В" },
+            { lat: "41°19'50.79\"С", lon: "69°19'31.58\"В" },
+            { lat: "41°19'45.92\"С", lon: "69°19'32.39\"В" }
+          ]
+        },
+        {
+          name: "Yangi Olmachi MFY",
+          points: [
+            { lat: "41°19'17.79\"С", lon: "69°19'18.26\"В" },
+            { lat: "41°19'16.11\"С", lon: "69°19'21.40\"В" },
+            { lat: "41°19'21.49\"С", lon: "69°19'26.79\"В" },
+            { lat: "41°19'23.14\"С", lon: "69°19'24.02\"В" },
+            { lat: "41°19'17.79\"С", lon: "69°19'18.26\"В" }
+          ]
+        },
+        {
+          name: "Olmachi MFY",
+          points: [
+            { lat: "41°19'11.35\"С", lon: "69°19'33.94\"В" },
+            { lat: "41°19'11.85\"С", lon: "69°19'37.29\"В" },
+            { lat: "41°19'27.10\"С", lon: "69°19'32.97\"В" },
+            { lat: "41°19'26.66\"С", lon: "69°19'29.58\"В" },
+            { lat: "41°19'24.52\"С", lon: "69°19'27.48\"В" },
+            { lat: "41°19'23.31\"С", lon: "69°19'28.95\"В" },
+            { lat: "41°19'23.21\"С", lon: "69°19'30.62\"В" },
+            { lat: "41°19'11.35\"С", lon: "69°19'33.94\"В" }
+          ]
+        },
+        {
+          name: "Podshog‘bog, Olmachi MFYlari",
+          points: [
+            { lat: "41°19'9.59\"С", lon: "69°19'39.03\"В" },
+            { lat: "41°19'9.91\"С", lon: "69°19'41.73\"В" },
+            { lat: "41°19'27.36\"С", lon: "69°19'37.19\"В" },
+            { lat: "41°19'26.97\"С", lon: "69°19'34.41\"В" },
+            { lat: "41°19'9.59\"С", lon: "69°19'39.03\"В" }
+          ]
+        },
+        {
+          name: "Navnihol MFY",
+          points: [
+            { lat: "41°20'38.15\"С", lon: "69°20'15.54\"В" },
+            { lat: "41°20'42.85\"С", lon: "69°20'20.54\"В" },
+            { lat: "41°20'47.05\"С", lon: "69°20'13.68\"В" },
+            { lat: "41°20'49.35\"С", lon: "69°20'16.15\"В" },
+            { lat: "41°20'51.60\"С", lon: "69°20'12.49\"В" },
+            { lat: "41°20'49.26\"С", lon: "69°20'9.70\"В" },
+            { lat: "41°20'52.68\"С", lon: "69°20'3.49\"В" },
+            { lat: "41°20'48.23\"С", lon: "69°19'58.80\"В" },
+            { lat: "41°20'38.15\"С", lon: "69°20'15.54\"В" }
+          ]
+        },
+        {
+          name: "Oliyhimmat MFY",
+          points: [
+            { lat: "41°20'30.82\"С", lon: "69°19'55.98\"В" },
+            { lat: "41°20'30.88\"С", lon: "69°19'56.23\"В" },
+            { lat: "41°20'32.02\"С", lon: "69°19'57.41\"В" },
+            { lat: "41°20'37.92\"С", lon: "69°19'47.72\"В" },
+            { lat: "41°20'36.84\"С", lon: "69°19'46.70\"В" },
+            { lat: "41°20'35.00\"С", lon: "69°19'49.61\"В" },
+            { lat: "41°20'35.17\"С", lon: "69°19'49.85\"В" },
+            { lat: "41°20'32.40\"С", lon: "69°19'54.57\"В" },
+            { lat: "41°20'30.82\"С", lon: "69°19'55.98\"В" }
+          ]
+        },
+        {
+          name: "Darxon MFY",
+          points: [
+            { lat: "41°19'50.63\"С", lon: "69°18'29.81\"В" },
+            { lat: "41°19'50.76\"С", lon: "69°18'30.37\"В" },
+            { lat: "41°19'49.69\"С", lon: "69°18'32.44\"В" },
+            { lat: "41°19'51.17\"С", lon: "69°18'33.80\"В" },
+            { lat: "41°19'52.09\"С", lon: "69°18'33.45\"В" },
+            { lat: "41°19'51.32\"С", lon: "69°18'29.62\"В" },
+            { lat: "41°19'50.63\"С", lon: "69°18'29.81\"В" }
+          ]
+        },
+        {
+          name: "Oqqo‘rg‘on MFY",
+          points: [
+            { lat: "41°19'42.74\"С", lon: "69°18'2.22\"В" },
+            { lat: "41°19'42.74\"С", lon: "69°18'2.22\"В" },
+            { lat: "41°19'40.12\"С", lon: "69°18'13.31\"В" },
+            { lat: "41°19'41.55\"С", lon: "69°18'13.50\"В" },
+            { lat: "41°19'42.74\"С", lon: "69°18'2.22\"В" }
+          ]
+        },
+        {
+          name: "Ijodkor MFY",
+          points: [
+            { lat: "41°19'52.72\"С", lon: "69°24'50.84\"В" },
+            { lat: "41°19'49.12\"С", lon: "69°24'57.80\"В" },
+            { lat: "41°19'52.79\"С", lon: "69°25'1.19\"В" },
+            { lat: "41°19'56.45\"С", lon: "69°24'54.28\"В" },
+            { lat: "41°19'52.72\"С", lon: "69°24'50.84\"В" }
+          ]
+        }
+      ];
+
+      // Function to convert the raw data into decimal coordinates
+      function convertToDecimal(rawData) {
+        return rawData.map((area) => ({
+          name: area.name,
+          points: area.points.map((point) => [
+            dmsToDecimal(point.lat),
+            dmsToDecimal(point.lon),
+          ]),
+        }));
+      }
+
+      // Convert the raw data
+      const areas = convertToDecimal(rawData);
+
+      // Initialize the map and set the initial view
+      const map = L.map("map").setView([41.346, 69.337], 13);
+
+      // Add tile layer (OpenStreetMap)
+      L.tileLayer("https://{s}.tile.openstreetmap.org/{z}/{x}/{y}.png", {
+        attribution:
+          '&copy; <a href="https://www.openstreetmap.org/copyright">OpenStreetMap</a> contributors',
+      }).addTo(map);
+
+      // Draw the polygons and add markers for each area
+      areas.forEach((area) => {
+        const polygon = L.polygon(area.points, {
+          color: "red",
+          fillColor: "yellow",
+          fillOpacity: 0.5,
+        }).addTo(map);
+        polygon.bindPopup(area.name);
+      });
+    </script>
+  </body>
+</html>

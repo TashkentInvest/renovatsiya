@@ -5,6 +5,7 @@ namespace App\Http\Controllers;
 use App\Exports\AktivsExport;
 use App\Models\Aktiv;
 use App\Models\Districts;
+use App\Models\PolygonAktiv;
 use App\Models\Regions;
 use App\Models\User;
 use Illuminate\Http\Request;
@@ -236,6 +237,19 @@ class AktivController extends Controller
             }
         }
 
+        $data = $request->validate([
+            'coordinates.*.tr' => 'required|integer',
+            'coordinates.*.start_lat' => 'required|string',
+            'coordinates.*.start_lon' => 'required|string',
+            'coordinates.*.end_lat' => 'required|string',
+            'coordinates.*.end_lon' => 'required|string',
+            'coordinates.*.distance' => 'required|integer',
+        ]);
+
+        foreach ($data['coordinates'] as $coordinate) {
+            Aktiv::create($coordinate);
+        }
+
         return redirect()->route('aktivs.index')->with('success', 'Aktiv created successfully.');
     }
 
@@ -311,8 +325,8 @@ class AktivController extends Controller
 
             'aktiv_docs.*'     => 'nullable',
 
-            'sub_street_id'    => 'required',
-            'street_id'    => 'required',
+            'sub_street_id'    => 'nullable',
+            'street_id'    => 'nullable',
 
             // New fields validation (example: all nullable)
             'turar_joy_maydoni'                         => 'nullable',
@@ -331,6 +345,8 @@ class AktivController extends Controller
             'yangidan_quriladigan_muhandislik_tarmoqlari_info' => 'nullable',
             'saqlanadigan_yollar_info'                  => 'nullable',
             'yangidan_quriladigan_yollar_info'          => 'nullable',
+            'coordinates'      => 'required|string', // Added validation for coordinates
+
 
             'user_id'          => 'nullable'
         ]);
@@ -363,6 +379,23 @@ class AktivController extends Controller
         $data = $request->except(['files', 'aktiv_docs', 'delete_files', 'delete_docs']);
 
         $aktiv->update($data);
+
+        $aktiv->polygonAktivs()->delete();
+
+        // Parse and save coordinates
+        $coordinates = $this->parseInput($request->input('coordinates'));
+        foreach ($coordinates as $coordinate) {
+            PolygonAktiv::create([
+                'aktiv_id' => $aktiv->id,
+                'tr' => $coordinate['tr'],
+                'start_lat' => $coordinate['start_lat'],
+                'start_lon' => $coordinate['start_lon'],
+                'end_lat' => $coordinate['end_lat'],
+                'end_lon' => $coordinate['end_lon'],
+                'distance' => $coordinate['distance'],
+            ]);
+        }
+    
 
         if ($request->hasFile('files')) {
             foreach ($request->file('files') as $file) {
@@ -398,6 +431,58 @@ class AktivController extends Controller
 
         return redirect()->route('aktivs.index')->with('success', 'Aktiv updated successfully.');
     }
+
+    private function parseInput($input)
+    {
+        // Clean the input by removing unwanted carriage return characters and extra spaces
+        $input = str_replace("\r", "", $input); // Remove any carriage returns
+        $lines = explode("\n", $input); // Split into lines
+        $data = [];
+    
+        $i = 0;
+        $tempLine = [];
+    
+        foreach ($lines as $line) {
+            // Ensure we're not processing empty lines
+            if (trim($line) === '') {
+                continue;
+            }
+    
+            // Case where each set of coordinates is on one line
+            if (preg_match('/^(\d+)\.\s+([\d°\'"]+С)\s+([\d°\'"]+В)\s+([\d°\'"]+С)\s+([\d°\'"]+В)\s+(\d+)$/', trim($line), $matches)) {
+                // Store the parsed data in the $data array
+                $data[] = [
+                    'tr' => (int)$matches[1], // Transaction number
+                    'start_lat' => $matches[2], // Start latitude
+                    'start_lon' => $matches[3], // Start longitude
+                    'end_lat' => $matches[4],   // End latitude
+                    'end_lon' => $matches[5],   // End longitude
+                    'distance' => (int)$matches[6], // Distance in meters
+                ];
+            }
+            // Case where coordinates are on multiple lines
+            else {
+                $tempLine[] = trim($line);
+                // We collect the entire set of 4 coordinates and distance
+                if (count($tempLine) == 6) {
+                    $data[] = [
+                        'tr' => (int)$tempLine[0], // Transaction number
+                        'start_lat' => $tempLine[1], // Start latitude
+                        'start_lon' => $tempLine[2], // Start longitude
+                        'end_lat' => $tempLine[3],   // End latitude
+                        'end_lon' => $tempLine[4],   // End longitude
+                        'distance' => (int)$tempLine[5], // Distance in meters
+                    ];
+                    // Clear the temporary array to start collecting the next line
+                    $tempLine = [];
+                }
+            }
+        }
+    
+        return $data;
+    }
+
+
 
     public function destroy(Aktiv $aktiv)
     {
