@@ -298,11 +298,11 @@ class AktivController extends Controller
 
         $regions = Regions::get();
 
-        $aktiv->load(['docs','polygonAktivs']);
+        $aktiv->load(['docs', 'polygonAktivs']);
 
-        $polygonData = $aktiv->polygonData;
+        $polygonData = $aktiv->polygonAktivs;
 
-        return view('pages.aktiv.edit', compact('aktiv', 'regions','polygonData'));
+        return view('pages.aktiv.edit', compact('aktiv', 'regions', 'polygonData'));
     }
 
     public function update(Request $request, Aktiv $aktiv)
@@ -397,7 +397,7 @@ class AktivController extends Controller
                 'distance' => $coordinate['distance'],
             ]);
         }
-    
+
 
         if ($request->hasFile('files')) {
             foreach ($request->file('files') as $file) {
@@ -440,16 +440,16 @@ class AktivController extends Controller
         $input = str_replace("\r", "", $input); // Remove any carriage returns
         $lines = explode("\n", $input); // Split into lines
         $data = [];
-    
+
         $i = 0;
         $tempLine = [];
-    
+
         foreach ($lines as $line) {
             // Ensure we're not processing empty lines
             if (trim($line) === '') {
                 continue;
             }
-    
+
             // Case where each set of coordinates is on one line
             if (preg_match('/^(\d+)\.\s+([\d°\'"]+С)\s+([\d°\'"]+В)\s+([\d°\'"]+С)\s+([\d°\'"]+В)\s+(\d+)$/', trim($line), $matches)) {
                 // Store the parsed data in the $data array
@@ -480,7 +480,7 @@ class AktivController extends Controller
                 }
             }
         }
-    
+
         return $data;
     }
 
@@ -560,27 +560,27 @@ class AktivController extends Controller
     // map code with source data
 
 
+
     public function getLots()
     {
         try {
-
             // Check if the authenticated user is the Super Admin (user_id = 1)
             $isSuperAdmin = auth()->id() === 1 || true;
             Log::info($isSuperAdmin);
-
+    
             if ($isSuperAdmin) {
                 // Super Admin sees all aktivs
-                $aktivs = Aktiv::with(['files', 'user'])->get();
+                $aktivs = Aktiv::with(['files', 'user', 'polygonAktivs'])->get();
             } else {
                 // Other users should not see aktivs created by the Super Admin (user_id = 1)
-                $aktivs = Aktiv::with(['files', 'user'])
+                $aktivs = Aktiv::with(['files', 'user', 'polygonAktivs'])
                     ->where('user_id', '!=', 1)  // Exclude records created by the Super Admin
                     ->get();
             }
-
+    
             // Define the default image in case there is no image
             $defaultImage = 'https://cdn.dribbble.com/users/1651691/screenshots/5336717/404_v2.png';
-
+    
             // Map the aktivs to the required format
             $lots = $aktivs->map(function ($aktiv) use ($defaultImage) {
                 // Determine the main image URL
@@ -588,7 +588,7 @@ class AktivController extends Controller
                 $mainImageUrl = $mainImagePath && file_exists(public_path($mainImagePath))
                     ? asset($mainImagePath)
                     : $defaultImage;
-
+    
                 // Return the necessary data
                 return [
                     'lat' => $aktiv->latitude,
@@ -602,7 +602,6 @@ class AktivController extends Controller
                     'address' => $aktiv->location,
                     'user_name' => $aktiv->user ? $aktiv->user->name : 'N/A',
                     'user_email' => $aktiv->user ? $aktiv->user->email : 'N/A',
-
                     'turar_joy_maydoni' => $aktiv->turar_joy_maydoni ?? '',
                     'noturar_joy_maydoni' => $aktiv->noturar_joy_maydoni ?? '',
                     'vaqtinchalik_parking_info' => $aktiv->vaqtinchalik_parking_info ?? '',
@@ -619,20 +618,27 @@ class AktivController extends Controller
                     'yangidan_quriladigan_muhandislik_tarmoqlari_info' => $aktiv->yangidan_quriladigan_muhandislik_tarmoqlari_info ?? '',
                     'saqlanadigan_yollar_info' => $aktiv->saqlanadigan_yollar_info ?? '',
                     'yangidan_quriladigan_yollar_info' => $aktiv->yangidan_quriladigan_yollar_info ?? '',
+                    'polygons' => $aktiv->polygonAktivs->map(function ($polygon) {
+                        return [
+                            'start_lat' => $polygon->start_lat,
+                            'start_lon' => $polygon->start_lon,
+                            'end_lat' => $polygon->end_lat,
+                            'end_lon' => $polygon->end_lon
+                        ];
+                    })
                 ];
             });
-
+    
             // Return the response as JSON
             return response()->json(['lots' => $lots]);
         } catch (\Exception $e) {
             // Log the error message
             Log::error('Error fetching lots: ' . $e->getMessage());
-
+    
             // Optionally, you can return a specific error message
             return response()->json(['error' => 'An error occurred while fetching the lots.'], 500);
         }
     }
-
 
 
     /**

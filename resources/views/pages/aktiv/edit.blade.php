@@ -408,7 +408,6 @@
         <button type="submit" class="btn btn-success" id="submit-btn">Сақлаш</button>
     </form>
 @endsection
-
 @section('scripts')
     <!-- Include Google Maps script and initialization code -->
     <script async defer
@@ -418,6 +417,7 @@
         document.addEventListener('DOMContentLoaded', function() {
             // Fetch coordinates from the server and parse them as JSON
             const polygonsData = {!! json_encode($polygonData) !!};
+            console.log(polygonsData);
 
             // Validate file uploads
             function validateFiles() {
@@ -585,26 +585,55 @@
                 document.getElementById('geolokatsiya').value = `https://www.google.com/maps?q=${lat},${lng}`;
             }
 
+            // Function to clean and convert DMS to Decimal Degrees
+            function dmsToDecimal(dms) {
+                if (!dms || typeof dms !== 'string') return null;
+
+                dms = dms.replace(/[^\d°'".]/g, '').trim();
+
+                const parts = dms.match(/(\d{1,3})°(\d{1,2})'(\d{1,2}(?:\.\d+)?)"/);
+                if (!parts) return null;
+
+                const degrees = parseFloat(parts[1]);
+                const minutes = parseFloat(parts[2]) / 60;
+                const seconds = parseFloat(parts[3]) / 3600;
+                return degrees + minutes + seconds;
+            }
+
             function drawPolygons(polygonsData) {
+                const polygonPaths = [];
+
                 polygonsData.forEach(polygonCoords => {
-                    if (polygonCoords.start && polygonCoords.end) {
-                        const polygonPath = [
-                            polygonCoords.start,
-                            polygonCoords.end
+                    const startLat = dmsToDecimal(polygonCoords.start_lat);
+                    const startLng = dmsToDecimal(polygonCoords.start_lon);
+                    const endLat = dmsToDecimal(polygonCoords.end_lat);
+                    const endLng = dmsToDecimal(polygonCoords.end_lon);
+
+                    if (startLat !== null && startLng !== null && endLat !== null && endLng !== null) {
+                        const path = [
+                            { lat: startLat, lng: startLng },
+                            { lat: endLat, lng: endLng }
                         ];
 
-                        const polygon = new google.maps.Polygon({
-                            paths: polygonPath,
-                            strokeColor: '#FF0000',
-                            strokeOpacity: 0.8,
-                            strokeWeight: 2,
-                            fillColor: '#FF0000',
-                            fillOpacity: 0.35
-                        });
-
-                        polygon.setMap(map);
-                        polygons.push(polygon);
+                        polygonPaths.push(path);
+                    } else {
+                        console.warn('Invalid coordinates for polygon:', polygonCoords);
                     }
+                });
+
+                // Draw all polygons
+                polygonPaths.forEach(path => {
+                    const polygon = new google.maps.Polygon({
+                        paths: path,
+                        strokeColor: '#FF0000',
+                        strokeOpacity: 0.8,
+                        strokeWeight: 2,
+                        fillColor: '#FF0000',
+                        fillOpacity: 0.35
+                    });
+
+                    polygon.setMap(map);
+                    polygons.push(polygon);
                 });
             }
 
@@ -613,177 +642,3 @@
         });
     </script>
 @endsection
-{{-- @section('scripts')
-    <!-- Include Google Maps script and initialization code -->
-    <script src="https://maps.googleapis.com/maps/api/js?key=AIzaSyAAnUwWTguBMsDU8UrQ7Re-caVeYCmcHQY&libraries=geometry">
-    </script>
-    <!-- Place the JavaScript code at the end, inside the 'scripts' section -->
-    <script>
-        document.addEventListener('DOMContentLoaded', function() {
-            // JavaScript code goes here
-            function validateFiles() {
-                const submitBtn = document.getElementById('submit-btn');
-                const errorDiv = document.getElementById('file-error');
-
-                // Get all new file inputs
-                const fileInputs = document.querySelectorAll('input[type="file"][name="files[]"]');
-
-                let totalFiles = 0;
-                fileInputs.forEach(input => {
-                    totalFiles += input.files.length;
-                });
-
-                // Get the count of existing files not marked for deletion
-                const existingFiles = document.querySelectorAll('#existing-files .existing-file');
-                const deleteCheckboxes = document.querySelectorAll(
-                    'input[type="checkbox"][name="delete_files[]"]:checked');
-                const existingFilesCount = existingFiles.length - deleteCheckboxes.length;
-
-                const totalFileCount = totalFiles + existingFilesCount;
-
-                // Validate minimum file requirement
-                if (totalFileCount < 4) {
-                    let filesNeeded = 4 - totalFileCount;
-                    if (totalFileCount === 0) {
-                        errorDiv.textContent = 'Сиз ҳеч қандай файл мавжуд эмас. Илтимос, камида 4 та файл юкланг.';
-                    } else {
-                        errorDiv.textContent = 'Сиз яна ' + filesNeeded + ' та файл қўшишингиз керак.';
-                    }
-                    submitBtn.disabled = true;
-                } else {
-                    errorDiv.textContent = '';
-                    submitBtn.disabled = false;
-                }
-            }
-
-            function addFileInput() {
-                const container = document.getElementById('file-upload-container');
-                const fileInputCount = container.querySelectorAll('input[type="file"]').length + 1;
-                const newDiv = document.createElement('div');
-                newDiv.classList.add('mb-3');
-                const label = document.createElement('label');
-                label.textContent = 'Қўшимча файл ' + fileInputCount;
-                const input = document.createElement('input');
-                input.setAttribute('type', 'file');
-                input.setAttribute('name', 'files[]');
-                input.setAttribute('class', 'form-control');
-                input.addEventListener('change', validateFiles);
-                newDiv.appendChild(label);
-                newDiv.appendChild(input);
-                container.appendChild(newDiv);
-            }
-
-            // Disable submit button initially
-            document.getElementById('submit-btn').disabled = false; // Allow initial load if existing files >= 4
-
-            // Add event listeners to initial file inputs
-            document.getElementById('file1').addEventListener('change', validateFiles);
-            document.getElementById('file2').addEventListener('change', validateFiles);
-            document.getElementById('file3').addEventListener('change', validateFiles);
-            document.getElementById('file4').addEventListener('change', validateFiles);
-
-            // Add event listener to delete checkboxes
-            const deleteCheckboxes = document.querySelectorAll('input[type="checkbox"][name="delete_files[]"]');
-            deleteCheckboxes.forEach(checkbox => {
-                checkbox.addEventListener('change', validateFiles);
-            });
-
-            // Initial validation
-            validateFiles();
-
-            // Form submission handling
-            document.getElementById('aktiv-form').addEventListener('submit', function(event) {
-                // Re-validate files on submit
-                validateFiles();
-
-                // If the submit button is disabled, prevent form submission
-                if (document.getElementById('submit-btn').disabled) {
-                    event.preventDefault();
-                } else {
-                    document.getElementById('submit-btn').disabled = true;
-                    document.getElementById('submit-btn').innerText = 'Юкланмоқда...';
-                }
-            });
-
-            // Google Maps initialization
-            let map;
-            let marker;
-
-            function initMap() {
-                const mapOptions = {
-                    center: {
-                        lat: parseFloat(document.getElementById('latitude').value) || 41.2995,
-                        lng: parseFloat(document.getElementById('longitude').value) || 69.2401
-                    },
-                    zoom: 10,
-                };
-
-                map = new google.maps.Map(document.getElementById('map'), mapOptions);
-
-                if (document.getElementById('latitude').value && document.getElementById('longitude').value) {
-                    const position = {
-                        lat: parseFloat(document.getElementById('latitude').value),
-                        lng: parseFloat(document.getElementById('longitude').value)
-                    };
-                    placeMarker(position);
-                    map.setCenter(position);
-                    map.setZoom(15);
-                }
-
-                document.getElementById('find-my-location').addEventListener('click', function() {
-                    if (navigator.geolocation) {
-                        navigator.geolocation.getCurrentPosition(
-                            function(position) {
-                                const userLocation = {
-                                    lat: position.coords.latitude,
-                                    lng: position.coords.longitude
-                                };
-
-                                map.setCenter(userLocation);
-                                map.setZoom(15);
-                                placeMarker(userLocation);
-
-                                // Set latitude, longitude, and geolocation URL in the input fields
-                                document.getElementById('latitude').value = userLocation.lat;
-                                document.getElementById('longitude').value = userLocation.lng;
-                                document.getElementById('geolokatsiya').value =
-                                    `https://www.google.com/maps?q=${userLocation.lat},${userLocation.lng}`;
-                            },
-                            function(error) {
-                                console.error('Error occurred. Error code: ' + error.code);
-                                alert('Жойлашувингиз аниқланмади: ' + error.message);
-                            }
-                        );
-                    } else {
-                        alert('Жойлашувни аниқлаш браузерингиз томонидан қўлланилмайди.');
-                    }
-                });
-
-                map.addListener('click', function(event) {
-                    placeMarker(event.latLng);
-                });
-            }
-
-            function placeMarker(location) {
-                if (marker) {
-                    marker.setMap(null);
-                }
-
-                marker = new google.maps.Marker({
-                    position: location,
-                    map: map
-                });
-
-                const lat = typeof location.lat === "function" ? location.lat() : location.lat;
-                const lng = typeof location.lng === "function" ? location.lng() : location.lng;
-
-                document.getElementById('latitude').value = lat;
-                document.getElementById('longitude').value = lng;
-                document.getElementById('geolokatsiya').value = `https://www.google.com/maps?q=${lat},${lng}`;
-            }
-
-            // Initialize the map after the page has loaded
-            initMap();
-        });
-    </script>
-@endsection --}}

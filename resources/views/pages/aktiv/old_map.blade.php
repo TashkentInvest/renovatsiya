@@ -472,19 +472,24 @@
             }
         }
 
-        function fetchMarkers(map) {
+        function fetchMarkers(map, usdRate, urlLat, urlLng) {
             fetch('/api/aktivs')
                 .then(response => response.json())
                 .then(data => {
                     const markersData = data.lots;
                     window.markers = markersData; // Make markers globally accessible
 
+                    let targetMarkerData = null;
+
                     markersData.forEach(markerData => {
                         const lat = parseFloat(markerData.lat);
                         const lng = parseFloat(markerData.lng);
 
                         if (!isNaN(lat) && !isNaN(lng)) {
-                            const position = { lat, lng };
+                            const position = {
+                                lat,
+                                lng
+                            };
                             const title = markerData.property_name || 'No Title';
 
                             const marker = new google.maps.Marker({
@@ -495,14 +500,39 @@
 
                             marker.addListener('click', function() {
                                 const sidebar = document.getElementById('info-sidebar');
-                                updateSidebarContent(markerData);
+                                const isInUSD = sidebar.getAttribute('data-currency') === 'USD';
+                                updateSidebarContent(markerData, isInUSD, usdRate);
                                 sidebar.classList.add('open');
                             });
 
-                            // Draw polygons for this marker
-                            drawPolygons(markerData.polygons, map);
+                            // Check if URL parameters match this marker
+                            if (urlLat && urlLng && lat === urlLat && lng === urlLng) {
+                                targetMarkerData = markerData;
+                                map.setCenter({
+                                    lat,
+                                    lng
+                                });
+                                map.setZoom(15);
+                            }
+
+                            // Fetch and draw polygons for this marker
+                            fetch(`/aktivs/${markerData.lot_number}/polygons`)
+                                .then(response => response.json())
+                                .then(polygonData => {
+                                    drawPolygons(polygonData, map);
+                                })
+                                .catch(error => console.error(
+                                    `Error fetching polygons for marker ${markerData.lot_number}:`, error));
                         }
                     });
+
+                    // Open sidebar if URL parameters match a marker
+                    if (targetMarkerData) {
+                        const sidebar = document.getElementById('info-sidebar');
+                        const isInUSD = sidebar.getAttribute('data-currency') === 'USD';
+                        updateSidebarContent(targetMarkerData, isInUSD, usdRate);
+                        sidebar.classList.add('open');
+                    }
                 })
                 .catch(error => console.error('Error fetching markers:', error));
         }
@@ -529,9 +559,14 @@
                 const endLng = dmsToDecimal(polygonCoords.end_lon);
 
                 if (startLat !== null && startLng !== null && endLat !== null && endLng !== null) {
-                    const polygonPath = [
-                        { lat: startLat, lng: startLng },
-                        { lat: endLat, lng: endLng }
+                    const polygonPath = [{
+                            lat: startLat,
+                            lng: startLng
+                        },
+                        {
+                            lat: endLat,
+                            lng: endLng
+                        }
                     ];
 
                     const polygon = new google.maps.Polygon({
@@ -549,7 +584,6 @@
                 }
             });
         }
-
 
         function updateSidebarContent(markerData, isInUSD, usdRate) {
             const sidebar = document.getElementById('info-sidebar');
