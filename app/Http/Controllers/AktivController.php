@@ -202,7 +202,7 @@ class AktivController extends Controller
         ]);
 
 
-        $data = $request->except(['files', 'aktiv_docs']);
+        $data = $request->except(['files', 'aktiv_docs','polygon_aktivs']);
         $data['user_id'] = auth()->id();
 
         $aktiv = Aktiv::create($data);
@@ -248,8 +248,10 @@ class AktivController extends Controller
             'coordinates.*.distance' => 'required|integer',
         ]);
 
-        foreach ($data['coordinates'] as $coordinate) {
-            Aktiv::create($coordinate);
+        if ($request->has('polygon_aktivs')) {
+            foreach ($request->polygon_aktivs as $polygonAktivData) {
+                $aktiv->polygonAktivs()->create($polygonAktivData);
+            }
         }
 
         return redirect()->route('aktivs.index')->with('success', 'Aktiv created successfully.');

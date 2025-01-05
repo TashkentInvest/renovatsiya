@@ -195,7 +195,7 @@
                         <div class="text-danger">{{ $message }}</div>
                     @enderror
                 </div>
-                
+
                 <div class="mb-3">
                     <label for="2-etap-protokol">2-etap protokol</label>
                     <input class="form-control" type="file" name="2-etap-protokol" id="2-etap-protokol">
@@ -203,7 +203,7 @@
                         <div class="text-danger">{{ $message }}</div>
                     @enderror
                 </div>
-                
+
                 <div class="mb-3">
                     <label for="1-etap-elon">1-etap elon</label>
                     <input class="form-control" type="file" name="1-etap-elon" id="1-etap-elon">
@@ -211,7 +211,7 @@
                         <div class="text-danger">{{ $message }}</div>
                     @enderror
                 </div>
-                
+
                 <div class="mb-3">
                     <label for="2-etap-elon">2-etap elon</label>
                     <input class="form-control" type="file" name="2-etap-elon" id="2-etap-elon">
@@ -219,7 +219,7 @@
                         <div class="text-danger">{{ $message }}</div>
                     @enderror
                 </div>
-                
+
                 <div class="mb-3">
                     <label for="zayavka">Ariza</label>
                     <input class="form-control" type="file" name="zayavka" id="zayavka">
@@ -227,7 +227,7 @@
                         <div class="text-danger">{{ $message }}</div>
                     @enderror
                 </div>
-                
+
                 <div class="mb-3">
                     <label for="hokim_qarori">Hokim qarori</label>
                     <input class="form-control" type="file" name="hokim_qarori" id="hokim_qarori">
@@ -235,7 +235,7 @@
                         <div class="text-danger">{{ $message }}</div>
                     @enderror
                 </div>
-                
+
                 <div class="mb-3">
                     <label for="others">Boshqa hujjatlar</label>
                     <input class="form-control" type="file" name="others" id="others">
@@ -243,7 +243,75 @@
                         <div class="text-danger">{{ $message }}</div>
                     @enderror
                 </div>
-                
+
+                <!-- PolygonAktiv fields -->
+                <div id="polygonAktivsContainer">
+                    <div class="polygon-aktiv-block">
+                        <div class="form-group">
+                            <label for="start_lat_0">Start Latitude</label>
+                            <input type="text" name="polygon_aktivs[0][start_lat]" class="form-control">
+                        </div>
+                        <div class="form-group">
+                            <label for="start_lon_0">Start Longitude</label>
+                            <input type="text" name="polygon_aktivs[0][start_lon]" class="form-control">
+                        </div>
+                        <div class="form-group">
+                            <label for="end_lat_0">End Latitude</label>
+                            <input type="text" name="polygon_aktivs[0][end_lat]" class="form-control">
+                        </div>
+                        <div class="form-group">
+                            <label for="end_lon_0">End Longitude</label>
+                            <input type="text" name="polygon_aktivs[0][end_lon]" class="form-control">
+                        </div>
+                        <div class="form-group">
+                            <label for="distance_0">Distance</label>
+                            <input type="number" name="polygon_aktivs[0][distance]" class="form-control">
+                        </div>
+                        <button type="button" class="remove-polygon-aktiv btn btn-danger">Remove</button>
+                    </div>
+                </div>
+                <button type="button" id="addPolygonAktivBtn" class="btn btn-primary">Add Polygon Aktiv</button>
+
+
+                <script>
+                    document.getElementById('addPolygonAktivBtn').addEventListener('click', function() {
+                        var container = document.getElementById('polygonAktivsContainer');
+                        var index = container.children.length;
+                        var newBlock = document.createElement('div');
+                        newBlock.classList.add('polygon-aktiv-block');
+                        newBlock.innerHTML = `
+            <div class="form-group">
+                <label for="start_lat_${index}">Start Latitude</label>
+                <input type="text" name="polygon_aktivs[${index}][start_lat]" class="form-control">
+            </div>
+            <div class="form-group">
+                <label for="start_lon_${index}">Start Longitude</label>
+                <input type="text" name="polygon_aktivs[${index}][start_lon]" class="form-control">
+            </div>
+            <div class="form-group">
+                <label for="end_lat_${index}">End Latitude</label>
+                <input type="text" name="polygon_aktivs[${index}][end_lat]" class="form-control">
+            </div>
+            <div class="form-group">
+                <label for="end_lon_${index}">End Longitude</label>
+                <input type="text" name="polygon_aktivs[${index}][end_lon]" class="form-control">
+            </div>
+            <div class="form-group">
+                <label for="distance_${index}">Distance</label>
+                <input type="number" name="polygon_aktivs[${index}][distance]" class="form-control">
+            </div>
+            <button type="button" class="remove-polygon-aktiv btn btn-danger">Remove</button>
+        `;
+                        container.appendChild(newBlock);
+                    });
+
+                    document.addEventListener('click', function(event) {
+                        if (event.target.classList.contains('remove-polygon-aktiv')) {
+                            event.target.closest('.polygon-aktiv-block').remove();
+                        }
+                    });
+                </script>
+
 
                 {{-- end new fields -------------------------- --}}
                 <!-- Form Inputs -->
