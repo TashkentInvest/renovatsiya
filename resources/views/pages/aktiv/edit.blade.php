@@ -322,90 +322,165 @@
 
                 {{-- cordinates --}}
 
-                <div>
-                    <label for="coordinates">Coordinates</label>
-                    <textarea id="coordinates" name="coordinates" rows="10" required>{{ $aktiv->polygonAktivs }}</textarea>
-                </div>
 
-            </div>
-            <!-- Right Column -->
-            <div class="col-md-6">
-                <!-- Existing Files -->
-                <div class="mb-3">
-                    <label class="text-primary">Мавжуд файллар</label>
-                    <div id="existing-files" class="mb-3">
-                        @foreach ($aktiv->files as $file)
-                            <div class="existing-file mb-2">
-                                <a href="{{ asset('storage/' . $file->path) }}" target="_blank">Файлни кўриш</a>
-                                <label>
-                                    <input type="checkbox" name="delete_files[]" value="{{ $file->id }}">
-                                    Ўчириш
-                                </label>
+                <!-- PolygonAktiv fields -->
+                <div id="polygonAktivsContainer">
+                    @foreach ($aktiv->polygonAktivs as $polygonAktiv)
+                        <div class="polygon-aktiv-block">
+                            <input type="hidden" name="polygon_aktivs[{{ $loop->index }}][id]"
+                                value="{{ $polygonAktiv->id }}">
+
+                            <div class="form-group">
+                                <label for="start_lat_{{ $loop->index }}">Start Latitude</label>
+                                <input type="text" name="polygon_aktivs[{{ $loop->index }}][start_lat]"
+                                    value="{{ $polygonAktiv->start_lat }}" class="form-control">
                             </div>
-                        @endforeach
-                    </div>
+                            <div class="form-group">
+                                <label for="start_lon_{{ $loop->index }}">Start Longitude</label>
+                                <input type="text" name="polygon_aktivs[{{ $loop->index }}][start_lon]"
+                                    value="{{ $polygonAktiv->start_lon }}" class="form-control">
+                            </div>
+                            <div class="form-group">
+                                <label for="end_lat_{{ $loop->index }}">End Latitude</label>
+                                <input type="text" name="polygon_aktivs[{{ $loop->index }}][end_lat]"
+                                    value="{{ $polygonAktiv->end_lat }}" class="form-control">
+                            </div>
+                            <div class="form-group">
+                                <label for="end_lon_{{ $loop->index }}">End Longitude</label>
+                                <input type="text" name="polygon_aktivs[{{ $loop->index }}][end_lon]"
+                                    value="{{ $polygonAktiv->end_lon }}" class="form-control">
+                            </div>
+                            <div class="form-group">
+                                <label for="distance_{{ $loop->index }}">Distance</label>
+                                <input type="number" name="polygon_aktivs[{{ $loop->index }}][distance]"
+                                    value="{{ $polygonAktiv->distance }}" class="form-control">
+                            </div>
+                            <button type="button" class="remove-polygon-aktiv btn btn-danger">Remove</button>
+                        </div>
+                    @endforeach
+
+                  
                 </div>
+                <button type="button" id="addPolygonAktivBtn" class="btn btn-primary">Add Polygon Aktiv</button>
 
-                <!-- File upload fields -->
-                <div class="mb-3">
-                    <label class="text-danger">Янги файлларни юклаш (Камида 4 та файл бўлиши шарт)</label>
-                </div>
-                <!-- Error message display -->
-                <div id="file-error" class="text-danger mb-3"></div>
-
-                <!-- Container to hold new file inputs -->
-                <div id="file-upload-container">
+                <script>
+                    document.getElementById('addPolygonAktivBtn').addEventListener('click', function() {
+                        var container = document.getElementById('polygonAktivsContainer');
+                        var index = container.children.length;
+                        var newBlock = document.createElement('div');
+                        newBlock.classList.add('polygon-aktiv-block');
+                        newBlock.innerHTML = `
+                            <div class="form-group">
+                                <label for="start_lat_${index}">Start Latitude</label>
+                                <input type="text" name="polygon_aktivs[${index}][start_lat]" class="form-control">
+                            </div>
+                            <div class="form-group">
+                                <label for="start_lon_${index}">Start Longitude</label>
+                                <input type="text" name="polygon_aktivs[${index}][start_lon]" class="form-control">
+                            </div>
+                            <div class="form-group">
+                                <label for="end_lat_${index}">End Latitude</label>
+                                <input type="text" name="polygon_aktivs[${index}][end_lat]" class="form-control">
+                            </div>
+                            <div class="form-group">
+                                <label for="end_lon_${index}">End Longitude</label>
+                                <input type="text" name="polygon_aktivs[${index}][end_lon]" class="form-control">
+                            </div>
+                            <div class="form-group">
+                                <label for="distance_${index}">Distance</label>
+                                <input type="number" name="polygon_aktivs[${index}][distance]" class="form-control">
+                            </div>
+                            <button type="button" class="remove-polygon-aktiv btn btn-danger">Remove</button>
+                        `;
+                        container.appendChild(newBlock);
+                    });
+                
+                    document.addEventListener('click', function(event) {
+                        if (event.target.classList.contains('remove-polygon-aktiv')) {
+                            event.target.closest('.polygon-aktiv-block').remove();
+                        }
+                    });
+                </script>
+                <!-- Right Column -->
+                <div class="col-md-6">
+                    <!-- Existing Files -->
                     <div class="mb-3">
-                        <label for="file1">Биринчи файл</label>
-                        <input type="file" class="form-control" name="files[]" id="file1">
+                        <label class="text-primary">Мавжуд файллар</label>
+                        <div id="existing-files" class="mb-3">
+                            @foreach ($aktiv->files as $file)
+                                <div class="existing-file mb-2">
+                                    <a href="{{ asset('storage/' . $file->path) }}" target="_blank">Файлни кўриш</a>
+                                    <label>
+                                        <input type="checkbox" name="delete_files[]" value="{{ $file->id }}">
+                                        Ўчириш
+                                    </label>
+                                </div>
+                            @endforeach
+                        </div>
                     </div>
+
+                    <!-- File upload fields -->
                     <div class="mb-3">
-                        <label for="file2">Иккинчи файл</label>
-                        <input type="file" class="form-control" name="files[]" id="file2">
+                        <label class="text-danger">Янги файлларни юклаш (Камида 4 та файл бўлиши шарт)</label>
                     </div>
+                    <!-- Error message display -->
+                    <div id="file-error" class="text-danger mb-3"></div>
+
+                    <!-- Container to hold new file inputs -->
+                    <div id="file-upload-container">
+                        <div class="mb-3">
+                            <label for="file1">Биринчи файл</label>
+                            <input type="file" class="form-control" name="files[]" id="file1">
+                        </div>
+                        <div class="mb-3">
+                            <label for="file2">Иккинчи файл</label>
+                            <input type="file" class="form-control" name="files[]" id="file2">
+                        </div>
+                        <div class="mb-3">
+                            <label for="file3">Учинчи файл</label>
+                            <input type="file" class="form-control" name="files[]" id="file3">
+                        </div>
+                        <div class="mb-3">
+                            <label for="file4">Тўртинчи файл</label>
+                            <input type="file" class="form-control" name="files[]" id="file4">
+                        </div>
+                    </div>
+
+                    <button type="button" class="btn btn-secondary mb-3" onclick="addFileInput()">Янги файл
+                        қўшиш</button>
+
+                    <!-- Map Section -->
                     <div class="mb-3">
-                        <label for="file3">Учинчи файл</label>
-                        <input type="file" class="form-control" name="files[]" id="file3">
+                        <button id="find-my-location" type="button" class="btn btn-primary mb-3">Менинг жойлашувимни
+                            топиш</button>
+                        <div id="map" style="height: 500px; width: 100%;"></div>
+                        @error('latitude')
+                            <div class="text-danger">{{ $message }}</div>
+                        @enderror
+                        @error('longitude')
+                            <div class="text-danger">{{ $message }}</div>
+                        @enderror
                     </div>
+
+                    <!-- Hidden Fields for Coordinates -->
+                    <input type="hidden" name="latitude" id="latitude"
+                        value="{{ old('latitude', $aktiv->latitude) }}">
+                    <input type="hidden" name="longitude" id="longitude"
+                        value="{{ old('longitude', $aktiv->longitude) }}">
+
+                    <!-- Geolocation URL Field -->
                     <div class="mb-3">
-                        <label for="file4">Тўртинчи файл</label>
-                        <input type="file" class="form-control" name="files[]" id="file4">
+                        <label for="geolokatsiya">Геолокация (координата)</label>
+                        <input class="form-control" type="text" name="geolokatsiya" id="geolokatsiya" readonly
+                            required value="{{ old('geolokatsiya', $aktiv->geolokatsiya) }}">
+                        @error('geolokatsiya')
+                            <div class="text-danger">{{ $message }}</div>
+                        @enderror
                     </div>
-                </div>
-
-                <button type="button" class="btn btn-secondary mb-3" onclick="addFileInput()">Янги файл қўшиш</button>
-
-                <!-- Map Section -->
-                <div class="mb-3">
-                    <button id="find-my-location" type="button" class="btn btn-primary mb-3">Менинг жойлашувимни
-                        топиш</button>
-                    <div id="map" style="height: 500px; width: 100%;"></div>
-                    @error('latitude')
-                        <div class="text-danger">{{ $message }}</div>
-                    @enderror
-                    @error('longitude')
-                        <div class="text-danger">{{ $message }}</div>
-                    @enderror
-                </div>
-
-                <!-- Hidden Fields for Coordinates -->
-                <input type="hidden" name="latitude" id="latitude" value="{{ old('latitude', $aktiv->latitude) }}">
-                <input type="hidden" name="longitude" id="longitude"
-                    value="{{ old('longitude', $aktiv->longitude) }}">
-
-                <!-- Geolocation URL Field -->
-                <div class="mb-3">
-                    <label for="geolokatsiya">Геолокация (координата)</label>
-                    <input class="form-control" type="text" name="geolokatsiya" id="geolokatsiya" readonly required
-                        value="{{ old('geolokatsiya', $aktiv->geolokatsiya) }}">
-                    @error('geolokatsiya')
-                        <div class="text-danger">{{ $message }}</div>
-                    @enderror
                 </div>
             </div>
-        </div>
-        <!-- Submit Button -->
-        <button type="submit" class="btn btn-success" id="submit-btn">Сақлаш</button>
+            <!-- Submit Button -->
+            <button type="submit" class="btn btn-success" id="submit-btn">Сақлаш</button>
     </form>
 @endsection
 @section('scripts')
@@ -610,9 +685,14 @@
                     const endLng = dmsToDecimal(polygonCoords.end_lon);
 
                     if (startLat !== null && startLng !== null && endLat !== null && endLng !== null) {
-                        const path = [
-                            { lat: startLat, lng: startLng },
-                            { lat: endLat, lng: endLng }
+                        const path = [{
+                                lat: startLat,
+                                lng: startLng
+                            },
+                            {
+                                lat: endLat,
+                                lng: endLng
+                            }
                         ];
 
                         polygonPaths.push(path);

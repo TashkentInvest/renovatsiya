@@ -349,7 +349,7 @@ class AktivController extends Controller
             'yangidan_quriladigan_muhandislik_tarmoqlari_info' => 'nullable',
             'saqlanadigan_yollar_info'                  => 'nullable',
             'yangidan_quriladigan_yollar_info'          => 'nullable',
-            'coordinates'      => 'required|string', // Added validation for coordinates
+            'coordinates'      => 'nullable', // Added validation for coordinates
 
 
             'user_id'          => 'nullable'
@@ -380,27 +380,18 @@ class AktivController extends Controller
 
 
 
-        $data = $request->except(['files', 'aktiv_docs', 'delete_files', 'delete_docs']);
+        $data = $request->except(['files', 'aktiv_docs', 'delete_files', 'delete_docs','polygon_aktivs']);
 
         $aktiv->update($data);
 
         $aktiv->polygonAktivs()->delete();
-
-        // Parse and save coordinates
-        $coordinates = $this->parseInput($request->input('coordinates'));
-        foreach ($coordinates as $coordinate) {
-            PolygonAktiv::create([
-                'aktiv_id' => $aktiv->id,
-                'tr' => $coordinate['tr'],
-                'start_lat' => $coordinate['start_lat'],
-                'start_lon' => $coordinate['start_lon'],
-                'end_lat' => $coordinate['end_lat'],
-                'end_lon' => $coordinate['end_lon'],
-                'distance' => $coordinate['distance'],
-            ]);
+        if ($request->has('polygon_aktivs')) {
+            foreach ($request->polygon_aktivs as $polygonAktivData) {
+                $aktiv->polygonAktivs()->create($polygonAktivData);
+            }
         }
-
-
+        // Parse and save coordinates
+  
         if ($request->hasFile('files')) {
             foreach ($request->file('files') as $file) {
                 $path = $file->store('assets', 'public');
