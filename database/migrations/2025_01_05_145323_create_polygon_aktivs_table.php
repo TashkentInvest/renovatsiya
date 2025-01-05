@@ -15,13 +15,12 @@ class CreatePolygonAktivsTable extends Migration
     {
         Schema::create('polygon_aktivs', function (Blueprint $table) {
             $table->id();
-            $table->unsignedBigInteger('aktiv_id'); // Foreign key to Aktiv
-            $table->integer('tr');
-            $table->string('start_lat');
-            $table->string('start_lon');
-            $table->string('end_lat');
-            $table->string('end_lon');
-            $table->integer('distance');
+            $table->unsignedBigInteger('aktiv_id')->nullable(); // Foreign key to Aktiv
+            $table->string('start_lat')->nullable();
+            $table->string('start_lon')->nullable();
+            $table->string('end_lat')->nullable();
+            $table->string('end_lon')->nullable();
+            $table->string('distance')->nullable();
             $table->timestamps();
 
             // Add foreign key constraint

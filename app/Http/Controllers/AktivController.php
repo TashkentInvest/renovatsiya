@@ -298,9 +298,11 @@ class AktivController extends Controller
 
         $regions = Regions::get();
 
-        $aktiv->load('docs');
+        $aktiv->load(['docs','polygonAktivs']);
 
-        return view('pages.aktiv.edit', compact('aktiv', 'regions'));
+        $polygonData = $aktiv->polygonData;
+
+        return view('pages.aktiv.edit', compact('aktiv', 'regions','polygonData'));
     }
 
     public function update(Request $request, Aktiv $aktiv)

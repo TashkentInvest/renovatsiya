@@ -43,14 +43,18 @@ use App\Http\Controllers\RuxsatnomaKimTamonidanController;
 use App\Http\Controllers\RuxsatnomaBerilganIshTuriController;
 use App\Http\Controllers\ShartnomaController;
 use App\Http\Controllers\SubyektController;
+use App\Http\Controllers\TestController;
 
 // Default laravel auth routes
 Auth::routes(['register' => false]);
 
 // Welcome page
+
+
 Route::get('/', function () {
     return view('welcome');
 });
+
 
 Route::get('/client/create', [ClientController::class, 'client_create'])->name('clientFormCreate');
 Route::post('/qr/create', [ClientController::class, 'Qrcreate'])->name('Qrcreate');
@@ -82,39 +86,7 @@ Route::group(['middleware' => ['auth', 'checkUserRole']], function () {
 
     Route::get('/optimize-cache', [HomeController::class, 'optimize'])->name('optimize.command');
 
-    // Regions  
-    // Route::prefix('regions')->group(function () {
-    //     Route::get('/', [RegionController::class, 'index'])->name('regionIndex');
-    //     Route::get('/add', [RegionController::class, 'add'])->name('regionAdd');
-    //     Route::post('/create', [RegionController::class, 'create'])->name('regionCreate');
-    //     Route::get('/edit/{id}', [RegionController::class, 'edit'])->name('regionEdit');
-    //     Route::post('/update/{id}', [RegionController::class, 'update'])->name('regionUpdate');
-    //     Route::delete('/delete/{id}', [RegionController::class, 'destroy'])->name('regionDestroy');
-    // });
 
-    // Districts 
-    // Route::prefix('districts')->group(function () {
-    //     Route::get('/', [DistrictController::class, 'index'])->name('districtIndex');
-    //     Route::get('/add', [DistrictController::class, 'add'])->name('districtAdd');
-    //     Route::post('/create', [DistrictController::class, 'create'])->name('districtCreate');
-    //     Route::get('/edit/{id}', [DistrictController::class, 'edit'])->name('districtEdit');
-    //     Route::post('/update/{id}', [DistrictController::class, 'update'])->name('districtUpdate');
-    //     Route::delete('/delete/{id}', [DistrictController::class, 'destroy'])->name('districtDestroy');
-    // });
-    // Products
-    // Route::prefix('clients')->group(function () {
-    //     Route::get('/', [ClientController::class, 'index'])->name('clientIndex');
-
-    //     Route::get('/data', [ClientController::class, 'getClientsData'])->name('clients.data');
-    //     Route::get('/add/fizik', [ClientController::class, 'add_fizik'])->name('clientFizikAdd');
-    //     Route::get('/add/yuridik', [ClientController::class, 'add_yuridik'])->name('clientYuridikAdd');
-    //     Route::get('/{id}', [ClientController::class, 'show'])->name('clientDetails');
-    //     Route::get('/edit/{id}', [ClientController::class, 'edit'])->name('clientFizikEdit');
-    //     Route::post('/create', [ClientController::class, 'create'])->name('clientCreate');
-    //     Route::delete('/delete/{id}', [ClientController::class, 'delete'])->name('clientDestroy');
-    //     Route::match(['put', 'post'], 'product/{id}', [ClientController::class, 'update'])->name('clientUpdate');
-    //     Route::post('/toggle-status/{id}', [ClientController::class, 'toggleclientActivation'])->name('clientActivation');
-    // });
     Route::get('/apz-second', [ClientController::class, 'apz_second'])->name('apz.second');
     Route::get('/client/confirm', [ClientController::class, 'client_confirm'])->name('clientFormConfirm');
 
@@ -494,7 +466,12 @@ Route::get('excel/import-export', [ExcelController::class, 'index_imp_exp'])->na
 Route::post('excel/import', [ExcelController::class, 'import'])->name('excel.import');
 Route::get('excel/export', [ExcelController::class, 'export'])->name('excel.export');
 
+Route::get('/aktivs/{aktiv_id}/polygons', [TestController::class, 'showPolygonData'])->name('aktivs.showPolygon');
 
+
+Route::get('/mmm', function () {
+    return view('pages.aktiv.showPolygon');
+});
 // custom routes
 // Route::get('/', function () {
 //     return redirect()->route('aktivs.index');
