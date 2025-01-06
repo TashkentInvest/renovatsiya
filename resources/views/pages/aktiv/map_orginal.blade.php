@@ -552,11 +552,9 @@
 
                     const polygon = new google.maps.Polygon({
                         paths: polygonPath,
-                        strokeColor: '#FF0000', // Red border color
-                        strokeOpacity: 0.8,
+                        strokeColor: 'yellow', // Red border color
                         strokeWeight: 2,
-                        fillColor: '#FFFF00', // Yellow fill color
-                        fillOpacity: 0.7 // Adjusted opacity for better visibility
+                        fillColor: 'yellow', // Yellow fill color
                     });
 
                     polygon.setMap(map);
