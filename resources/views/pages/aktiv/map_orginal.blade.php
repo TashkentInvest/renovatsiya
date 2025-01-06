@@ -552,9 +552,10 @@
 
                     const polygon = new google.maps.Polygon({
                         paths: polygonPath,
-                        strokeColor: 'yellow', // Red border color
-                        strokeWeight: 2,
-                        fillColor: 'yellow', // Yellow fill color
+                        strokeColor: 'yellow', // Set border color to yellow
+                        strokeWeight: 2, // Set stroke width
+                        fillColor: 'yellow', // Set fill color to yellow
+                        fillOpacity: 0.5 // Set fill opacity to 50%
                     });
 
                     polygon.setMap(map);
@@ -563,6 +564,7 @@
                 }
             });
         }
+
 
 
         function updateSidebarContent(markerData, isInUSD, usdRate) {
@@ -626,14 +628,14 @@
                         <td>${markerData.address || 'N/A'}</td>
                     </tr>
                     ${priceUZS > 0 ? `
-                                    <tr>
-                                        <th class="sidebar_key">Boshlang'ich narxi</th>
-                                        <td id="price-td">${lotPriceFormatted}</td>
-                                    </tr>
-                                    <tr>
-                                        <th class="sidebar_key">1 sotix uchun narx</th>
-                                        <td>${lotPricePerSotixFormatted}</td>
-                                    </tr>` : ''}
+                                        <tr>
+                                            <th class="sidebar_key">Boshlang'ich narxi</th>
+                                            <td id="price-td">${lotPriceFormatted}</td>
+                                        </tr>
+                                        <tr>
+                                            <th class="sidebar_key">1 sotix uchun narx</th>
+                                            <td>${lotPricePerSotixFormatted}</td>
+                                        </tr>` : ''}
                     <tr>
                         <th class="sidebar_key">Yaratilgan foydalanuvchi</th>
                         <td>${markerData.user_name || 'N/A'}</td>
