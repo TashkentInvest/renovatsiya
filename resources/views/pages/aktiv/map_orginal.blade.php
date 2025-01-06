@@ -129,8 +129,8 @@
         #info-sidebar {
             position: fixed;
             top: 0;
-            right: -400px;
-            width: 400px;
+            right: -500px;
+            width: 500px;
             height: 100%;
             background-color: #fff;
             overflow-y: auto;
