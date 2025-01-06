@@ -11,12 +11,12 @@ class PolygonAktiv extends Model
 
     protected $fillable = [
         'aktiv_id',  // The foreign key for the relationship
-        'tr',
         'start_lat',
         'start_lon',
         'end_lat',
         'end_lon',
         'distance',
+        'comment',
     ];
 
     // Relationship: Each PolygonAktiv belongs to one Aktiv

@@ -326,7 +326,7 @@
 
                     </table>
 
-                    <form action="{{route('aktiv.clearCache')}}" method="POST">
+                    <form action="{{ route('aktiv.clearCache') }}" method="POST">
                         @csrf
                         @method('POST')
                         <button id="clear-cache-btn">Clear Cache</button>
@@ -430,7 +430,7 @@
             document.head.appendChild(script);
         });
 
-     
+
 
         function initMap() {
             const urlParams = new URLSearchParams(window.location.search);
@@ -552,11 +552,11 @@
 
                     const polygon = new google.maps.Polygon({
                         paths: polygonPath,
-                        strokeColor: '#FF0000',
+                        strokeColor: '#FF0000', // Red border color
                         strokeOpacity: 0.8,
                         strokeWeight: 2,
-                        fillColor: '#FF0000',
-                        fillOpacity: 0.35
+                        fillColor: '#FFFF00', // Yellow fill color
+                        fillOpacity: 0.7 // Adjusted opacity for better visibility
                     });
 
                     polygon.setMap(map);
@@ -628,14 +628,14 @@
                         <td>${markerData.address || 'N/A'}</td>
                     </tr>
                     ${priceUZS > 0 ? `
-                                <tr>
-                                    <th class="sidebar_key">Boshlang'ich narxi</th>
-                                    <td id="price-td">${lotPriceFormatted}</td>
-                                </tr>
-                                <tr>
-                                    <th class="sidebar_key">1 sotix uchun narx</th>
-                                    <td>${lotPricePerSotixFormatted}</td>
-                                </tr>` : ''}
+                                    <tr>
+                                        <th class="sidebar_key">Boshlang'ich narxi</th>
+                                        <td id="price-td">${lotPriceFormatted}</td>
+                                    </tr>
+                                    <tr>
+                                        <th class="sidebar_key">1 sotix uchun narx</th>
+                                        <td>${lotPricePerSotixFormatted}</td>
+                                    </tr>` : ''}
                     <tr>
                         <th class="sidebar_key">Yaratilgan foydalanuvchi</th>
                         <td>${markerData.user_name || 'N/A'}</td>

@@ -21,13 +21,12 @@ class CreatePolygonAktivsTable extends Migration
             $table->string('end_lat')->nullable();
             $table->string('end_lon')->nullable();
             $table->string('distance')->nullable();
+            $table->text('comment')->nullable();
             $table->timestamps();
 
             // Add foreign key constraint
             $table->foreign('aktiv_id')->references('id')->on('aktivs')->onDelete('cascade');
         });
-
-        
     }
 
     /**
