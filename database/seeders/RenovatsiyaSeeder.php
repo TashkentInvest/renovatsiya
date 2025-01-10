@@ -43,7 +43,7 @@ class RenovatsiyaSeeder extends Seeder
         };
 
         // File path to the Excel file
-        $filePath = public_path('polygon_data.xlsx');  // Use storage path instead
+        $filePath = public_path('ren_polygon_10_jan.xlsx');  // Use storage path instead
 
         // Execute the import using the import handler
         Excel::import($importHandler, $filePath);

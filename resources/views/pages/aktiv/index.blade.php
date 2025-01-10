@@ -2,7 +2,7 @@
 
 @section('content')
     <div class="d-flex justify-content-between align-items-center mb-4">
-        <h1>Активлар сони: {{ $aktivs->total() ?? '' }}</h1>
+        <h1>Объектлар сони: {{ $aktivs->total() ?? '' }}</h1>
         <a href="{{ route('aktivs.create') }}" class="btn btn-primary">
             <i class="fas fa-plus"></i> Янги актив яратиш
         </a>
@@ -87,7 +87,7 @@
         </div>
     @else
         <div class="alert alert-warning text-center mt-4">
-            <i class="fas fa-exclamation-circle"></i> Активлар топилмади.
+            <i class="fas fa-exclamation-circle"></i> Объектлар топилмади.
         </div>
     @endif
 @endsection

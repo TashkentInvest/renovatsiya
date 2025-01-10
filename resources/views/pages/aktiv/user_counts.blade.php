@@ -1,7 +1,7 @@
 @extends('layouts.admin')
 
 @section('content')
-    <h1 class="mb-4">Фойдаланувчилар ва Активлар сони</h1>
+    <h1 class="mb-4">Фойдаланувчилар ва Объектлар сони</h1>
 
     @if ($users->count())
         <div class="table-responsive rounded shadow-sm">
@@ -12,7 +12,7 @@
                         <th scope="col">Исми</th>
                         <th scope="col">Электрон почта</th>
                         <th scope="col">Роли</th>
-                        <th scope="col">Яратилган Активлар сони</th>
+                        <th scope="col">Яратилган Объектлар сони</th>
                         <th scope="col">Ҳаракатлар</th>
                     </tr>
                 </thead>
@@ -33,7 +33,7 @@
                                 <td>
                                     <a href="{{ route('aktivs.index', ['user_id' => $user->id]) }}"
                                         class="btn btn-primary btn-sm">
-                                        Активларини кўриш
+                                        Объектларини кўриш
                                     </a>
                                 </td>
                             </tr>

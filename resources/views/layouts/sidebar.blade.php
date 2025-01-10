@@ -19,25 +19,26 @@
                     </a>
                 </li>
                 <li class="pc-item">
+                    <a class="pc-link" href="{{ route('aktivs.index') }}">
+                        Объектлар ҳақида маълумот
+                    </a>
+                </li>
+                {{-- <li class="pc-item">
                     <a class="pc-link" href="{{ route('userIndex') }}">
                         Фойдаланучилар
                     </a>
-                </li>
-                <li class="pc-item">
-                    <a class="pc-link" href="{{ route('aktivs.index') }}">
-                        Активлар ҳақида маълумот
-                    </a>
-                </li>
+                </li> --}}
+               
 
                 {{-- @if (auth()->user()->roles[0]->name == 'Super Admin' || auth()->user()->roles[0]->name == 'Manager')
                     <li class="pc-item">
                         <a class="pc-link" href="{{ route('aktivs.userAktivCounts') }}">
-                            Фойдаланувчилар Активлари
+                            Фойдаланувчилар Объектлари
                         </a>
                     </li>
                     <li class="pc-item">
                         <a class="pc-link" href="{{ route('aktivs.userTumanlarCounts') }}">
-                            Туман Активлари
+                            Туман Объектлари
                         </a>
                     </li>
                 @endif --}}
