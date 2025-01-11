@@ -583,8 +583,8 @@
             const lotPricePerSotixUZS = area > 0 ? priceUZS / (area * 100) : 0;
 
             // Convert price and per-sotix based on currency
-            let lotPriceFormatted = 'N/A';
-            let lotPricePerSotixFormatted = 'N/A';
+            let lotPriceFormatted = 'Мавжуд Эмас';
+            let lotPricePerSotixFormatted = 'Мавжуд Эмас';
 
             try {
                 if (isInUSD && usdRate && priceUZS > 0) {
@@ -628,11 +628,11 @@
     <table>
         <tr>
             <th class="sidebar_key">№</th>
-            <td>${markerData.lot_number || 'N/A'}</td>
+            <td>${markerData.lot_number || 'Мавжуд Эмас'}</td>
         </tr>
         <tr>
             <th class="sidebar_key">Манзили</th>
-            <td>${markerData.address || 'N/A'}</td>
+            <td>${markerData.address || 'Мавжуд Эмас'}</td>
         </tr>
         ${priceUZS > 0 ? `
                                 <tr>
@@ -645,72 +645,72 @@
                                 </tr>` : ''}
                                 <tr>
                                     <th class="sidebar_key">Яратган фойдаланувчи</th>
-                                    <td>${markerData.user_name || 'N/A'} | ${markerData.user_email || 'N/A'}</td>
+                                    <td>${markerData.user_name || 'Мавжуд Эмас'} | ${markerData.user_email || 'Мавжуд Эмас'}</td>
                                 </tr>
                          
                                 <tr>
                                     <th class="sidebar_key">Турар жой майдони</th>
-                                    <td>${markerData.turar_joy_maydoni || 'N/A'} kv.m</td>
+                                    <td>${markerData.turar_joy_maydoni || 'Мавжуд Эмас'} kv.m</td>
                                 </tr>
                                 <tr>
                                     <th class="sidebar_key">Нотурар жой майдони</th>
-                                    <td>${markerData.noturar_joy_maydoni || 'N/A'} kv.m</td>
+                                    <td>${markerData.noturar_joy_maydoni || 'Мавжуд Эмас'} kv.m</td>
                                 </tr>
                                 <tr>
                                     <th class="sidebar_key">Вақтинчалик парковка маълумоти</th>
-                                    <td>${markerData.vaqtinchalik_parking_info || 'N/A'}</td>
+                                    <td>${markerData.vaqtinchalik_parking_info || 'Мавжуд Эмас'}</td>
                                 </tr>
                                 <tr>
                                     <th class="sidebar_key">Дўмий парковка маълумоти</th>
-                                    <td>${markerData.doimiy_parking_info || 'N/A'}</td>
+                                    <td>${markerData.doimiy_parking_info || 'Мавжуд Эмас'}</td>
                                 </tr>
                                 <tr>
                                     <th class="sidebar_key">Мактабгача ташкилот маълумоти</th>
-                                    <td>${markerData.maktabgacha_tashkilot_info || 'N/A'}</td>
+                                    <td>${markerData.maktabgacha_tashkilot_info || 'Мавжуд Эмас'}</td>
                                 </tr>
                                 <tr>
                                     <th class="sidebar_key">Умумтаълим мактаб маълумоти</th>
-                                    <td>${markerData.umumtaolim_maktab_info || 'N/A'}</td>
+                                    <td>${markerData.umumtaolim_maktab_info || 'Мавжуд Эмас'}</td>
                                 </tr>
                                 <tr>
                                     <th class="sidebar_key">Стационар тиббиёт маълумоти</th>
-                                    <td>${markerData.stasionar_tibbiyot_info || 'N/A'}</td>
+                                    <td>${markerData.stasionar_tibbiyot_info || 'Мавжуд Эмас'}</td>
                                 </tr>
                                 <tr>
                                     <th class="sidebar_key">Амбулатор тиббиёт маълумоти</th>
-                                    <td>${markerData.ambulator_tibbiyot_info || 'N/A'}</td>
+                                    <td>${markerData.ambulator_tibbiyot_info || 'Мавжуд Эмас'}</td>
                                 </tr>
                                 <tr>
                                     <th class="sidebar_key">Диний муассаса маълумоти</th>
-                                    <td>${markerData.diniy_muassasa_info || 'N/A'}</td>
+                                    <td>${markerData.diniy_muassasa_info || 'Мавжуд Эмас'}</td>
                                 </tr>
                                 <tr>
                                     <th class="sidebar_key">Спорт соғломлаштириш маълумоти</th>
-                                    <td>${markerData.sport_soglomlashtirish_info || 'N/A'}</td>
+                                    <td>${markerData.sport_soglomlashtirish_info || 'Мавжуд Эмас'}</td>
                                 </tr>
                                 <tr>
                                     <th class="sidebar_key">Сақланадиган кўкаламзор маълумоти</th>
-                                    <td>${markerData.saqlanadigan_kokalamzor_info || 'N/A'}</td>
+                                    <td>${markerData.saqlanadigan_kokalamzor_info || 'Мавжуд Эмас'}</td>
                                 </tr>
                                 <tr>
                                     <th class="sidebar_key">Янгидан ташкил кўкаламзор маълумоти</th>
-                                    <td>${markerData.yangidan_tashkil_kokalamzor_info || 'N/A'}</td>
+                                    <td>${markerData.yangidan_tashkil_kokalamzor_info || 'Мавжуд Эмас'}</td>
                                 </tr>
                                 <tr>
                                     <th class="sidebar_key">Сақланадиган муҳандислик тармоқлари маълумоти</th>
-                                    <td>${markerData.saqlanadigan_muhandislik_tarmoqlari_info || 'N/A'}</td>
+                                    <td>${markerData.saqlanadigan_muhandislik_tarmoqlari_info || 'Мавжуд Эмас'}</td>
                                 </tr>
                                 <tr>
                                     <th class="sidebar_key">Янгидан қуриладиган муҳандислик тармоқлари маълумоти</th>
-                                    <td>${markerData.yangidan_quriladigan_muhandislik_tarmoqlari_info || 'N/A'}</td>
+                                    <td>${markerData.yangidan_quriladigan_muhandislik_tarmoqlari_info || 'Мавжуд Эмас'}</td>
                                 </tr>
                                 <tr>
                                     <th class="sidebar_key">Сақланадиган йўллар маълумоти</th>
-                                    <td>${markerData.saqlanadigan_yollar_info || 'N/A'}</td>
+                                    <td>${markerData.saqlanadigan_yollar_info || 'Мавжуд Эмас'}</td>
                                 </tr>
                                 <tr>
                                     <th class="sidebar_key">Янгидан қуриладиган йўллар маълумоти</th>
-                                    <td>${markerData.yangidan_quriladigan_yollar_info || 'N/A'}</td>
+                                    <td>${markerData.yangidan_quriladigan_yollar_info || 'Мавжуд Эмас'}</td>
                                 </tr>
                             </table>
                             <a target="_blank" href="${markerData.lot_link || '#'}" class="btn-link">Батафсил кўриш</a>
@@ -848,7 +848,7 @@
                         aholiSoni: '60,5 ming',
                         TumanlarSoni: '20',
                         MahallaSoni: '18',
-                        savdodaTurganJamiSoni: 'N/A'
+                        savdodaTurganJamiSoni: 'Мавжуд Эмас'
                     },
                     'chilonzor.xml': {
                         name: 'Chilonzor',
@@ -856,7 +856,7 @@
                         aholiSoni: '275,1 ming',
                         TumanlarSoni: '45',
                         MahallaSoni: '45',
-                        savdodaTurganJamiSoni: 'N/A'
+                        savdodaTurganJamiSoni: 'Мавжуд Эмас'
                     },
                     'mirabod.xml': {
                         name: 'Mirobod',
@@ -864,7 +864,7 @@
                         aholiSoni: '152,2 ming',
                         TumanlarSoni: '30',
                         MahallaSoni: '39',
-                        savdodaTurganJamiSoni: 'N/A'
+                        savdodaTurganJamiSoni: 'Мавжуд Эмас'
                     },
                     'mirzo_ulugbek.xml': {
                         name: 'Mirzo Ulug‘bek',
@@ -872,7 +872,7 @@
                         aholiSoni: '331,2 ming',
                         TumanlarSoni: '35',
                         MahallaSoni: '70',
-                        savdodaTurganJamiSoni: 'N/A'
+                        savdodaTurganJamiSoni: 'Мавжуд Эмас'
                     },
                     'olmazor.xml': {
                         name: 'Olmazor',
@@ -880,7 +880,7 @@
                         aholiSoni: '404,4 ming',
                         TumanlarSoni: '50',
                         MahallaSoni: '64',
-                        savdodaTurganJamiSoni: 'N/A'
+                        savdodaTurganJamiSoni: 'Мавжуд Эмас'
                     },
                     'sergeli.xml': {
                         name: 'Sergeli',
@@ -888,7 +888,7 @@
                         aholiSoni: '168,2 ming',
                         TumanlarSoni: '55',
                         MahallaSoni: '46',
-                        savdodaTurganJamiSoni: 'N/A'
+                        savdodaTurganJamiSoni: 'Мавжуд Эмас'
                     },
                     'shayhontaxur.xml': {
                         name: 'Shayxontohur',
@@ -896,7 +896,7 @@
                         aholiSoni: '365,4 ming',
                         TumanlarSoni: '15',
                         MahallaSoni: '51',
-                        savdodaTurganJamiSoni: 'N/A'
+                        savdodaTurganJamiSoni: 'Мавжуд Эмас'
                     },
                     'uchtepa.xml': {
                         name: 'Uchtepa',
@@ -904,7 +904,7 @@
                         aholiSoni: '299,4 ming',
                         TumanlarSoni: '60',
                         MahallaSoni: '60',
-                        savdodaTurganJamiSoni: 'N/A'
+                        savdodaTurganJamiSoni: 'Мавжуд Эмас'
                     },
                     'yakkasaroy.xml': {
                         name: 'Yakkasaroy',
@@ -912,7 +912,7 @@
                         aholiSoni: '133,4 ming',
                         TumanlarSoni: '40',
                         MahallaSoni: '21',
-                        savdodaTurganJamiSoni: 'N/A'
+                        savdodaTurganJamiSoni: 'Мавжуд Эмас'
                     },
                     'yashnabod.xml': {
                         name: 'Yashnobod',
@@ -920,7 +920,7 @@
                         aholiSoni: '300,1 ming',
                         TumanlarSoni: '25',
                         MahallaSoni: '67',
-                        savdodaTurganJamiSoni: 'N/A'
+                        savdodaTurganJamiSoni: 'Мавжуд Эмас'
                     },
                     'yunusabod.xml': {
                         name: 'Yunusobod',
@@ -928,7 +928,7 @@
                         aholiSoni: '376,1 ming',
                         TumanlarSoni: '30',
                         MahallaSoni: '64',
-                        savdodaTurganJamiSoni: 'N/A'
+                        savdodaTurganJamiSoni: 'Мавжуд Эмас'
                     },
                     'yangihayot.xml': {
                         name: 'Yangihayot',
@@ -936,7 +936,7 @@
                         aholiSoni: '174,7 ming',
                         TumanlarSoni: '52',
                         MahallaSoni: '30',
-                        savdodaTurganJamiSoni: 'N/A'
+                        savdodaTurganJamiSoni: 'Мавжуд Эмас'
                     },
                     'tashkent': {
                         name: 'Tashkent',
@@ -944,18 +944,18 @@
                         aholiSoni: '3 mln',
                         TumanlarSoni: '12',
                         MahallaSoni: '585',
-                        savdodaTurganJamiSoni: 'N/A'
+                        savdodaTurganJamiSoni: 'Мавжуд Эмас'
                     } // Static info for Tashkent
                 };
 
                 // Get information for the selected district
                 const info = districtInfo[districtFile] || {
                     name: '',
-                    maydoni: 'N/A',
-                    aholiSoni: 'N/A',
-                    TumanlarSoni: 'N/A',
-                    MahallaSoni: 'N/A',
-                    savdodaTurganJamiSoni: 'N/A'
+                    maydoni: 'Мавжуд Эмас',
+                    aholiSoni: 'Мавжуд Эмас',
+                    TumanlarSoni: 'Мавжуд Эмас',
+                    MahallaSoni: 'Мавжуд Эмас',
+                    savdodaTurganJamiSoni: 'Мавжуд Эмас'
                 };
 
                 updateInfoTable(info);
@@ -987,7 +987,7 @@
                 ];
 
                 // Update the district name
-                document.getElementById('district-name').textContent = data.name || 'N/A';
+                document.getElementById('district-name').textContent = data.name || 'Мавжуд Эмас';
 
                 // Update the table with the provided info
                 updateTable(info);

@@ -28,6 +28,7 @@ class CreateAktivsTable extends Migration
             $table->string('location')->nullable();
             $table->decimal('land_area', 10, 2)->nullable();
             $table->decimal('building_area', 10, 2)->nullable();
+            $table->decimal('total_area', 10, 2)->nullable();
             $table->string('gas')->nullable();
             $table->string('water')->nullable();
             $table->string('electricity')->nullable();
@@ -38,7 +39,7 @@ class CreateAktivsTable extends Migration
             $table->string('kadastr_raqami')->nullable();
 
             // new fields
-            $table->string('turar_joy_maydoni', 12, 2)->nullable();
+            $table->decimal('turar_joy_maydoni', 12, 2)->nullable();
             $table->decimal('noturar_joy_maydoni', 12, 2)->nullable();
             $table->text('vaqtinchalik_parking_info')->nullable();
             $table->text('doimiy_parking_info')->nullable();

@@ -329,6 +329,14 @@
                     @enderror
                 </div>
                 <div class="mb-3">
+                    <label for="total_area">Умумий майдон (кв.м)</label>
+                    <input class="form-control" type="number" name="total_area" id="total_area"
+                        value="{{ old('total_area') }}">
+                    @error('total_area')
+                        <div class="text-danger">{{ $message }}</div>
+                    @enderror
+                </div>
+                <div class="mb-3">
                     <label for="land_area">Ер майдони (кв.м)</label>
                     <input class="form-control" type="number" name="land_area" id="land_area"
                         value="{{ old('land_area') }}">

@@ -15,6 +15,15 @@
                 <p>Yangi ma'lumotlar</p>
                 <!-- 1) Турар жой майдони -->
                 <div class="mb-3">
+                    <label for="total_area">Умумий майдон (кв.м)</label>
+                    <input class="form-control" type="number" step="0.01" name="total_area" id="total_area"
+                        value="{{ old('total_area', $aktiv->total_area) }}">
+                    @error('total_area')
+                        <div class="text-danger">{{ $message }}</div>
+                    @enderror
+                </div>
+
+                <div class="mb-3">
                     <label for="turar_joy_maydoni">Турар жой майдони</label>
                     <input class="form-control" type="number" step="0.01" name="turar_joy_maydoni"
                         id="turar_joy_maydoni" value="{{ old('turar_joy_maydoni', $aktiv->turar_joy_maydoni) }}">
@@ -238,6 +247,7 @@
                     @enderror
                 </div>
 
+
                 <div class="mb-3">
                     <label for="land_area">Ер майдони (кв.м)</label>
                     <input class="form-control" type="number" name="land_area" id="land_area"
@@ -359,7 +369,7 @@
                         </div>
                     @endforeach
 
-                  
+
                 </div>
                 <button type="button" id="addPolygonAktivBtn" class="btn btn-primary">Add Polygon Aktiv</button>
 
@@ -394,7 +404,7 @@
                         `;
                         container.appendChild(newBlock);
                     });
-                
+
                     document.addEventListener('click', function(event) {
                         if (event.target.classList.contains('remove-polygon-aktiv')) {
                             event.target.closest('.polygon-aktiv-block').remove();

@@ -49,15 +49,15 @@
                 <h5 class="card-title text-primary font-weight-bold mb-3">Умумий маълумотлар</h5>
                 <div class="info-section">
                     <strong class="text-dark font-weight-bold">Объект номи (Название объекта):</strong>
-                    <p class="text-muted">{{ $aktiv->object_name }}</p>
+                    <p class="text-muted">{{ $aktiv->object_name ?? 'Мавжуд Эмас' }}</p>
                 </div>
                 <div class="info-section">
                     <strong class="text-dark font-weight-bold">Балансда сақловчи (Балансодержатель):</strong>
-                    <p class="text-muted">{{ $aktiv->balance_keeper }}</p>
+                    <p class="text-muted">{{ $aktiv->balance_keeper ?? 'Мавжуд Эмас' }}</p>
                 </div>
                 <div class="info-section">
                     <strong class="text-dark font-weight-bold">Мўлжал (Местоположение):</strong>
-                    <p class="text-muted">{{ $aktiv->location }}</p>
+                    <p class="text-muted">{{ $aktiv->location ?? 'Мавжуд Эмас' }}</p>
                 </div>
             </div>
 
@@ -85,6 +85,7 @@
             <!-- Technical Information -->
             <div class="card shadow-sm p-4 mb-4 border-primary">
                 <h5 class="card-title text-primary font-weight-bold mb-3">Техник маълумотлар</h5>
+             
                 <div class="info-section">
                     <strong class="text-dark font-weight-bold">Ер майдони (Площадь земли) (кв.м):</strong>
                     <p class="text-muted">{{ $aktiv->land_area ?? 'Мавжуд Эмас' }}</p>
@@ -128,6 +129,10 @@
             <!-- Additional New Fields (Новые поля) -->
             <div class="card shadow-sm p-4 mb-4 border-primary">
                 <h5 class="card-title text-primary font-weight-bold mb-3">Янги майдонлар</h5>
+                <div class="info-section">
+                    <strong class="text-dark font-weight-bold">Умумий майдон (Площадь) (кв.м):</strong>
+                    <p class="text-muted">{{ $aktiv->total_area ?? 'Мавжуд Эмас' }}</p>
+                </div>
                 <!-- 1) Турар жой майдони -->
                 <div class="info-section">
                     <strong class="text-dark font-weight-bold">Турар жой майдони:</strong>

@@ -41,6 +41,7 @@ class Aktiv extends Model
         'location',
         'land_area',
         'building_area',
+        'total_area',
         'gas',
         'water',
         'electricity',
