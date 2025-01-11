@@ -4,209 +4,244 @@
     <h1 class="mb-4">Объект маълумотлари (Детали объекта)</h1>
 
 
+    <style>
+        body {
+            background-color: #f8f9fa;
+        }
+
+        .card {
+            border: 1px solid #dee2e6;
+            border-radius: 8px;
+            box-shadow: 0 4px 6px rgba(0, 0, 0, 0.1);
+        }
+
+        .card-title {
+            font-size: 1.25rem;
+        }
+
+        .info-section {
+            background-color: #f1f3f5;
+            border-radius: 5px;
+            padding: 10px;
+            margin-bottom: 15px;
+        }
+
+        .info-section strong {
+            font-size: 1rem;
+            color: #495057;
+        }
+
+        .info-section p {
+            margin: 0;
+            color: #6c757d;
+        }
+
+        .file-section a {
+            text-decoration: none;
+        }
+    </style>
+
+
     <div class="row">
         <div class="col-12 col-md-12 col-lg-6">
             <!-- General Information -->
             <div class="card shadow-sm p-4 mb-4 border-primary">
                 <h5 class="card-title text-primary font-weight-bold mb-3">Умумий маълумотлар</h5>
-                <div class="card-body">
-                    <div class="mb-3">
-                        <strong class="text-dark font-weight-bold">Объект номи (Название объекта):</strong>
-                        <p class="text-muted">{{ $aktiv->object_name }}</p>
-                    </div>
-                    <div class="mb-3">
-                        <strong class="text-dark font-weight-bold">Балансда сақловчи (Балансодержатель):</strong>
-                        <p class="text-muted">{{ $aktiv->balance_keeper }}</p>
-                    </div>
-                    <div class="mb-3">
-                        <strong class="text-dark font-weight-bold">Мўлжал (Местоположение):</strong>
-                        <p class="text-muted">{{ $aktiv->location }}</p>
-                    </div>
+                <div class="info-section">
+                    <strong class="text-dark font-weight-bold">Объект номи (Название объекта):</strong>
+                    <p class="text-muted">{{ $aktiv->object_name }}</p>
+                </div>
+                <div class="info-section">
+                    <strong class="text-dark font-weight-bold">Балансда сақловчи (Балансодержатель):</strong>
+                    <p class="text-muted">{{ $aktiv->balance_keeper }}</p>
+                </div>
+                <div class="info-section">
+                    <strong class="text-dark font-weight-bold">Мўлжал (Местоположение):</strong>
+                    <p class="text-muted">{{ $aktiv->location }}</p>
                 </div>
             </div>
-        
+
             <!-- Location Information -->
             <div class="card shadow-sm p-4 mb-4 border-primary">
                 <h5 class="card-title text-primary font-weight-bold mb-3">Жойлашув</h5>
-                <div class="card-body">
-                    <div class="mb-3">
-                        <strong class="text-dark font-weight-bold">Вилоят номи:</strong>
-                        <p class="text-muted">{{ $aktiv->subStreet->district->region->name_uz ?? 'Маълумот йўқ' }}</p>
-                    </div>
-                    <div class="mb-3">
-                        <strong class="text-dark font-weight-bold">Туман номи:</strong>
-                        <p class="text-muted">{{ $aktiv->subStreet->district->name_uz ?? 'Маълумот йўқ' }}</p>
-                    </div>
-                    <div class="mb-3">
-                        <strong class="text-dark font-weight-bold">Мфй номи:</strong>
-                        <p class="text-muted">{{ $aktiv->street->name ?? 'Маълумот йўқ' }}</p>
-                    </div>
-                    <div class="mb-3">
-                        <strong class="text-dark font-weight-bold">Кўча номи:</strong>
-                        <p class="text-muted">{{ $aktiv->subStreet->name ?? 'Маълумот йўқ' }}</p>
-                    </div>
+                <div class="info-section">
+                    <strong class="text-dark font-weight-bold">Вилоят номи:</strong>
+                    <p class="text-muted">{{ $aktiv->subStreet->district->region->name_uz ?? 'Мавжуд Эмас' }}</p>
+                </div>
+                <div class="info-section">
+                    <strong class="text-dark font-weight-bold">Туман номи:</strong>
+                    <p class="text-muted">{{ $aktiv->subStreet->district->name_uz ?? 'Мавжуд Эмас' }}</p>
+                </div>
+                <div class="info-section">
+                    <strong class="text-dark font-weight-bold">Мфй номи:</strong>
+                    <p class="text-muted">{{ $aktiv->street->name ?? 'Мавжуд Эмас' }}</p>
+                </div>
+                <div class="info-section">
+                    <strong class="text-dark font-weight-bold">Кўча номи:</strong>
+                    <p class="text-muted">{{ $aktiv->subStreet->name ?? 'Мавжуд Эмас' }}</p>
                 </div>
             </div>
-        
+
             <!-- Technical Information -->
             <div class="card shadow-sm p-4 mb-4 border-primary">
                 <h5 class="card-title text-primary font-weight-bold mb-3">Техник маълумотлар</h5>
-                <div class="card-body">
-                    <div class="mb-3">
-                        <strong class="text-dark font-weight-bold">Ер майдони (Площадь земли) (кв.м):</strong>
-                        <p class="text-muted">{{ $aktiv->land_area }}</p>
-                    </div>
-                    <div class="mb-3">
-                        <strong class="text-dark font-weight-bold">Бино майдони (Площадь здания) (кв.м):</strong>
-                        <p class="text-muted">{{ $aktiv->building_area }}</p>
-                    </div>
-                    <div class="mb-3">
-                        <strong class="text-dark font-weight-bold">Газ (Газ):</strong>
-                        <p class="text-muted">{{ $aktiv->gas }}</p>
-                    </div>
-                    <div class="mb-3">
-                        <strong class="text-dark font-weight-bold">Сув (Вода):</strong>
-                        <p class="text-muted">{{ $aktiv->water }}</p>
-                    </div>
-                    <div class="mb-3">
-                        <strong class="text-dark font-weight-bold">Электр (Электричество):</strong>
-                        <p class="text-muted">{{ $aktiv->electricity }}</p>
-                    </div>
-                    <div class="mb-3">
-                        <strong class="text-dark font-weight-bold">Қўшимча маълумот (Дополнительная информация):</strong>
-                        <p class="text-muted">{{ $aktiv->additional_info }}</p>
-                    </div>
-                    <div class="mb-3">
-                        <strong class="text-dark font-weight-bold">Кадастр рақами (Кадастровый номер):</strong>
-                        <p class="text-muted">{{ $aktiv->kadastr_raqami }}</p>
-                    </div>
-                    <div class="mb-3">
-                        <strong class="text-dark font-weight-bold">Геолокация (Ссылка на геолокацию):</strong>
-                        <a href="{{ $aktiv->geolokatsiya }}" target="_blank" class="btn btn-outline-primary btn-sm">
-                            {{ $aktiv->geolokatsiya }}
-                        </a>
-                    </div>
+                <div class="info-section">
+                    <strong class="text-dark font-weight-bold">Ер майдони (Площадь земли) (кв.м):</strong>
+                    <p class="text-muted">{{ $aktiv->land_area ?? 'Мавжуд Эмас' }}</p>
+                </div>
+                <div class="info-section">
+                    <strong class="text-dark font-weight-bold">Бино майдони (Площадь здания) (кв.м):</strong>
+                    <p class="text-muted">{{ $aktiv->building_area ?? 'Мавжуд Эмас' }}</p>
+                </div>
+                <div class="info-section">
+                    <strong class="text-dark font-weight-bold">Газ (Газ):</strong>
+                    <p class="text-muted">{{ $aktiv->gas ?? 'Мавжуд Эмас' }}</p>
+                </div>
+                <div class="info-section">
+                    <strong class="text-dark font-weight-bold">Сув (Вода):</strong>
+                    <p class="text-muted">{{ $aktiv->water ?? 'Мавжуд Эмас' }}</p>
+                </div>
+                <div class="info-section">
+                    <strong class="text-dark font-weight-bold">Электр (Электричество):</strong>
+                    <p class="text-muted">{{ $aktiv->electricity ?? 'Мавжуд Эмас' }}</p>
+                </div>
+                <div class="info-section">
+                    <strong class="text-dark font-weight-bold">Қўшимча маълумот (Дополнительная информация):</strong>
+                    <p class="text-muted">{{ $aktiv->additional_info ?? 'Мавжуд Эмас' }}</p>
+                </div>
+                <div class="info-section">
+                    <strong class="text-dark font-weight-bold">Кадастр рақами (Кадастровый номер):</strong>
+                    <p class="text-muted">{{ $aktiv->kadastr_raqami ?? 'Мавжуд Эмас' }}</p>
+                </div>
+                <div class="info-section">
+                    <strong class="text-dark font-weight-bold">Геолокация (Ссылка на геолокацию):</strong>
+                    <a href="{{ $aktiv->geolokatsiya ?? 'Мавжуд Эмас' }}" target="_blank"
+                        class="btn btn-outline-primary btn-sm">
+                        {{ $aktiv->geolokatsiya ?? 'Мавжуд Эмас' }}
+                    </a>
                 </div>
             </div>
         </div>
-        
+
 
         <div class="col-12 col-md-12 col-lg-6">
             <!-- Additional New Fields (Новые поля) -->
             <div class="card shadow-sm p-4 mb-4 border-primary">
                 <h5 class="card-title text-primary font-weight-bold mb-3">Янги майдонлар</h5>
-                <div class="card-body">
-                    <!-- 1) Турар жой майдони -->
-                    <div class="mb-3">
-                        <strong class="text-dark font-weight-bold">Турар жой майдони:</strong>
-                        <p class="text-muted">{{ $aktiv->turar_joy_maydoni }} kv.m</p>
-                    </div>
-                    
-                    <!-- 2) Нотурар жой майдони -->
-                    <div class="mb-3">
-                        <strong class="text-dark font-weight-bold">Нотурар жой майдони:</strong>
-                        <p class="text-muted">{{ $aktiv->noturar_joy_maydoni }} kv.m</p>
-                    </div>
-        
-                    <!-- 3) Вақтинчалик тўхташ жойи маълумот -->
-                    <div class="mb-3">
-                        <strong class="text-dark font-weight-bold">Вақтинчалик тўхташ жойи (Парковка) маълумот:</strong>
-                        <p class="text-muted">{{ $aktiv->vaqtinchalik_parking_info }}</p>
-                    </div>
-        
-                    <!-- 4) Доимий тўхташ жойи маълумот -->
-                    <div class="mb-3">
-                        <strong class="text-dark font-weight-bold">Доимий тўхташ жойи (Парковка) маълумот:</strong>
-                        <p class="text-muted">{{ $aktiv->doimiy_parking_info }}</p>
-                    </div>
-        
-                    <!-- 5) Мактабгача таълим ташкилоти маълумот -->
-                    <div class="mb-3">
-                        <strong class="text-dark font-weight-bold">Мактабгача таълим ташкилоти маълумот:</strong>
-                        <p class="text-muted">{{ $aktiv->maktabgacha_tashkilot_info }}</p>
-                    </div>
-        
-                    <!-- 6) Умумтаълим мактаби маълумот -->
-                    <div class="mb-3">
-                        <strong class="text-dark font-weight-bold">Умумтаълим мактаби маълумот:</strong>
-                        <p class="text-muted">{{ $aktiv->umumtaolim_maktab_info }}</p>
-                    </div>
-        
-                    <!-- 7) Стационар тиббиёт муассасаси маълумот -->
-                    <div class="mb-3">
-                        <strong class="text-dark font-weight-bold">Стационар тиббиёт муассасаси маълумот:</strong>
-                        <p class="text-muted">{{ $aktiv->stasionar_tibbiyot_info }}</p>
-                    </div>
-        
-                    <!-- 8) Амбулатор тиббиёт муассасаси маълумот -->
-                    <div class="mb-3">
-                        <strong class="text-dark font-weight-bold">Амбулатор тиббиёт муассасаси маълумот:</strong>
-                        <p class="text-muted">{{ $aktiv->ambulator_tibbiyot_info }}</p>
-                    </div>
-        
-                    <!-- 9) Диний муассасаси маълумот -->
-                    <div class="mb-3">
-                        <strong class="text-dark font-weight-bold">Диний муассасаси маълумот:</strong>
-                        <p class="text-muted">{{ $aktiv->diniy_muassasa_info }}</p>
-                    </div>
-        
-                    <!-- 10) Спорт-соғломлаштириш муассасаси маълумот -->
-                    <div class="mb-3">
-                        <strong class="text-dark font-weight-bold">Спорт-соғломлаштириш муассасаси маълумот:</strong>
-                        <p class="text-muted">{{ $aktiv->sport_soglomlashtirish_info }}</p>
-                    </div>
-        
-                    <!-- 11) Сақланадиган кўкаламзорлаштириш маълумот -->
-                    <div class="mb-3">
-                        <strong class="text-dark font-weight-bold">Сақланадиган кўкаламзорлаштириш маълумот:</strong>
-                        <p class="text-muted">{{ $aktiv->saqlanadigan_kokalamzor_info }}</p>
-                    </div>
-        
-                    <!-- 12) Янгидан ташкил қилинадиган кўкаламзорлаштириш маълумот -->
-                    <div class="mb-3">
-                        <strong class="text-dark font-weight-bold">Янгидан ташкил қилинадиган кўкаламзорлаштириш маълумот:</strong>
-                        <p class="text-muted">{{ $aktiv->yangidan_tashkil_kokalamzor_info }}</p>
-                    </div>
-        
-                    <!-- 13) Сақланадиган муҳандислик-коммуникация тармоқлари -->
-                    <div class="mb-3">
-                        <strong class="text-dark font-weight-bold">Сақланадиган муҳандислик-коммуникация тармоқлари:</strong>
-                        <p class="text-muted">{{ $aktiv->saqlanadigan_muhandislik_tarmoqlari_info }}</p>
-                    </div>
-        
-                    <!-- 14) Янгидан қуриладиган муҳандислик-коммуникация тармоқлари -->
-                    <div class="mb-3">
-                        <strong class="text-dark font-weight-bold">Янгидан қуриладиган муҳандислик-коммуникация тармоқлари:</strong>
-                        <p class="text-muted">{{ $aktiv->yangidan_quriladigan_muhandislik_tarmoqlari_info }}</p>
-                    </div>
-        
-                    <!-- 15) Сақланадиган йўллар ва йўлаклар -->
-                    <div class="mb-3">
-                        <strong class="text-dark font-weight-bold">Сақланадиган йўллар ва йўлаклар:</strong>
-                        <p class="text-muted">{{ $aktiv->saqlanadigan_yollar_info }}</p>
-                    </div>
-        
-                    <!-- 16) Янгидан қуриладиган йўллар ва йўлаклар -->
-                    <div class="mb-3">
-                        <strong class="text-dark font-weight-bold">Янгидан қуриладиган йўллар ва йўлаклар:</strong>
-                        <p class="text-muted">{{ $aktiv->yangidan_quriladigan_yollar_info }}</p>
-                    </div>
-        
-                    <!-- File Attachments Section -->
-                    <div class="d-flex" style="flex-wrap: wrap">
-                        @foreach ($aktiv->docs as $doc)
+                <!-- 1) Турар жой майдони -->
+                <div class="info-section">
+                    <strong class="text-dark font-weight-bold">Турар жой майдони:</strong>
+                    <p class="text-muted">{{ $aktiv->turar_joy_maydoni ?? 'Мавжуд Эмас' }} kv.m</p>
+                </div>
+
+                <!-- 2) Нотурар жой майдони -->
+                <div class="info-section">
+                    <strong class="text-dark font-weight-bold">Нотурар жой майдони:</strong>
+                    <p class="text-muted">{{ $aktiv->noturar_joy_maydoni ?? 'Мавжуд Эмас' }} kv.m</p>
+                </div>
+
+                <!-- 3) Вақтинчалик тўхташ жойи маълумот -->
+                <div class="info-section">
+                    <strong class="text-dark font-weight-bold">Вақтинчалик тўхташ жойи (Парковка) маълумот:</strong>
+                    <p class="text-muted">{{ $aktiv->vaqtinchalik_parking_info ?? 'Мавжуд Эмас' }}</p>
+                </div>
+
+                <!-- 4) Доимий тўхташ жойи маълумот -->
+                <div class="info-section">
+                    <strong class="text-dark font-weight-bold">Доимий тўхташ жойи (Парковка) маълумот:</strong>
+                    <p class="text-muted">{{ $aktiv->doimiy_parking_info ?? 'Мавжуд Эмас' }}</p>
+                </div>
+
+                <!-- 5) Мактабгача таълим ташкилоти маълумот -->
+                <div class="info-section">
+                    <strong class="text-dark font-weight-bold">Мактабгача таълим ташкилоти маълумот:</strong>
+                    <p class="text-muted">{{ $aktiv->maktabgacha_tashkilot_info ?? 'Мавжуд Эмас' }}</p>
+                </div>
+
+                <!-- 6) Умумтаълим мактаби маълумот -->
+                <div class="info-section">
+                    <strong class="text-dark font-weight-bold">Умумтаълим мактаби маълумот:</strong>
+                    <p class="text-muted">{{ $aktiv->umumtaolim_maktab_info ?? 'Мавжуд Эмас' }}</p>
+                </div>
+
+                <!-- 7) Стационар тиббиёт муассасаси маълумот -->
+                <div class="info-section">
+                    <strong class="text-dark font-weight-bold">Стационар тиббиёт муассасаси маълумот:</strong>
+                    <p class="text-muted">{{ $aktiv->stasionar_tibbiyot_info ?? 'Мавжуд Эмас' }}</p>
+                </div>
+
+                <!-- 8) Амбулатор тиббиёт муассасаси маълумот -->
+                <div class="info-section">
+                    <strong class="text-dark font-weight-bold">Амбулатор тиббиёт муассасаси маълумот:</strong>
+                    <p class="text-muted">{{ $aktiv->ambulator_tibbiyot_info ?? 'Мавжуд Эмас' }}</p>
+                </div>
+
+                <!-- 9) Диний муассасаси маълумот -->
+                <div class="info-section">
+                    <strong class="text-dark font-weight-bold">Диний муассасаси маълумот:</strong>
+                    <p class="text-muted">{{ $aktiv->diniy_muassasa_info ?? 'Мавжуд Эмас' }}</p>
+                </div>
+
+                <!-- 10) Спорт-соғломлаштириш муассасаси маълумот -->
+                <div class="info-section">
+                    <strong class="text-dark font-weight-bold">Спорт-соғломлаштириш муассасаси маълумот:</strong>
+                    <p class="text-muted">{{ $aktiv->sport_soglomlashtirish_info ?? 'Мавжуд Эмас' }}</p>
+                </div>
+
+                <!-- 11) Сақланадиган кўкаламзорлаштириш маълумот -->
+                <div class="info-section">
+                    <strong class="text-dark font-weight-bold">Сақланадиган кўкаламзорлаштириш маълумот:</strong>
+                    <p class="text-muted">{{ $aktiv->saqlanadigan_kokalamzor_info ?? 'Мавжуд Эмас' }}</p>
+                </div>
+
+                <!-- 12) Янгидан ташкил қилинадиган кўкаламзорлаштириш маълумот -->
+                <div class="info-section">
+                    <strong class="text-dark font-weight-bold">Янгидан ташкил қилинадиган кўкаламзорлаштириш
+                        маълумот:</strong>
+                    <p class="text-muted">{{ $aktiv->yangidan_tashkil_kokalamzor_info ?? 'Мавжуд Эмас' }}</p>
+                </div>
+
+                <!-- 13) Сақланадиган муҳандислик-коммуникация тармоқлари -->
+                <div class="info-section">
+                    <strong class="text-dark font-weight-bold">Сақланадиган муҳандислик-коммуникация тармоқлари:</strong>
+                    <p class="text-muted">{{ $aktiv->saqlanadigan_muhandislik_tarmoqlari_info ?? 'Мавжуд Эмас' }}</p>
+                </div>
+
+                <!-- 14) Янгидан қуриладиган муҳандислик-коммуникация тармоқлари -->
+                <div class="info-section">
+                    <strong class="text-dark font-weight-bold">Янгидан қуриладиган муҳандислик-коммуникация
+                        тармоқлари:</strong>
+                    <p class="text-muted">{{ $aktiv->yangidan_quriladigan_muhandislik_tarmoqlari_info ?? 'Мавжуд Эмас' }}
+                    </p>
+                </div>
+
+                <!-- 15) Сақланадиган йўллар ва йўлаклар -->
+                <div class="info-section">
+                    <strong class="text-dark font-weight-bold">Сақланадиган йўллар ва йўлаклар:</strong>
+                    <p class="text-muted">{{ $aktiv->saqlanadigan_yollar_info ?? 'Мавжуд Эмас' }}</p>
+                </div>
+
+                <!-- 16) Янгидан қуриладиган йўллар ва йўлаклар -->
+                <div class="info-section">
+                    <strong class="text-dark font-weight-bold">Янгидан қуриладиган йўллар ва йўлаклар:</strong>
+                    <p class="text-muted">{{ $aktiv->yangidan_quriladigan_yollar_info ?? 'Мавжуд Эмас' }}</p>
+                </div>
+
+                <!-- File Attachments Section -->
+                <div class="d-flex" style="flex-wrap: wrap">
+                    @foreach ($aktiv->docs as $doc)
                         <div class="mb-3 mx-3">
                             <label class="font-weight-bold">{{ ucfirst(str_replace('_', ' ', $doc->doc_type)) }}</label>
                             <div class="d-flex align-items-center">
-                                <a href="{{ asset('storage/' . $doc->path) }}" target="_blank" class="btn btn-outline-primary btn-sm">
+                                <a href="{{ asset('storage/' . $doc->path) }}" target="_blank"
+                                    class="btn btn-outline-primary btn-sm">
                                     {{ $doc->path ? 'Файлни Кориш' : '' }}
                                 </a>
                             </div>
                         </div>
                     @endforeach
-                    </div>
-                    
                 </div>
+
             </div>
         </div>
 
@@ -215,37 +250,35 @@
     <!-- Display Files -->
     <div class="card shadow-sm p-4 mb-4">
         <h5 class="card-title text-primary">Юкланган файллар (Загруженные файлы)</h5>
-        <div class="card-body">
-            @if ($aktiv->files->count())
-                <!-- Swiper Container -->
-                <div class="swiper-container">
-                    <div class="swiper-wrapper">
-                        @foreach ($aktiv->files as $file)
-                            <div class="swiper-slide">
-                                @if (strtolower(pathinfo($file->path, PATHINFO_EXTENSION)) === 'heic')
-                                    <!-- HEIC images will be converted using HEIC2ANY -->
-                                    <img data-heic="{{ asset('storage/' . $file->path) }}" class="heic-image"
-                                        alt="Image">
-                                @else
-                                    <!-- Display non-HEIC images directly -->
-                                    <a href="{{ asset('storage/' . $file->path) }}" class="glightbox"
-                                        data-gallery="aktiv-gallery" data-title="{{ $aktiv->object_name }}"
-                                        data-description="{{ $aktiv->additional_info }}">
-                                        <img src="{{ asset('storage/' . $file->path) }}" alt="Image">
-                                    </a>
-                                @endif
-                            </div>
-                        @endforeach
-                    </div>
-                    <!-- Add Pagination and Navigation -->
-                    <div class="swiper-pagination"></div>
-                    <div class="swiper-button-next"></div>
-                    <div class="swiper-button-prev"></div>
+        @if ($aktiv->files->count())
+            <!-- Swiper Container -->
+            <div class="swiper-container">
+                <div class="swiper-wrapper">
+                    @foreach ($aktiv->files as $file)
+                        <div class="swiper-slide">
+                            @if (strtolower(pathinfo($file->path, PATHINFO_EXTENSION)) === 'heic')
+                                <!-- HEIC images will be converted using HEIC2ANY -->
+                                <img data-heic="{{ asset('storage/' . $file->path) }}" class="heic-image"
+                                    alt="Image">
+                            @else
+                                <!-- Display non-HEIC images directly -->
+                                <a href="{{ asset('storage/' . $file->path) }}" class="glightbox"
+                                    data-gallery="aktiv-gallery" data-title="{{ $aktiv->object_name }}"
+                                    data-description="{{ $aktiv->additional_info }}">
+                                    <img src="{{ asset('storage/' . $file->path) }}" alt="Image">
+                                </a>
+                            @endif
+                        </div>
+                    @endforeach
                 </div>
-            @else
-                <p class="text-muted">Файллар мавжуд эмас (Нет загруженных файлов).</p>
-            @endif
-        </div>
+                <!-- Add Pagination and Navigation -->
+                <div class="swiper-pagination"></div>
+                <div class="swiper-button-next"></div>
+                <div class="swiper-button-prev"></div>
+            </div>
+        @else
+            <p class="text-muted">Файллар мавжуд эмас (Нет загруженных файлов).</p>
+        @endif
     </div>
 
     <!-- Map Section -->
@@ -274,22 +307,6 @@
     <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/swiper@9/swiper-bundle.min.css">
 
     <style>
-        .card {
-            border: none;
-            border-radius: 10px;
-        }
-
-        .card-title {
-            font-size: 1.25rem;
-            font-weight: 600;
-            margin-bottom: 1rem;
-        }
-
-        .mb-3 strong {
-            color: #333;
-            font-weight: 500;
-        }
-
         .btn-secondary,
         .btn-primary {
             transition: background-color 0.2s ease, transform 0.2s;
