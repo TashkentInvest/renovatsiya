@@ -68,7 +68,7 @@ Route::get('/statistics', [HomeController::class, 'statistics'])->name('statisti
 Route::group(['middleware' => ['auth', 'checkUserRole']], function () {
 
     Route::get('aktivs', [AktivController::class, 'index'])->name('aktivs.index');
-    Route::get('aktivs/dashboard', [AktivController::class, 'dashboard'])->name('aktivs.dashboard');
+    Route::get('dashboard', [AktivController::class, 'dashboard'])->name('aktivs.dashboard');
     Route::get('aktivs/create', [AktivController::class, 'create'])->name('aktivs.create');
     Route::post('aktivs', [AktivController::class, 'store'])->name('aktivs.store');
     Route::get('aktivs/{aktiv}', [AktivController::class, 'show'])->name('aktivs.show');

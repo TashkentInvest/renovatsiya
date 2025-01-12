@@ -18,6 +18,11 @@
                         Харита
                     </a>
                 </li>
+                <li class="pc-item {{ request()->is('dashboard*') ? 'active' : '' }}">
+                    <a class="pc-link {{ request()->is('dashboard*') ? 'active' : '' }}" href="{{ route('aktivs.dashboard') }}">
+                        Статистика
+                    </a>
+                </li>
                 <li class="pc-item {{ request()->is('aktivs*') ? 'active' : '' }}">
                     <a class="pc-link {{ request()->is('aktivs*') ? 'active' : '' }}" href="{{ route('aktivs.index') }}">
                         Объектлар ҳақида маълумот
