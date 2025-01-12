@@ -16,6 +16,56 @@ use Illuminate\Support\Facades\Cache;
 
 class AktivController extends Controller
 {
+
+    public function dashboard(Request $request)
+    {
+        $district_id = $request->input('district_id');
+        $userRole = auth()->user()->roles->first()->name;
+    
+        // Initialize the query builder for Aktivs
+        $query = Aktiv::query();
+    
+        // Apply district filter if provided
+        if ($district_id) {
+            $query->whereHas('user', function ($q) use ($district_id) {
+                $q->where('district_id', $district_id);
+            });
+        }
+    
+        // Get the aktivs and necessary statistics
+        $aktivs = $query->orderBy('created_at', 'desc')
+            ->with('files') // eager load files
+            ->paginate(10)
+            ->appends($request->query());
+    
+        // Get statistics (for example: counts, sums, averages)
+        if ($district_id) {
+            $totalAktivs = $query->count();
+            $totalTurarJoy = $query->sum('turar_joy_maydoni');
+            $totalNoturarJoy = $query->sum('noturar_joy_maydoni');
+        } else {
+            $totalAktivs = Aktiv::count();
+            $totalTurarJoy = Aktiv::sum('turar_joy_maydoni');
+            $totalNoturarJoy = Aktiv::sum('noturar_joy_maydoni');
+        }
+    
+        $parkingData = [
+            'vaqtinchalik' => Aktiv::whereNotNull('vaqtinchalik_parking_info')->count(),
+            'doimiy' => Aktiv::whereNotNull('doimiy_parking_info')->count(),
+        ];
+    
+        // Get monthly data for line chart
+        $monthlyData = Aktiv::selectRaw('MONTH(created_at) as month, COUNT(*) as count')
+            ->groupBy('month')
+            ->orderBy('month')
+            ->pluck('count', 'month')->toArray();
+    
+        // Get district data for filters
+        $districts = Districts::all();
+    
+        // Return data to the Blade view
+        return view('pages.aktiv.dashboard', compact('aktivs', 'totalAktivs', 'totalTurarJoy', 'totalNoturarJoy', 'parkingData', 'monthlyData', 'districts'));
+    }
     public function index(Request $request)
     {
         $user_id = $request->input('user_id');
@@ -203,7 +253,7 @@ class AktivController extends Controller
         ]);
 
 
-        $data = $request->except(['files', 'aktiv_docs','polygon_aktivs']);
+        $data = $request->except(['files', 'aktiv_docs', 'polygon_aktivs']);
         $data['user_id'] = auth()->id();
 
         $aktiv = Aktiv::create($data);
@@ -384,7 +434,7 @@ class AktivController extends Controller
 
 
 
-        $data = $request->except(['files', 'aktiv_docs', 'delete_files', 'delete_docs','polygon_aktivs']);
+        $data = $request->except(['files', 'aktiv_docs', 'delete_files', 'delete_docs', 'polygon_aktivs']);
 
         $aktiv->update($data);
 
@@ -395,7 +445,7 @@ class AktivController extends Controller
             }
         }
         // Parse and save coordinates
-  
+
         if ($request->hasFile('files')) {
             foreach ($request->file('files') as $file) {
                 $path = $file->store('assets', 'public');
@@ -565,7 +615,6 @@ class AktivController extends Controller
             // Log::error('cleared ');
 
             return redirect()->back()->with(['message' => 'Cache cleared successfully.']);
-            
         } catch (\Exception $e) {
             // Log the error message
             Log::error('Error clearing cache: ' . $e->getMessage());
