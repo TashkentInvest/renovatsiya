@@ -117,7 +117,7 @@
                                                 <th>ID</th>
                                                 <th>Ҳаракат</th>
                                                 <th>Жойлашув</th>
-                                                <th>Баланс сақловчи</th>
+                                                <th>Умумий майдон</th>
                                                 <th>Яратилган сана</th>
                                             </tr>
                                         </thead>
@@ -127,7 +127,7 @@
                                                     <td>{{ $aktiv->id }}</td>
                                                     <td>{{ $aktiv->action }}</td>
                                                     <td>{{ $aktiv->location }}</td>
-                                                    <td>{{ $aktiv->balance_keeper }}</td>
+                                                    <td>{{ $aktiv->total_area }}</td>
                                                     <td>{{ $aktiv->created_at }}</td>
                                                 </tr>
                                             @endforeach
