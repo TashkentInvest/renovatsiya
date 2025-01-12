@@ -372,6 +372,7 @@
 
                 </div>
                 <button type="button" id="addPolygonAktivBtn" class="btn btn-primary">Add Polygon Aktiv</button>
+            </div>
 
                 <script>
                     document.getElementById('addPolygonAktivBtn').addEventListener('click', function() {
@@ -412,7 +413,7 @@
                     });
                 </script>
                 <!-- Right Column -->
-                <div class="col-md-6">
+                <div class="col-6">
                     <!-- Existing Files -->
                     <div class="mb-3">
                         <label class="text-primary">Мавжуд файллар</label>
