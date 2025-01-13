@@ -276,73 +276,168 @@
     <!-- Sidebar -->
     <nav class="pc-sidebar">
         <div class="navbar-wrapper">
+            <!-- Logo Section -->
             <div class="m-header">
                 <a href="{{ route('aktivs.index') }}" class="b-brand text-primary">
                     <img src="{{ asset('assets/projects-map/images/logo.png') }}" class="img-fluid logo-lg custom_logo"
                         alt="logo" />
                 </a>
             </div>
+
+            <!-- Font Awesome Icons -->
             <link href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.0.0-beta3/css/all.min.css"
                 rel="stylesheet">
 
             <div class="navbar-content">
                 <ul class="pc-navbar">
-
+                    <!-- Create Section -->
                     <li class="pc-item">
                         <a class="pc-link" href="{{ route('aktivs.create') }}">
                             <i class="fas fa-plus-circle"></i> Yaratisih
                         </a>
                     </li>
+                    <!-- Back Section -->
                     <li class="pc-item">
                         <a class="pc-link" href="{{ route('aktivs.index') }}">
                             <i class="fas fa-arrow-left"></i> Ortga
                         </a>
                     </li>
                 </ul>
+
+                <!-- Separator -->
+                <hr class="sidebar-divider">
+
                 <!-- District Information -->
                 <div id="district-info">
-                    <div id="district-name" class="px-2">Toshkent</div>
+                    <div id="district-name" class="px-2 text-primary text-center font-weight-bold">Toshkent</div>
                     <table id="info-table" class="table">
                         <thead>
                             <tr>
-                                <th colspan="2">Ma'lumotlar</th>
+                                <th colspan="2"><i class="fas fa-info-circle"></i> Ma'lumotlar</th>
                             </tr>
                         </thead>
                         <tbody>
                             <tr>
-                                <td>Maydoni</td>
+                                <td><i class="fas fa-map-marked-alt"></i> Maydoni</td>
                                 <td id="maydoni">43.5 km²</td>
                             </tr>
                             <tr>
-                                <td>Aholi soni</td>
+                                <td><i class="fas fa-users"></i> Aholi soni</td>
                                 <td id="aholiSoni">3 mln</td>
                             </tr>
                             <tr>
-                                <td>Tumanlar soni</td>
+                                <td><i class="fas fa-city"></i> Tumanlar soni</td>
                                 <td id="TumanlarSoni">12</td>
                             </tr>
                             <tr>
-                                <td>Mahalla soni</td>
+                                <td><i class="fas fa-home"></i> Mahalla soni</td>
                                 <td id="MahallaSoni">585</td>
                             </tr>
                             <tr>
-                                <td>Savdodagi obyektlar</td>
+                                <td><i class="fas fa-store"></i> Savdodagi obyektlar</td>
                                 <td id="savdodaTurganJamiSoni">---</td>
                             </tr>
                         </tbody>
-
                     </table>
 
+                    <!-- Clear Cache Button -->
                     <form action="{{ route('aktiv.clearCache') }}" method="POST">
                         @csrf
                         @method('POST')
-                        <button id="clear-cache-btn " class="btn btn-primary m-2">Кешни тозалаш</button>
+                        <button id="clear-cache-btn"><i class="fas fa-trash-alt"></i> Кешни тозалаш</button>
                         <div id="message"></div>
                     </form>
                 </div>
+
+                <!-- Separator -->
+                <hr class="sidebar-divider">
+
+                <!-- User Production Mode -->
+                <div id="user-production-mode" class="text-center">
+                    <h5 class="text-success font-weight-bold"><i class="fas fa-cogs"></i> Ish Rejimi</h5>
+                    <ul class="list-unstyled">
+                        {{-- <li><i class="fas fa-lightbulb"></i> Yaratuvchi Mod</li> --}}
+                        <li><i class="fas fa-chart-line"></i>Tizim test jarayonida</li>
+                        {{-- <li><i class="fas fa-tasks"></i> Harakatdagi ma'lumotlar</li> --}}
+                    </ul>
+                </div>
             </div>
         </div>
+
+        <!-- Custom Styles -->
+        <style>
+            .navbar-wrapper {
+                background: linear-gradient(135deg, #6a11cb, #2575fc);
+                color: #000;
+                font-family: 'Arial', sans-serif;
+                padding: 1rem;
+                border-radius: 0.5rem;
+            }
+
+            .pc-item a {
+                color: #000;
+                text-decoration: none;
+                display: flex;
+                align-items: center;
+                gap: 0.5rem;
+                transition: background 0.3s, color 0.3s;
+            }
+
+            .pc-item a:hover {
+                background: #6a11cb;
+                color: #fff;
+                border-radius: 0.3rem;
+            }
+
+            #clear-cache-btn {
+                width: 100%;
+                background: #6a11cb;
+                color: #fff;
+                border: none;
+                padding: 0.5rem 0;
+                border-radius: 0.5rem;
+                font-size: 1rem;
+                transition: background 0.3s;
+            }
+
+            #clear-cache-btn:hover {
+                background: #2575fc;
+            }
+
+            #district-info,
+            #user-production-mode {
+                margin-top: 1rem;
+            }
+
+            .sidebar-divider {
+                border: 1px solid #000;
+                margin: 1rem 0;
+            }
+
+            .text-primary {
+                color: #6a11cb !important;
+            }
+
+            .text-success {
+                color: #28a745 !important;
+            }
+
+            .font-weight-bold {
+                font-weight: bold;
+            }
+
+            #info-table td,
+            #info-table th {
+                color: #000;
+            }
+
+            #info-table {
+                background: rgba(255, 255, 255, 0.1);
+                border-radius: 0.5rem;
+            }
+        </style>
     </nav>
+
 
 
     <!-- Header -->
@@ -635,14 +730,14 @@
             <td>${markerData.address || 'Мавжуд Эмас'}</td>
         </tr>
         ${priceUZS > 0 ? `
-                                <tr>
-                                    <th class="sidebar_key">Бошланғич нархи</th>
-                                    <td id="price-td">${lotPriceFormatted}</td>
-                                </tr>
-                                <tr>
-                                    <th class="sidebar_key">1 сотих учун нарх</th>
-                                    <td>${lotPricePerSotixFormatted}</td>
-                                </tr>` : ''}
+                                        <tr>
+                                            <th class="sidebar_key">Бошланғич нархи</th>
+                                            <td id="price-td">${lotPriceFormatted}</td>
+                                        </tr>
+                                        <tr>
+                                            <th class="sidebar_key">1 сотих учун нарх</th>
+                                            <td>${lotPricePerSotixFormatted}</td>
+                                        </tr>` : ''}
                                 <tr>
                                     <th class="sidebar_key">Умумий майдон</th>
                                     <td>${markerData.total_area || 'Мавжуд Эмас'} </td>
@@ -994,6 +1089,15 @@
             }
 
             function updateTable(info) {
+                // Define the icon mapping for each metric
+                const iconMapping = {
+                    'Maydoni': 'fas fa-map-marked-alt',
+                    'Aholi Soni': 'fas fa-users',
+                    'Tumanlar soni': 'fas fa-city',
+                    'Mahalla soni': 'fas fa-home',
+                    'Savdodagi obyektlar': 'fas fa-store'
+                };
+
                 // Get the table body
                 const tableBody = document.getElementById('info-table').getElementsByTagName('tbody')[0];
                 tableBody.innerHTML = ''; // Clear existing rows
@@ -1001,18 +1105,29 @@
                 // Add rows to the table
                 info.forEach(item => {
                     const row = document.createElement('tr');
+
+                    // Create metric cell with an icon
                     const metricCell = document.createElement('td');
-                    metricCell.textContent = item.metric;
+                    const icon = document.createElement('i');
+                    icon.className = iconMapping[item.metric] || ''; // Add the icon class
+                    icon.style.marginRight = '8px'; // Add spacing between the icon and the text
+                    metricCell.appendChild(icon); // Append the icon
+                    metricCell.appendChild(document.createTextNode(item.metric)); // Append the text
+
+                    // Create value cell
                     const valueCell = document.createElement('td');
                     valueCell.textContent = item.value;
+
+                    // Append cells to the row
                     row.appendChild(metricCell);
                     row.appendChild(valueCell);
+
+                    // Append the row to the table body
                     tableBody.appendChild(row);
                 });
             }
 
         }
-        // Handle District Selection and KML Files
     </script>
 </body>
 
