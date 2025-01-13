@@ -662,6 +662,7 @@ class AktivController extends Controller
                         'lng' => $aktiv->longitude,
                         'property_name' => $aktiv->object_name,
                         'main_image' => $mainImageUrl,
+                        'total_area' => $aktiv->total_area,
                         'land_area' => $aktiv->land_area,
                         'start_price' => $aktiv->start_price ?? 0,
                         'lot_link' => route('aktivs.show', $aktiv->id),

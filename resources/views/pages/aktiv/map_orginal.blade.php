@@ -644,8 +644,8 @@
                                     <td>${lotPricePerSotixFormatted}</td>
                                 </tr>` : ''}
                                 <tr>
-                                    <th class="sidebar_key">Яратган фойдаланувчи</th>
-                                    <td>${markerData.user_name || 'Мавжуд Эмас'} | ${markerData.user_email || 'Мавжуд Эмас'}</td>
+                                    <th class="sidebar_key">Умумий майдон</th>
+                                    <td>${markerData.total_area || 'Мавжуд Эмас'} </td>
                                 </tr>
                          
                                 <tr>
