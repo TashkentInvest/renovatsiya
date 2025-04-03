@@ -298,11 +298,10 @@
                     </li>
 
                     <li class="pc-item">
-                        <a class="pc-link" href="{{ route('myTaklifMap') }}">
-                            <i class="fas fa-map"></i> Takliflar
+                        <a class="pc-link" href="{{ route('aktivs.myMap') }}">
+                            <i class="fas fa-map"></i> Renovatsiya
                         </a>
                     </li>
-
                     <!-- Back Section -->
                     <li class="pc-item">
                         <a class="pc-link" href="{{ route('aktivs.index') }}">
@@ -590,7 +589,7 @@
         }
 
         function fetchMarkers(map) {
-            fetch('/api/aktivs')
+            fetch('/api/taklif/aktivs')
                 .then(response => response.json())
                 .then(data => {
                     const markersData = data.lots;
@@ -737,14 +736,14 @@
             <td>${markerData.address || 'Мавжуд Эмас'}</td>
         </tr>
         ${priceUZS > 0 ? `
-                                            <tr>
-                                                <th class="sidebar_key">Бошланғич нархи</th>
-                                                <td id="price-td">${lotPriceFormatted}</td>
-                                            </tr>
-                                            <tr>
-                                                <th class="sidebar_key">1 сотих учун нарх</th>
-                                                <td>${lotPricePerSotixFormatted}</td>
-                                            </tr>` : ''}
+                                        <tr>
+                                            <th class="sidebar_key">Бошланғич нархи</th>
+                                            <td id="price-td">${lotPriceFormatted}</td>
+                                        </tr>
+                                        <tr>
+                                            <th class="sidebar_key">1 сотих учун нарх</th>
+                                            <td>${lotPricePerSotixFormatted}</td>
+                                        </tr>` : ''}
                                 <tr>
                                     <th class="sidebar_key">Умумий майдон</th>
                                     <td>${markerData.total_area || 'Мавжуд Эмас'} </td>

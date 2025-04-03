@@ -18,6 +18,7 @@ use App\Http\Controllers\Blade\ApiUserController;
 Route::post('/login', [ApiAuthController::class, 'login']);
 
 Route::get('/aktivs', [AktivController::class, 'getLots']);
+Route::get('/taklif/aktivs', [AktivController::class, 'getTaklifLots']);
 
 
 Route::group(['middleware' => 'api-auth'], function () {
