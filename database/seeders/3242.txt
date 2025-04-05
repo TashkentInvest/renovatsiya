@@ -10,7 +10,7 @@ use PhpOffice\PhpSpreadsheet\IOFactory;
 use Illuminate\Support\Facades\Log;
 use Illuminate\Support\Facades\Schema;
 
-class RenovationProjectSeeder extends Seeder
+class 3242 extends Seeder
 {
     /**
      * Run the database seeds.
@@ -92,28 +92,6 @@ class RenovationProjectSeeder extends Seeder
                         $neighborhood_name = substr($neighborhood_name, 0, 255);
                     }
 
-                    // Split the coordinates into arrays
-                    $startLatCoordinates = $this->splitCoordinates($start_lat_raw);
-                    $startLonCoordinates = $this->splitCoordinates($start_lon_raw);
-                    $endLatCoordinates = $this->splitCoordinates($end_lat_raw);
-                    $endLonCoordinates = $this->splitCoordinates($end_lon_raw);
-
-                    // Get the count of valid coordinates
-                    $count = min(
-                        count($startLatCoordinates),
-                        count($startLonCoordinates),
-                        count($endLatCoordinates),
-                        count($endLonCoordinates)
-                    );
-
-                    // Use first coordinate for Aktiv model latitude and longitude
-                    $latDms = $count > 0 ? $startLatCoordinates[0] : '';
-                    $lonDms = $count > 0 ? $startLonCoordinates[0] : '';
-
-                    // Convert to decimal only to store in the database
-                    $latDecimal = $this->dmsToDecimal($latDms);
-                    $lonDecimal = $this->dmsToDecimal($lonDms);
-
                     // Validate and clean the data before inserting
                     $data = [
                         'district_name' => substr($district_name, 0, 255),
@@ -138,9 +116,9 @@ class RenovationProjectSeeder extends Seeder
                         'additional_information' => is_string($additional_information) ? $additional_information : null,
                         'created_at' => now(),
                         'updated_at' => now(),
-                        // Use the first point's coordinates exactly as they are in DMS format
-                        'latitude' => $latDecimal,
-                        'longitude' => $lonDecimal,
+                        // Use default Tashkent coordinates
+                        'latitude' => '41.3462375',
+                        'longitude' => '69.3353813',
                     ];
 
                     // Create the project
@@ -149,25 +127,6 @@ class RenovationProjectSeeder extends Seeder
                     // Create complete polygon records with start and end points
                     $comment = "{$district_name} tuman, {$neighborhood_name} " . ($area_hectare ? $area_hectare . " gektar" : "");
                     $this->createCompletePolygonRecords($aktivId = $aktiv->id, $start_lat_raw, $start_lon_raw, $end_lat_raw, $end_lon_raw, $comment);
-
-                    // Update the Aktiv with the correct decimalized coordinates after polygons are created
-                    if (!$latDecimal || !$lonDecimal) {
-                        // If we didn't get valid coordinates from the first point,
-                        // try to get them from the polygon records we just created
-                        $firstPolygon = PolygonAktiv::where('aktiv_id', $aktiv->id)->first();
-                        if ($firstPolygon) {
-                            $latDecimal = $this->dmsToDecimal($firstPolygon->start_lat);
-                            $lonDecimal = $this->dmsToDecimal($firstPolygon->start_lon);
-
-                            if ($latDecimal && $lonDecimal) {
-                                // Update the Aktiv with these coordinates
-                                $aktiv->update([
-                                    'latitude' => $latDecimal,
-                                    'longitude' => $lonDecimal
-                                ]);
-                            }
-                        }
-                    }
 
                     $projectsImported++;
                 } catch (\Exception $e) {
@@ -188,49 +147,6 @@ class RenovationProjectSeeder extends Seeder
             $this->command->error("Error importing Excel file: " . $e->getMessage());
             $this->command->error($e->getTraceAsString());
         }
-    }
-
-    /**
-     * Convert DMS (Degrees, Minutes, Seconds) coordinates to decimal
-     */
-    private function dmsToDecimal($dmsString)
-    {
-        if (!$dmsString || !is_string($dmsString)) {
-            return null;
-        }
-
-        // Format: 41°15'26.33"С (Cyrillic С for North)
-        $pattern = '/(\d+)°(\d+)\'(\d+(?:\.\d+)?)["\'"]([СЮЗВNEWS])?/';
-        $match = preg_match($pattern, $dmsString, $matches);
-
-        if ($match) {
-            $degrees = floatval($matches[1]);
-            $minutes = floatval($matches[2]) / 60;
-            $seconds = floatval($matches[3]) / 3600;
-
-            $decimal = $degrees + $minutes + $seconds;
-
-            // Handle direction if provided
-            if (isset($matches[4])) {
-                $direction = $matches[4];
-
-                // South or West should be negative
-                if ($direction === 'Ю' || $direction === 'S') {
-                    $decimal = -$decimal;
-                } else if ($direction === 'З' || $direction === 'W') {
-                    $decimal = -$decimal;
-                }
-            }
-
-            return number_format($decimal, 7, '.', '');
-        }
-
-        // If it's already a decimal, just return it
-        if (is_numeric($dmsString)) {
-            return number_format(floatval($dmsString), 7, '.', '');
-        }
-
-        return null;
     }
 
     /**
