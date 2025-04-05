@@ -1,0 +1,245 @@
+<?php
+
+namespace Database\Seeders;
+
+use App\Models\Aktiv;
+use App\Models\PolygonAktiv;
+use Illuminate\Database\Seeder;
+use Illuminate\Support\Facades\DB;
+use PhpOffice\PhpSpreadsheet\IOFactory;
+use Illuminate\Support\Facades\Log;
+use Illuminate\Support\Facades\Schema;
+
+class RenovationProjectSeeder extends Seeder
+{
+    /**
+     * Run the database seeds.
+     */
+    public function run(): void
+    {
+        // Disable foreign key checks before truncating
+        Schema::disableForeignKeyConstraints();
+
+        // Clear all existing projects
+        DB::table('polygon_aktivs')->truncate();
+        DB::table('aktivs')->truncate();
+
+        // Re-enable foreign key checks
+        Schema::enableForeignKeyConstraints();
+
+        // Set the path to the Excel file
+        $path = public_path('assets/data/renovation.xlsx');
+
+        $this->command->info("Importing Excel file from: $path");
+
+        try {
+            // Load the spreadsheet
+            $spreadsheet = IOFactory::load($path);
+            $worksheet = $spreadsheet->getActiveSheet();
+
+            // Get the highest row number
+            $highestRow = $worksheet->getHighestRow();
+
+            $this->command->info("Found $highestRow rows in the Excel file.");
+            $this->command->info("Starting import process...");
+
+            // Progress bar
+            $bar = $this->command->getOutput()->createProgressBar($highestRow - 1);
+            $bar->start();
+
+            // Skip the header row
+            $projectsImported = 0;
+
+            // Process each row
+            for ($row = 2; $row <= $highestRow; $row++) {
+                try {
+                    // Get cell values one by one
+                    $district_name = trim($worksheet->getCellByColumnAndRow(2, $row)->getValue() ?? '');
+                    $start_lat_raw = $worksheet->getCellByColumnAndRow(3, $row)->getValue();
+                    $start_lon_raw = $worksheet->getCellByColumnAndRow(4, $row)->getValue();
+                    $end_lat_raw = $worksheet->getCellByColumnAndRow(5, $row)->getValue();
+                    $end_lon_raw = $worksheet->getCellByColumnAndRow(6, $row)->getValue();
+                    $neighborhood_name = $worksheet->getCellByColumnAndRow(7, $row)->getValue();
+                    $area_hectare = $worksheet->getCellByColumnAndRow(8, $row)->getValue();
+                    $total_building_area = $worksheet->getCellByColumnAndRow(9, $row)->getValue();
+                    $residential_area = $worksheet->getCellByColumnAndRow(10, $row)->getValue();
+                    $non_residential_area = $worksheet->getCellByColumnAndRow(11, $row)->getValue();
+                    $adjacent_area = $worksheet->getCellByColumnAndRow(12, $row)->getValue();
+                    $object_information = $worksheet->getCellByColumnAndRow(13, $row)->getValue();
+                    $umn_coefficient = $worksheet->getCellByColumnAndRow(19, $row)->getValue();
+                    $qmn_percentage = $worksheet->getCellByColumnAndRow(20, $row)->getValue();
+                    $designated_floors = $worksheet->getCellByColumnAndRow(21, $row)->getValue();
+                    $proposed_floors = $worksheet->getCellByColumnAndRow(22, $row)->getValue();
+                    $decision_number = $worksheet->getCellByColumnAndRow(23, $row)->getValue();
+                    $cadastre_certificate = $worksheet->getCellByColumnAndRow(24, $row)->getValue();
+                    $area_strategy = $worksheet->getCellByColumnAndRow(25, $row)->getValue();
+                    $investor = $worksheet->getCellByColumnAndRow(26, $row)->getValue();
+                    $status = $worksheet->getCellByColumnAndRow(27, $row)->getValue();
+                    $population = $worksheet->getCellByColumnAndRow(28, $row)->getValue();
+                    $household_count = $worksheet->getCellByColumnAndRow(29, $row)->getValue();
+                    $additional_information = $worksheet->getCellByColumnAndRow(33, $row)->getValue();
+
+                    // Skip empty rows
+                    if (empty($district_name)) {
+                        $bar->advance();
+                        continue;
+                    }
+
+                    // Process the neighborhood name to remove HTML formatting and truncate if necessary
+                    if ($neighborhood_name) {
+                        $neighborhood_name = strip_tags($neighborhood_name);
+                        // Limit neighborhood_name to 255 characters (typical VARCHAR size)
+                        $neighborhood_name = substr($neighborhood_name, 0, 255);
+                    }
+
+                    // Validate and clean the data before inserting
+                    $data = [
+                        'district_name' => substr($district_name, 0, 255),
+                        'neighborhood_name' => $neighborhood_name,
+                        'area_hectare' => $this->parseNumeric($area_hectare),
+                        'total_building_area' => $this->parseNumeric($total_building_area),
+                        'residential_area' => $this->parseNumeric($residential_area),
+                        'non_residential_area' => $this->parseNumeric($non_residential_area),
+                        'adjacent_area' => $this->parseNumeric($adjacent_area),
+                        'object_information' => is_string($object_information) ? $object_information : null,
+                        'umn_coefficient' => is_string($umn_coefficient) ? substr($umn_coefficient, 0, 255) : null,
+                        'qmn_percentage' => is_string($qmn_percentage) ? substr($qmn_percentage, 0, 255) : null,
+                        'designated_floors' => is_string($designated_floors) ? substr($designated_floors, 0, 255) : null,
+                        'proposed_floors' => is_string($proposed_floors) ? substr($proposed_floors, 0, 255) : null,
+                        'decision_number' => is_string($decision_number) ? substr($decision_number, 0, 255) : null,
+                        'cadastre_certificate' => is_string($cadastre_certificate) ? substr($cadastre_certificate, 0, 255) : null,
+                        'area_strategy' => is_string($area_strategy) ? substr($area_strategy, 0, 255) : null,
+                        'investor' => is_string($investor) ? substr($investor, 0, 255) : null,
+                        'status' => is_string($status) ? substr($status, 0, 255) : null,
+                        'population' => $this->parseNumeric($population),
+                        'household_count' => $this->parseNumeric($household_count),
+                        'additional_information' => is_string($additional_information) ? $additional_information : null,
+                        'created_at' => now(),
+                        'updated_at' => now(),
+                        // Use default Tashkent coordinates
+                        'latitude' => '41.3462375',
+                        'longitude' => '69.3353813',
+                    ];
+
+                    // Create the project
+                    $aktiv = Aktiv::create($data);
+
+                    // Create complete polygon records with start and end points
+                    $comment = "{$district_name} tuman, {$neighborhood_name} " . ($area_hectare ? $area_hectare . " gektar" : "");
+                    $this->createCompletePolygonRecords($aktivId = $aktiv->id, $start_lat_raw, $start_lon_raw, $end_lat_raw, $end_lon_raw, $comment);
+
+                    $projectsImported++;
+                } catch (\Exception $e) {
+                    // Log the error but continue with the next row
+                    $this->command->error("Error processing row $row: " . $e->getMessage());
+                    Log::error("Error processing row $row: " . $e->getMessage());
+                }
+
+                $bar->advance();
+            }
+
+            $bar->finish();
+            $this->command->newLine(2);
+            $this->command->info("Import completed. $projectsImported projects imported successfully.");
+        } catch (\Exception $e) {
+            Log::error("Error importing Excel file: " . $e->getMessage());
+            Log::error($e->getTraceAsString());
+            $this->command->error("Error importing Excel file: " . $e->getMessage());
+            $this->command->error($e->getTraceAsString());
+        }
+    }
+
+    /**
+     * Create polygon records with start and end points for each segment
+     */
+    private function createCompletePolygonRecords($aktivId, $start_lat_raw, $start_lon_raw, $end_lat_raw, $end_lon_raw, $comment)
+    {
+        // Split the coordinates into arrays
+        $startLatCoordinates = $this->splitCoordinates($start_lat_raw);
+        $startLonCoordinates = $this->splitCoordinates($start_lon_raw);
+        $endLatCoordinates = $this->splitCoordinates($end_lat_raw);
+        $endLonCoordinates = $this->splitCoordinates($end_lon_raw);
+
+        // Get the count of valid coordinates (use the smallest array to avoid index errors)
+        $count = min(
+            count($startLatCoordinates),
+            count($startLonCoordinates),
+            count($endLatCoordinates),
+            count($endLonCoordinates)
+        );
+
+        // Create records connecting consecutive points
+        for ($i = 0; $i < $count; $i++) {
+            PolygonAktiv::create([
+                'aktiv_id' => $aktivId,
+                'start_lat' => $startLatCoordinates[$i],
+                'start_lon' => $startLonCoordinates[$i],
+                'end_lat' => $endLatCoordinates[$i],
+                'end_lon' => $endLonCoordinates[$i],
+                'distance' => null,
+                'comment' => $comment,
+                'created_at' => now(),
+                'updated_at' => now(),
+            ]);
+        }
+
+        // If there are missing closing segments, add them manually
+        if ($count > 0 && (
+            $endLatCoordinates[$count - 1] != $startLatCoordinates[0] ||
+            $endLonCoordinates[$count - 1] != $startLonCoordinates[0]
+        )) {
+            // Add closing segment connecting last point back to first
+            PolygonAktiv::create([
+                'aktiv_id' => $aktivId,
+                'start_lat' => $endLatCoordinates[$count - 1],
+                'start_lon' => $endLonCoordinates[$count - 1],
+                'end_lat' => $startLatCoordinates[0],
+                'end_lon' => $startLonCoordinates[0],
+                'distance' => null,
+                'comment' => $comment,
+                'created_at' => now(),
+                'updated_at' => now(),
+            ]);
+        }
+    }
+
+    /**
+     * Split coordinates string into an array of coordinates
+     */
+    private function splitCoordinates($coordinateString)
+    {
+        if (!is_string($coordinateString)) {
+            return [];
+        }
+
+        // Split by any combination of newline characters
+        $coordinates = preg_split('/\r\n|\r|\n/', $coordinateString);
+
+        // Trim each coordinate and remove empty ones
+        return array_filter(array_map('trim', $coordinates), function ($value) {
+            return !empty($value);
+        });
+    }
+
+    /**
+     * Parse numeric values, handling commas as decimal separators
+     */
+    private function parseNumeric($value)
+    {
+        if (empty($value)) {
+            return null;
+        }
+
+        // If the value is a formula or contains non-numeric characters, return null
+        if (is_string($value) && (strpos($value, '=') === 0 || preg_match('/[a-zA-Z]/', $value))) {
+            return null;
+        }
+
+        // Remove any commas used as thousand separators and convert to float
+        if (is_string($value)) {
+            $value = str_replace(',', '', $value);
+        }
+
+        return is_numeric($value) ? (float)$value : null;
+    }
+}

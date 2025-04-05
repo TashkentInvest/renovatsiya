@@ -633,7 +633,6 @@ class AktivController extends Controller
         }
     }
 
-
     public function getLots()
     {
         try {
@@ -669,34 +668,29 @@ class AktivController extends Controller
 
                     // Return the necessary data
                     return [
-                        'lat' => $aktiv->latitude,
-                        'lng' => $aktiv->longitude,
-                        'property_name' => $aktiv->object_name,
+                        'district_name' => $aktiv->district_name,
+                        'neighborhood_name' => $aktiv->neighborhood_name,
+                        'lat' => $aktiv->latitude, // Make sure this matches the field name in your JS
+                        'lng' => $aktiv->longitude, // Make sure this matches the field name in your JS
+                        'area_hectare' => $aktiv->area_hectare,
+                        'total_building_area' => $aktiv->total_building_area,
+                        'residential_area' => $aktiv->residential_area,
+                        'non_residential_area' => $aktiv->non_residential_area,
+                        'adjacent_area' => $aktiv->adjacent_area,
+                        'object_information' => $aktiv->object_information,
+                        'umn_coefficient' => $aktiv->umn_coefficient,
+                        'qmn_percentage' => $aktiv->qmn_percentage,
+                        'designated_floors' => $aktiv->designated_floors,
+                        'proposed_floors' => $aktiv->proposed_floors,
+                        'decision_number' => $aktiv->decision_number,
+                        'cadastre_certificate' => $aktiv->cadastre_certificate,
+                        'area_strategy' => $aktiv->area_strategy,
+                        'investor' => $aktiv->investor,
+                        'status' => $aktiv->status,
+                        'population' => $aktiv->population,
+                        'household_count' => $aktiv->household_count,
+                        'additional_information' => $aktiv->additional_information,
                         'main_image' => $mainImageUrl,
-                        'total_area' => $aktiv->total_area,
-                        'land_area' => $aktiv->land_area,
-                        'start_price' => $aktiv->start_price ?? 0,
-                        'lot_link' => route('aktivs.show', $aktiv->id),
-                        'lot_number' => $aktiv->id,
-                        'address' => $aktiv->location,
-                        'user_name' => $aktiv->user ? $aktiv->user->name : 'N/A',
-                        'user_email' => $aktiv->user ? $aktiv->user->email : 'N/A',
-                        'turar_joy_maydoni' => $aktiv->turar_joy_maydoni ?? '',
-                        'noturar_joy_maydoni' => $aktiv->noturar_joy_maydoni ?? '',
-                        'vaqtinchalik_parking_info' => $aktiv->vaqtinchalik_parking_info ?? '',
-                        'doimiy_parking_info' => $aktiv->doimiy_parking_info ?? '',
-                        'maktabgacha_tashkilot_info' => $aktiv->maktabgacha_tashkilot_info ?? '',
-                        'umumtaolim_maktab_info' => $aktiv->umumtaolim_maktab_info ?? '',
-                        'stasionar_tibbiyot_info' => $aktiv->stasionar_tibbiyot_info ?? '',
-                        'ambulator_tibbiyot_info' => $aktiv->ambulator_tibbiyot_info ?? '',
-                        'diniy_muassasa_info' => $aktiv->diniy_muassasa_info ?? '',
-                        'sport_soglomlashtirish_info' => $aktiv->sport_soglomlashtirish_info ?? '',
-                        'saqlanadigan_kokalamzor_info' => $aktiv->saqlanadigan_kokalamzor_info ?? '',
-                        'yangidan_tashkil_kokalamzor_info' => $aktiv->yangidan_tashkil_kokalamzor_info ?? '',
-                        'saqlanadigan_muhandislik_tarmoqlari_info' => $aktiv->saqlanadigan_muhandislik_tarmoqlari_info ?? '',
-                        'yangidan_quriladigan_muhandislik_tarmoqlari_info' => $aktiv->yangidan_quriladigan_muhandislik_tarmoqlari_info ?? '',
-                        'saqlanadigan_yollar_info' => $aktiv->saqlanadigan_yollar_info ?? '',
-                        'yangidan_quriladigan_yollar_info' => $aktiv->yangidan_quriladigan_yollar_info ?? '',
                         'polygons' => $aktiv->polygonAktivs->map(function ($polygon) {
                             return [
                                 'start_lat' => $polygon->start_lat,
@@ -719,6 +713,8 @@ class AktivController extends Controller
             return response()->json(['error' => 'An error occurred while fetching the lots.'], 500);
         }
     }
+
+
     public function getTaklifLots()
     {
         try {

@@ -1,6 +1,7 @@
 <?php
 
 use App\Http\Controllers\AktivController;
+use App\Http\Controllers\MarkerController;
 use Illuminate\Support\Facades\Auth;
 use Illuminate\Support\Facades\Route;
 use App\Http\Controllers\KjController;
@@ -485,3 +486,6 @@ Route::post('/aktivs/clear-cache', [AktivController::class, 'clearCache'])->name
 // Import the controller at the top
 
 // Define routes individually
+
+Route::get('/maps-api', [MarkerController::class, 'getApiKey']);
+Route::get('/api/markersing', [MarkerController::class, 'getLots']);
