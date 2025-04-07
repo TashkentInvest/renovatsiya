@@ -255,8 +255,8 @@
                             <div class="card-body p-3 d-flex justify-content-between align-items-center h-100">
                                 <a href="{{ route('aktivs.myMap') }}"
                                     class="btn btn-primary w-100 d-flex align-items-center justify-content-center gap-2">
-                                    <i class="fas fa-plus"></i>
-                                    <span>Интерактивная карта</span>
+                                    <i class="fas fa-map"></i>
+                                    <span>Интерактив карта</span>
                                 </a>
                             </div>
                         </div>
