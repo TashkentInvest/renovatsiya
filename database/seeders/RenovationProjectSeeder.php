@@ -3,12 +3,14 @@
 namespace Database\Seeders;
 
 use App\Models\Aktiv;
+use App\Models\AktivDoc;
 use App\Models\PolygonAktiv;
 use Illuminate\Database\Seeder;
 use Illuminate\Support\Facades\DB;
 use PhpOffice\PhpSpreadsheet\IOFactory;
 use Illuminate\Support\Facades\Log;
 use Illuminate\Support\Facades\Schema;
+use Illuminate\Support\Facades\File;
 
 class RenovationProjectSeeder extends Seeder
 {
@@ -23,6 +25,7 @@ class RenovationProjectSeeder extends Seeder
         // Clear all existing projects
         DB::table('polygon_aktivs')->truncate();
         DB::table('aktivs')->truncate();
+        DB::table('aktiv_docs')->truncate(); // Also clear the docs table
 
         // Re-enable foreign key checks
         Schema::enableForeignKeyConstraints();
@@ -30,6 +33,15 @@ class RenovationProjectSeeder extends Seeder
         // Set the path to the Excel file
         $path = public_path('assets/data/renovation.xlsx');
 
+        // Set the path to the PDF directory
+        $pdfDirectoryPath = public_path('assets/data/RENOVATSIYA ISXOD PDF/');
+
+        // $pdfDirectoryPath = 'C:/Users/inves/OneDrive/Ishchi stol/ren.new/public/assets/data/RENOVATSIYA ISXOD PDF/';
+
+        // Cache all PDF files in the directory for faster matching
+        $pdfFiles = $this->scanPdfDirectory($pdfDirectoryPath);
+
+        $this->command->info("Found " . count($pdfFiles) . " PDF files in the directory.");
         $this->command->info("Importing Excel file from: $path");
 
         try {
@@ -49,6 +61,7 @@ class RenovationProjectSeeder extends Seeder
 
             // Skip the header row
             $projectsImported = 0;
+            $docsLinked = 0;
 
             // Process each row
             for ($row = 2; $row <= $highestRow; $row++) {
@@ -153,7 +166,7 @@ class RenovationProjectSeeder extends Seeder
                     // Update the Aktiv with the correct decimalized coordinates after polygons are created
                     if (!$latDecimal || !$lonDecimal) {
                         // If we didn't get valid coordinates from the first point,
-                        // try to get them from the polygon records w   e just created
+                        // try to get them from the polygon records we just created
                         $firstPolygon = PolygonAktiv::where('aktiv_id', $aktiv->id)->first();
                         if ($firstPolygon) {
                             $latDecimal = $this->dmsToDecimal($firstPolygon->start_lat);
@@ -169,6 +182,12 @@ class RenovationProjectSeeder extends Seeder
                         }
                     }
 
+                    // Match and link PDF files with the neighborhood name
+                    if ($neighborhood_name) {
+                        $linkedDocs = $this->linkPdfDocumentsToAktiv($aktiv->id, $neighborhood_name, $pdfFiles, $area_hectare);
+                        $docsLinked += $linkedDocs;
+                    }
+
                     $projectsImported++;
                 } catch (\Exception $e) {
                     // Log the error but continue with the next row
@@ -182,12 +201,195 @@ class RenovationProjectSeeder extends Seeder
             $bar->finish();
             $this->command->newLine(2);
             $this->command->info("Import completed. $projectsImported projects imported successfully.");
+            $this->command->info("$docsLinked PDF documents linked to projects.");
         } catch (\Exception $e) {
             Log::error("Error importing Excel file: " . $e->getMessage());
             Log::error($e->getTraceAsString());
             $this->command->error("Error importing Excel file: " . $e->getMessage());
             $this->command->error($e->getTraceAsString());
         }
+    }
+
+    /**
+     * Scan the PDF directory and return all PDF files
+     */
+    private function scanPdfDirectory($directory)
+    {
+        $pdfFiles = [];
+
+        try {
+            if (!file_exists($directory)) {
+                Log::error("PDF directory does not exist: $directory");
+                return $pdfFiles;
+            }
+
+            $files = File::files($directory);
+
+            foreach ($files as $file) {
+                if (strtolower($file->getExtension()) === 'pdf') {
+                    $filename = $file->getFilename();
+
+                    // Extract the neighborhood name from the filename
+                    // Format: "1.Кашгар (0,12 га).pdf"
+                    if (preg_match('/^\d+\.(.+?)(?:\s*\([\d,\.\s-]+\s*га\))?\.pdf$/i', $filename, $matches)) {
+                        $nameInFile = trim($matches[1]);
+                        $pdfFiles[] = [
+                            'full_path' => $file->getPathname(),
+                            'filename' => $filename,
+                            'neighborhood_name' => $nameInFile,
+                            'original_path' => str_replace('\\', '/', $file->getPathname())
+                        ];
+                    } else {
+                        // If no match, still add the file with the raw filename as neighborhood name
+                        $pdfFiles[] = [
+                            'full_path' => $file->getPathname(),
+                            'filename' => $filename,
+                            'neighborhood_name' => pathinfo($filename, PATHINFO_FILENAME),
+                            'original_path' => str_replace('\\', '/', $file->getPathname())
+                        ];
+                    }
+                }
+            }
+        } catch (\Exception $e) {
+            Log::error("Error scanning PDF directory: " . $e->getMessage());
+        }
+
+        return $pdfFiles;
+    }
+
+    /**
+     * Link PDF documents to an Aktiv record based on neighborhood name
+     */
+    /**
+     * Link PDF documents to an Aktiv record based on neighborhood name
+     */
+    private function linkPdfDocumentsToAktiv($aktivId, $neighborhoodName, $pdfFiles, $areaHectare = null)
+    {
+        $linkedDocs = 0;
+        $neighborhoodName = trim($neighborhoodName);
+
+        // Skip if neighborhood name is empty
+        if (empty($neighborhoodName)) {
+            return 0;
+        }
+
+        // Prepare area string for matching if available
+        $areaString = '';
+        if ($areaHectare) {
+            // Convert area to string with comma as decimal separator for matching with filenames
+            $areaString = str_replace('.', ',', (string)$areaHectare);
+        }
+
+        // Log info for debugging
+        Log::info("Matching for Aktiv ID: $aktivId, Neighborhood: $neighborhoodName, Area: $areaString");
+
+        // Extract neighborhood name parts for better matching
+        $cleanNeighborhoodName = preg_replace('/[^\p{L}\p{N}\s]/u', ' ', $neighborhoodName);
+        $neighborhoodParts = array_filter(
+            explode(' ', $cleanNeighborhoodName),
+            function ($part) {
+                return mb_strlen($part) > 2;
+            }
+        );
+
+        foreach ($pdfFiles as $pdfFile) {
+            $match = false;
+            $matchReason = '';
+
+            // Clean up the PDF neighborhood name for comparison
+            $pdfNeighborhood = trim($pdfFile['neighborhood_name']);
+
+            // Skip if PDF neighborhood name is empty
+            if (empty($pdfNeighborhood)) {
+                continue;
+            }
+
+            // 1. EXACT MATCH - Case-insensitive exact match with neighborhood name
+            if (mb_strtolower($pdfNeighborhood) === mb_strtolower($neighborhoodName)) {
+                $match = true;
+                $matchReason = "Exact match";
+            }
+
+            // 2. NUMBER + NAME MATCH - If filename starts with a number followed by the neighborhood name
+            if (!$match && preg_match('/^\d+\.\s*' . preg_quote($neighborhoodName, '/') . '/iu', $pdfFile['filename'])) {
+                $match = true;
+                $matchReason = "Number + name match";
+            }
+
+            // 3. AREA BASED MATCH - Only if area hectare is specified and matches in the filename
+            if (!$match && $areaString && stripos($pdfFile['filename'], $neighborhoodName) !== false) {
+                // Make sure the area is also in the filename, with proper format checking
+                if (preg_match('/\(\s*' . preg_quote($areaString, '/') . '\s*га\)/iu', $pdfFile['filename'])) {
+                    $match = true;
+                    $matchReason = "Area match";
+                }
+            }
+
+            // 4. SIGNIFICANT WORD MATCH - If neighborhood has multiple words
+            if (!$match && count($neighborhoodParts) > 1) {
+                // For multi-word neighborhoods, check if significant words match
+                $pdfNameParts = array_filter(
+                    explode(' ', preg_replace('/[^\p{L}\p{N}\s]/u', ' ', $pdfNeighborhood)),
+                    function ($part) {
+                        return mb_strlen($part) > 2;
+                    }
+                );
+
+                // Count matching words
+                $matchingWords = 0;
+                $totalSignificantWords = count($neighborhoodParts);
+
+                foreach ($neighborhoodParts as $part) {
+                    foreach ($pdfNameParts as $pdfPart) {
+                        // Only compare significant word parts
+                        if (mb_strlen($part) > 3 && mb_strlen($pdfPart) > 3) {
+                            if (mb_strtolower($part) === mb_strtolower($pdfPart)) {
+                                $matchingWords++;
+                                break;
+                            }
+                        }
+                    }
+                }
+
+                // Match if at least 80% of significant words match
+                if (
+                    $totalSignificantWords > 0 &&
+                    $matchingWords >= ceil($totalSignificantWords * 0.8)
+                ) {
+                    $match = true;
+                    $matchReason = "Word match ($matchingWords/$totalSignificantWords words)";
+                }
+            }
+
+            // If we have a match, create the document record
+            if ($match) {
+                // Store the relative path in the database (easier to use in web context)
+                $relativePath = 'assets/data/RENOVATSIYA ISXOD PDF/' . $pdfFile['filename'];
+
+                // Log the successful match
+                Log::info("Match found for Aktiv ID: $aktivId, File: {$pdfFile['filename']}, Reason: $matchReason");
+
+                AktivDoc::create([
+                    'aktiv_id' => $aktivId,
+                    'doc_type' => 'pdf-document',
+                    'path' => $relativePath,
+                    'created_at' => now(),
+                    'updated_at' => now(),
+                ]);
+
+                $linkedDocs++;
+
+                // Important: Remove this PDF from the array to prevent it from matching with other records
+                // This ensures each PDF is only linked to the most relevant Aktiv record
+                unset($pdfFiles[array_search($pdfFile, $pdfFiles)]);
+            }
+        }
+
+        if ($linkedDocs > 0) {
+            Log::info("Linked $linkedDocs documents to Aktiv ID: $aktivId");
+        }
+
+        return $linkedDocs;
     }
 
     /**

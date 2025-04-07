@@ -60,4 +60,9 @@ class Aktiv extends Model
     {
         return $this->belongsTo(User::class);
     }
+
+    public function aktivDocs()
+    {
+        return $this->hasMany(AktivDoc::class, 'aktiv_id');
+    }
 }

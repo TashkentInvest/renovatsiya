@@ -50,6 +50,49 @@
 
     <!-- Custom Styles -->
     <style>
+        .document-links {
+            margin-top: 20px;
+            padding: 10px;
+            background-color: #f9f9f9;
+            border-radius: 5px;
+        }
+
+        .document-links h4 {
+            margin-bottom: 10px;
+            font-size: 18px;
+            color: #333;
+        }
+
+        .document-list {
+            list-style: none;
+            padding: 0;
+            margin: 0;
+        }
+
+        .document-list li {
+            margin-bottom: 8px;
+        }
+
+        .document-link {
+            display: inline-flex;
+            align-items: center;
+            color: #2b5797;
+            text-decoration: none;
+            padding: 5px 8px;
+            border-radius: 4px;
+            transition: background-color 0.2s;
+        }
+
+        .document-link:hover {
+            background-color: #e9f0f7;
+            text-decoration: underline;
+        }
+
+        .document-link i {
+            margin-right: 8px;
+            color: #c00;
+        }
+
         /* Modal Styles */
         .modal {
             display: none;
@@ -723,165 +766,104 @@
             // const qrCodeUrl = `${baseUrl}/api/lot/qr-code/${markerData.lat}/${markerData.lng}`;
 
             sidebar.innerHTML = `
-          <span class="close-btn">&times;</span>
-<div class="info-content">
-    <img class="custom_sidebar_image" src="${markerData.main_image}" alt="Marker Image"/>
-    <h4 class="custom_sidebar_title"><b>${markerData.property_name || 'No Title'}</b></h4>
-   <table>
-                     <tr>
-                         <th class="sidebar_key">Маҳалла фуқаролар йиғини номи</th>
-                         <td>${markerData.neighborhood_name || 'Мавжуд Эмас'}</td>
-                     </tr>
-                     <tr>
-                         <th class="sidebar_key">Ҳудуд майдони</th>
-                         <td>${area ? area + ' га' : 'Мавжуд Эмас'}</td>
-                     </tr>
-                     <tr>
-                         <th class="sidebar_key">Қурилиш ости майдони</th>
-                         <td>${markerData.total_building_area ? markerData.total_building_area + ' кв.м' : 'Мавжуд Эмас'}</td>
-                     </tr>
-                     <tr>
-                         <th class="sidebar_key">Турар жой</th>
-                         <td>${markerData.residential_area ? markerData.residential_area + ' кв.м' : 'Мавжуд Эмас'}</td>
-                     </tr>
-                     <tr>
-                         <th class="sidebar_key">Нотурар жой</th>
-                         <td>${markerData.non_residential_area ? markerData.non_residential_area + ' кв.м' : 'Мавжуд Эмас'}</td>
-                     </tr>
-                     <tr>
-                         <th class="sidebar_key">УМН коэффициент</th>
-                         <td>${markerData.umn_coefficient || 'Мавжуд Эмас'}</td>
-                     </tr>
-                     <tr>
-                         <th class="sidebar_key">ҚМН фоизи</th>
-                         <td>${markerData.qmn_percentage || 'Мавжуд Эмас'}</td>
-                     </tr>
-                     <tr>
-                         <th class="sidebar_key">Белгиланган қаватлар</th>
-                         <td>${markerData.designated_floors || 'Мавжуд Эмас'}</td>
-                     </tr>
-                     <tr>
-                         <th class="sidebar_key">Таклиф этилган қаватлар</th>
-                         <td>${markerData.proposed_floors || 'Мавжуд Эмас'}</td>
-                     </tr>
-                     <tr>
-                         <th class="sidebar_key">Қарор</th>
-                         <td>${markerData.decision_number || 'Мавжуд Эмас'}</td>
-                     </tr>
-                     <tr>
-                         <th class="sidebar_key">Кадастр далолатномаси</th>
-                         <td>${markerData.cadastre_certificate || 'Мавжуд Эмас'}</td>
-                     </tr>
-                     <tr>
-                         <th class="sidebar_key">Ҳудуд стратегияси</th>
-                         <td>${markerData.area_strategy || 'Мавжуд Эмас'}</td>
-                     </tr>
-                     <tr>
-                         <th class="sidebar_key">Инвестор</th>
-                         <td>${markerData.investor || 'Мавжуд Эмас'}</td>
-                     </tr>
-                     <tr>
-                         <th class="sidebar_key">Статус</th>
-                         <td>${markerData.status || 'Мавжуд Эмас'}</td>
-                     </tr>
-                     <tr>
-                         <th class="sidebar_key">Аҳоли сони</th>
-                         <td>${markerData.population || 'Мавжуд Эмас'}</td>
-                     </tr>
-                     <tr>
-                         <th class="sidebar_key">Хонадон сони</th>
-                         <td>${markerData.household_count || 'Мавжуд Эмас'}</td>
-                     </tr>
-                     <tr>
-                         <th class="sidebar_key">Қўшимча маълумот</th>
-                         <td>${markerData.additional_information || 'Мавжуд Эмас'}</td>
-                     </tr>
-                 </table>
-                            <a target="_blank" href="${markerData.lot_link || '#'}" class="btn-link">Батафсил кўриш</a>
-                        </div>
+    <span class="close-btn">&times;</span>
+    <div class="info-content">
+        <img class="custom_sidebar_image" src="${markerData.main_image}" style="display:none;" alt="Marker Image"/>
+        <h4 class="custom_sidebar_title" style="margin-top:30px;"><b>${markerData.neighborhood_name || 'No Title'}</b></h4>
+        <table>
+            <tr>
+                <th class="sidebar_key">Маҳалла фуқаролар йиғини номи</th>
+                <td>${markerData.neighborhood_name || 'Мавжуд Эмас'}</td>
+            </tr>
+            <tr>
+                <th class="sidebar_key">Ҳудуд майдони</th>
+                <td>${markerData.area_hectare ? markerData.area_hectare + ' га' : 'Мавжуд Эмас'}</td>
+            </tr>
+            <tr>
+                <th class="sidebar_key">Қурилиш ости майдони</th>
+                <td>${markerData.total_building_area ? markerData.total_building_area + ' кв.м' : 'Мавжуд Эмас'}</td>
+            </tr>
+            <tr>
+                <th class="sidebar_key">Турар жой</th>
+                <td>${markerData.residential_area ? markerData.residential_area + ' кв.м' : 'Мавжуд Эмас'}</td>
+            </tr>
+            <tr>
+                <th class="sidebar_key">Нотурар жой</th>
+                <td>${markerData.non_residential_area ? markerData.non_residential_area + ' кв.м' : 'Мавжуд Эмас'}</td>
+            </tr>
+            <tr>
+                <th class="sidebar_key">УМН коэффициент</th>
+                <td>${markerData.umn_coefficient || 'Мавжуд Эмас'}</td>
+            </tr>
+            <tr>
+                <th class="sidebar_key">ҚМН фоизи</th>
+                <td>${markerData.qmn_percentage || 'Мавжуд Эмас'}</td>
+            </tr>
+            <tr>
+                <th class="sidebar_key">Белгиланган қаватлар</th>
+                <td>${markerData.designated_floors || 'Мавжуд Эмас'}</td>
+            </tr>
+            <tr>
+                <th class="sidebar_key">Таклиф этилган қаватлар</th>
+                <td>${markerData.proposed_floors || 'Мавжуд Эмас'}</td>
+            </tr>
+            <tr>
+                <th class="sidebar_key">Қарор</th>
+                <td>${markerData.decision_number || 'Мавжуд Эмас'}</td>
+            </tr>
+            <tr>
+                <th class="sidebar_key">Кадастр далолатномаси</th>
+                <td>${markerData.cadastre_certificate || 'Мавжуд Эмас'}</td>
+            </tr>
+            <tr>
+                <th class="sidebar_key">Ҳудуд стратегияси</th>
+                <td>${markerData.area_strategy || 'Мавжуд Эмас'}</td>
+            </tr>
+            <tr>
+                <th class="sidebar_key">Инвестор</th>
+                <td>${markerData.investor || 'Мавжуд Эмас'}</td>
+            </tr>
+            <tr>
+                <th class="sidebar_key">Статус</th>
+                <td>${markerData.status || 'Мавжуд Эмас'}</td>
+            </tr>
+            <tr>
+                <th class="sidebar_key">Аҳоли сони</th>
+                <td>${markerData.population || 'Мавжуд Эмас'}</td>
+            </tr>
+            <tr>
+                <th class="sidebar_key">Хонадон сони</th>
+                <td>${markerData.household_count || 'Мавжуд Эмас'}</td>
+            </tr>
+            <tr>
+                <th class="sidebar_key">Қўшимча маълумот</th>
+                <td>${markerData.additional_information || 'Мавжуд Эмас'}</td>
+            </tr>
+        </table>
 
-        `;
+        <div class="document-links">
+            <h4>Ҳужжатлар</h4>
+            ${
+                markerData.documents && markerData.documents.length > 0
+                ? `<ul class="document-list">
+                                ${markerData.documents.map(doc =>
+                                    `<li>
+                            <a href="${doc.url}" target="_blank" class="document-link">
+                                <i class="fa fa-file-pdf-o" aria-hidden="true"></i>
+                                ${doc.filename || 'Ҳужжат'}
+                            </a>
+                        </li>`
+                                ).join('')}
+                              </ul>`
+                : '<p>Ҳужжатлар мавжуд эмас</p>'
+            }
+        </div>
+
+        <a target="_blank" href="${markerData.lot_link || '#'}" class="btn-link">Батафсил кўриш</a>
+    </div>
+`;
         }
 
-        // sidebar.innerHTML = `
-    //         <span class="close-btn">&times;</span>
-    //         <div class="info-content">
-    //             <img class="custom_sidebar_image" src="${markerData.image_url || defaultImage}" alt="Marker Image"/>
-    //             <h4 class="custom_sidebar_title"><b>${markerData.district_name || 'No Title'}</b></h4>
-    //             <table>
-    //                 <tr>
-    //                     <th class="sidebar_key">Маҳалла фуқаролар йиғини номи</th>
-    //                     <td>${markerData.neighborhood_name || 'Мавжуд Эмас'}</td>
-    //                 </tr>
-    //                 <tr>
-    //                     <th class="sidebar_key">Ҳудуд майдони</th>
-    //                     <td>${area ? area + ' га' : 'Мавжуд Эмас'}</td>
-    //                 </tr>
-    //                 <tr>
-    //                     <th class="sidebar_key">Қурилиш ости майдони</th>
-    //                     <td>${totalBuildingArea ? totalBuildingArea + ' кв.м' : 'Мавжуд Эмас'}</td>
-    //                 </tr>
-    //                 <tr>
-    //                     <th class="sidebar_key">Турар жой</th>
-    //                     <td>${residentialArea ? residentialArea + ' кв.м' : 'Мавжуд Эмас'}</td>
-    //                 </tr>
-    //                 <tr>
-    //                     <th class="sidebar_key">Нотурар жой</th>
-    //                     <td>${nonResidentialArea ? nonResidentialArea + ' кв.м' : 'Мавжуд Эмас'}</td>
-    //                 </tr>
-    //                 <tr>
-    //                     <th class="sidebar_key">УМН коэффициент</th>
-    //                     <td>${markerData.umn_coefficient || 'Мавжуд Эмас'}</td>
-    //                 </tr>
-    //                 <tr>
-    //                     <th class="sidebar_key">ҚМН фоизи</th>
-    //                     <td>${markerData.qmn_percentage || 'Мавжуд Эмас'}</td>
-    //                 </tr>
-    //                 <tr>
-    //                     <th class="sidebar_key">Белгиланган қаватлар</th>
-    //                     <td>${markerData.designated_floors || 'Мавжуд Эмас'}</td>
-    //                 </tr>
-    //                 <tr>
-    //                     <th class="sidebar_key">Таклиф этилган қаватлар</th>
-    //                     <td>${markerData.proposed_floors || 'Мавжуд Эмас'}</td>
-    //                 </tr>
-    //                 <tr>
-    //                     <th class="sidebar_key">Қарор</th>
-    //                     <td>${markerData.decision_number || 'Мавжуд Эмас'}</td>
-    //                 </tr>
-    //                 <tr>
-    //                     <th class="sidebar_key">Кадастр далолатномаси</th>
-    //                     <td>${markerData.cadastre_certificate || 'Мавжуд Эмас'}</td>
-    //                 </tr>
-    //                 <tr>
-    //                     <th class="sidebar_key">Ҳудуд стратегияси</th>
-    //                     <td>${markerData.area_strategy || 'Мавжуд Эмас'}</td>
-    //                 </tr>
-    //                 <tr>
-    //                     <th class="sidebar_key">Инвестор</th>
-    //                     <td>${markerData.investor || 'Мавжуд Эмас'}</td>
-    //                 </tr>
-    //                 <tr>
-    //                     <th class="sidebar_key">Статус</th>
-    //                     <td>${markerData.status || 'Мавжуд Эмас'}</td>
-    //                 </tr>
-    //                 <tr>
-    //                     <th class="sidebar_key">Аҳоли сони</th>
-    //                     <td>${markerData.population || 'Мавжуд Эмас'}</td>
-    //                 </tr>
-    //                 <tr>
-    //                     <th class="sidebar_key">Хонадон сони</th>
-    //                     <td>${markerData.household_count || 'Мавжуд Эмас'}</td>
-    //                 </tr>
-    //                 <tr>
-    //                     <th class="sidebar_key">Қўшимча маълумот</th>
-    //                     <td>${markerData.additional_information || 'Мавжуд Эмас'}</td>
-    //                 </tr>
-    //             </table>
-    //             <a target="_blank" href="/aktivs/${markerData.id}" class="btn-link">Батафсил кўриш</a>
-    //         </div>
-    //     `;
-        // }
 
 
         function setupEventListeners() {

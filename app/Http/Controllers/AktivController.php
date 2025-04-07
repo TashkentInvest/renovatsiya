@@ -640,68 +640,79 @@ class AktivController extends Controller
             $cacheKey = 'aktivs_data';
 
             // Check if data is cached
-            $lots = Cache::remember($cacheKey, 60 * 60, function () {
-                // Fetch the data from the database
-                $isSuperAdmin = auth()->id() === 1 || true;
-                Log::info($isSuperAdmin);
+            // $lots = Cache::remember($cacheKey, 60 * 60, function () {
+            // Fetch the data from the database
+            $isSuperAdmin = auth()->id() === 1 || true;
+            Log::info($isSuperAdmin);
 
-                if ($isSuperAdmin) {
-                    // Super Admin sees all aktivs
-                    $aktivs = Aktiv::with(['files', 'user', 'polygonAktivs'])->get();
-                } else {
-                    // Other users should not see aktivs created by the Super Admin (user_id = 1)
-                    $aktivs = Aktiv::with(['files', 'user', 'polygonAktivs'])
-                        ->where('user_id', '!=', 1)  // Exclude records created by the Super Admin
-                        ->get();
-                }
+            if ($isSuperAdmin) {
+                // Super Admin sees all aktivs
+                $aktivs = Aktiv::with(['files', 'user', 'polygonAktivs'])->get();
+            } else {
+                // Other users should not see aktivs created by the Super Admin (user_id = 1)
+                $aktivs = Aktiv::with(['files', 'user', 'polygonAktivs'])
+                    ->where('user_id', '!=', 1)  // Exclude records created by the Super Admin
+                    ->get();
+            }
 
-                // Define the default image in case there is no image
-                $defaultImage = 'https://cdn.dribbble.com/users/1651691/screenshots/5336717/404_v2.png';
 
-                // Map the aktivs to the required format
-                return $aktivs->map(function ($aktiv) use ($defaultImage) {
-                    // Determine the main image URL
-                    $mainImagePath = $aktiv->files->first() ? 'storage/' . $aktiv->files->first()->path : null;
-                    $mainImageUrl = $mainImagePath && file_exists(public_path($mainImagePath))
-                        ? asset($mainImagePath)
-                        : $defaultImage;
+            // Define the default image in case there is no image
+            $defaultImage = 'https://cdn.dribbble.com/users/1651691/screenshots/5336717/404_v2.png';
 
-                    // Return the necessary data
-                    return [
-                        'district_name' => $aktiv->district_name,
-                        'neighborhood_name' => $aktiv->neighborhood_name,
-                        'lat' => $aktiv->latitude, // Make sure this matches the field name in your JS
-                        'lng' => $aktiv->longitude, // Make sure this matches the field name in your JS
-                        'area_hectare' => $aktiv->area_hectare,
-                        'total_building_area' => $aktiv->total_building_area,
-                        'residential_area' => $aktiv->residential_area,
-                        'non_residential_area' => $aktiv->non_residential_area,
-                        'adjacent_area' => $aktiv->adjacent_area,
-                        'object_information' => $aktiv->object_information,
-                        'umn_coefficient' => $aktiv->umn_coefficient,
-                        'qmn_percentage' => $aktiv->qmn_percentage,
-                        'designated_floors' => $aktiv->designated_floors,
-                        'proposed_floors' => $aktiv->proposed_floors,
-                        'decision_number' => $aktiv->decision_number,
-                        'cadastre_certificate' => $aktiv->cadastre_certificate,
-                        'area_strategy' => $aktiv->area_strategy,
-                        'investor' => $aktiv->investor,
-                        'status' => $aktiv->status,
-                        'population' => $aktiv->population,
-                        'household_count' => $aktiv->household_count,
-                        'additional_information' => $aktiv->additional_information,
-                        'main_image' => $mainImageUrl,
-                        'polygons' => $aktiv->polygonAktivs->map(function ($polygon) {
-                            return [
-                                'start_lat' => $polygon->start_lat,
-                                'start_lon' => $polygon->start_lon,
-                                'end_lat' => $polygon->end_lat,
-                                'end_lon' => $polygon->end_lon
-                            ];
-                        })
-                    ];
-                });
+            // Map the aktivs to the required format
+            $lots =  $aktivs->map(function ($aktiv) use ($defaultImage) {
+                // Determine the main image URL
+                $mainImagePath = $aktiv->files->first() ? 'storage/' . $aktiv->files->first()->path : null;
+                $mainImageUrl = $mainImagePath && file_exists(public_path($mainImagePath))
+                    ? asset($mainImagePath)
+                    : $defaultImage;
+
+                // Return the necessary data
+                return [
+                    'district_name' => $aktiv->district_name,
+                    'neighborhood_name' => $aktiv->neighborhood_name,
+                    'lat' => $aktiv->latitude, // Make sure this matches the field name in your JS
+                    'lng' => $aktiv->longitude, // Make sure this matches the field name in your JS
+                    'area_hectare' => $aktiv->area_hectare,
+                    'total_building_area' => $aktiv->total_building_area,
+                    'residential_area' => $aktiv->residential_area,
+                    'non_residential_area' => $aktiv->non_residential_area,
+                    'adjacent_area' => $aktiv->adjacent_area,
+                    'object_information' => $aktiv->object_information,
+                    'umn_coefficient' => $aktiv->umn_coefficient,
+                    'qmn_percentage' => $aktiv->qmn_percentage,
+                    'designated_floors' => $aktiv->designated_floors,
+                    'proposed_floors' => $aktiv->proposed_floors,
+                    'decision_number' => $aktiv->decision_number,
+                    'cadastre_certificate' => $aktiv->cadastre_certificate,
+                    'area_strategy' => $aktiv->area_strategy,
+                    'investor' => $aktiv->investor,
+                    'status' => $aktiv->status,
+                    'population' => $aktiv->population,
+                    'household_count' => $aktiv->household_count,
+                    'additional_information' => $aktiv->additional_information,
+                    'main_image' => $mainImageUrl,
+                    'polygons' => $aktiv->polygonAktivs->map(function ($polygon) {
+                        return [
+                            'start_lat' => $polygon->start_lat,
+                            'start_lon' => $polygon->start_lon,
+                            'end_lat' => $polygon->end_lat,
+                            'end_lon' => $polygon->end_lon
+                        ];
+                    }),
+                    'documents' => $aktiv->aktivDocs->map(function ($doc) {
+                        return [
+                            'id' => $doc->id,
+                            'doc_type' => $doc->doc_type,
+                            'path' => $doc->path,
+                            'url' => asset($doc->path),
+                            'filename' => basename($doc->path)
+                        ];
+                    }),
+
+                ];
             });
+            // });
 
             // Return the response as JSON
             return response()->json(['lots' => $lots]);
@@ -715,6 +726,89 @@ class AktivController extends Controller
     }
 
 
+    // public function getLots()
+    // {
+    //     try {
+    //         // Determine user authorization
+    //         $isSuperAdmin = auth()->id() === 1 || true;
+    //         Log::info($isSuperAdmin);
+
+    //         if ($isSuperAdmin) {
+    //             // Super Admin sees all aktivs
+    //             $aktivs = Aktiv::with(['files', 'user', 'polygonAktivs', 'aktivDocs'])->get();
+    //         } else {
+    //             // Other users should not see aktivs created by the Super Admin (user_id = 1)
+    //             $aktivs = Aktiv::with(['files', 'user', 'polygonAktivs', 'aktivDocs'])
+    //                 ->where('user_id', '!=', 1)  // Exclude records created by the Super Admin
+    //                 ->get();
+    //         }
+
+    //         // Define the default image in case there is no image
+    //         $defaultImage = 'https://cdn.dribbble.com/users/1651691/screenshots/5336717/404_v2.png';
+
+    //         // Map the aktivs to the required format
+    //         $lots = $aktivs->map(function ($aktiv) use ($defaultImage) {
+    //             // Determine the main image URL
+    //             $mainImagePath = $aktiv->files->first() ? 'storage/' . $aktiv->files->first()->path : null;
+    //             $mainImageUrl = $mainImagePath && file_exists(public_path($mainImagePath))
+    //                 ? asset($mainImagePath)
+    //                 : $defaultImage;
+
+    //             // Return the necessary data
+    //             return [
+    //                 'district_name' => $aktiv->district_name,
+    //                 'neighborhood_name' => $aktiv->neighborhood_name,
+    //                 'lat' => $aktiv->latitude, // Make sure this matches the field name in your JS
+    //                 'lng' => $aktiv->longitude, // Make sure this matches the field name in your JS
+    //                 'area_hectare' => $aktiv->area_hectare,
+    //                 'total_building_area' => $aktiv->total_building_area,
+    //                 'residential_area' => $aktiv->residential_area,
+    //                 'non_residential_area' => $aktiv->non_residential_area,
+    //                 'adjacent_area' => $aktiv->adjacent_area,
+    //                 'object_information' => $aktiv->object_information,
+    //                 'umn_coefficient' => $aktiv->umn_coefficient,
+    //                 'qmn_percentage' => $aktiv->qmn_percentage,
+    //                 'designated_floors' => $aktiv->designated_floors,
+    //                 'proposed_floors' => $aktiv->proposed_floors,
+    //                 'decision_number' => $aktiv->decision_number,
+    //                 'cadastre_certificate' => $aktiv->cadastre_certificate,
+    //                 'area_strategy' => $aktiv->area_strategy,
+    //                 'investor' => $aktiv->investor,
+    //                 'status' => $aktiv->status,
+    //                 'population' => $aktiv->population,
+    //                 'household_count' => $aktiv->household_count,
+    //                 'additional_information' => $aktiv->additional_information,
+    //                 'main_image' => $mainImageUrl,
+    //                 'polygons' => $aktiv->polygonAktivs->map(function ($polygon) {
+    //                     return [
+    //                         'start_lat' => $polygon->start_lat,
+    //                         'start_lon' => $polygon->start_lon,
+    //                         'end_lat' => $polygon->end_lat,
+    //                         'end_lon' => $polygon->end_lon
+    //                     ];
+    //                 }),
+    //                 // 'documents' => $aktiv->aktivDocs->map(function ($doc) {
+    //                 //     return [
+    //                 //         'id' => $doc->id,
+    //                 //         'doc_type' => $doc->doc_type,
+    //                 //         'path' => $doc->path,
+    //                 //         'url' => asset($doc->path),
+    //                 //         'filename' => basename($doc->path)
+    //                 //     ];
+    //                 // })
+    //             ];
+    //         });
+
+    //         // Return the response as JSON
+    //         return response()->json(['lots' => $lots]);
+    //     } catch (\Exception $e) {
+    //         // Log the error message
+    //         Log::error('Error fetching lots: ' . $e->getMessage());
+
+    //         // Optionally, you can return a specific error message
+    //         return response()->json(['error' => 'An error occurred while fetching the lots.'], 500);
+    //     }
+    // }
     public function getTaklifLots()
     {
         try {
