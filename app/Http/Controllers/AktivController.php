@@ -17,6 +17,13 @@ use Illuminate\Support\Facades\Cache;
 class AktivController extends Controller
 {
 
+    public function getData(Aktiv $aktiv)
+    {
+        // Load the relationships
+        $aktiv->load(['user', 'street', 'subStreet.district']);
+
+        return response()->json($aktiv);
+    }
     public function dashboard(Request $request)
     {
         $district_id = $request->input('district_id');

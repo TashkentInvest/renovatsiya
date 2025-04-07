@@ -650,11 +650,19 @@
                             };
                             const title = markerData.property_name || 'No Title';
 
+
+
                             const marker = new google.maps.Marker({
                                 position: position,
                                 map: map,
-                                title: title
+                                title: title,
+                                icon: {
+                                    url: 'https://cdn-icons-png.flaticon.com/512/5425/5425870.png',
+                                    scaledSize: new google.maps.Size(50,
+                                        50) // Adjust width and height as needed
+                                }
                             });
+
 
                             marker.addListener('click', function() {
                                 const sidebar = document.getElementById('info-sidebar');
@@ -846,15 +854,15 @@
             ${
                 markerData.documents && markerData.documents.length > 0
                 ? `<ul class="document-list">
-                                ${markerData.documents.map(doc =>
-                                    `<li>
+                                                                                ${markerData.documents.map(doc =>
+                                                                                    `<li>
                             <a href="${doc.url}" target="_blank" class="document-link">
                                 <i class="fa fa-file-pdf-o" aria-hidden="true"></i>
                                 ${doc.filename || 'Ҳужжат'}
                             </a>
                         </li>`
-                                ).join('')}
-                              </ul>`
+                                                                                ).join('')}
+                                                                              </ul>`
                 : '<p>Ҳужжатлар мавжуд эмас</p>'
             }
         </div>
@@ -953,9 +961,9 @@
                 const polygonArray = paths.map(path => {
                     const polygon = new google.maps.Polygon({
                         paths: path,
-                        strokeColor: '#fff',
+                        strokeColor: 'red',
                         strokeOpacity: 0.8,
-                        strokeWeight: 2,
+                        strokeWeight: 4,
                         fillColor: fillColor,
                         fillOpacity: 0.35,
                         map: map

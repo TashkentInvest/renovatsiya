@@ -35,6 +35,7 @@ Route::get('/', function () {
 Route::group(['middleware' => ['auth', 'checkUserRole']], function () {
 
     Route::get('aktivs', [AktivController::class, 'index'])->name('aktivs.index');
+    Route::get('/aktivs/{aktiv}/get-data', [AktivController::class, 'getData'])->name('aktivs.getData');
     Route::get('dashboard', [AktivController::class, 'dashboard'])->name('aktivs.dashboard');
     Route::get('aktivs/create', [AktivController::class, 'create'])->name('aktivs.create');
     Route::post('aktivs', [AktivController::class, 'store'])->name('aktivs.store');
