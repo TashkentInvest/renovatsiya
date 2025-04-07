@@ -1,4 +1,4 @@
-@extends('layouts.admin')
+@extends('layouts.app')
 
 @section('title', 'Активлар рўйхати')
 
@@ -253,10 +253,10 @@
                     <li class="col">
                         <div class="card border-0 shadow-sm overflow-hidden h-100 card-hover">
                             <div class="card-body p-3 d-flex justify-content-between align-items-center h-100">
-                                <a href="{{ route('aktivs.create') }}"
+                                <a href="{{ route('aktivs.myMap') }}"
                                     class="btn btn-primary w-100 d-flex align-items-center justify-content-center gap-2">
                                     <i class="fas fa-plus"></i>
-                                    <span>Янги актив яратиш</span>
+                                    <span>Интерактивная карта</span>
                                 </a>
                             </div>
                         </div>
@@ -388,18 +388,18 @@
                                             </td>
                                             <td class="px-3 py-3 align-middle text-center">
                                                 <div class="btn-group" role="group">
-                                                    <a href="{{ route('aktivs.show', $aktiv) }}"
+                                                    {{-- <a href="{{ route('aktivs.show', $aktiv) }}"
                                                         class="btn btn-sm btn-info" data-bs-toggle="tooltip"
                                                         title="Кўриш">
                                                         <i class="fas fa-eye"></i>
-                                                    </a>
+                                                    </a> --}}
 
                                                     <button type="button" class="btn btn-sm btn-primary"
                                                         data-bs-toggle="modal"
                                                         data-bs-target="#modalAktiv{{ $aktiv->id }}">
                                                         <i class="fas fa-search-plus"></i>
                                                     </button>
-
+{{--
                                                     @if (Auth::user()->id == $aktiv->user_id || Auth::user()->hasRole(['Super Admin', 'Manager']))
                                                         <a href="{{ route('aktivs.edit', $aktiv) }}"
                                                             class="btn btn-sm btn-warning" data-bs-toggle="tooltip"
@@ -417,7 +417,7 @@
                                                                 <i class="fas fa-trash"></i>
                                                             </button>
                                                         </form>
-                                                    @endif
+                                                    @endif --}}
                                                 </div>
                                             </td>
                                         </tr>
@@ -575,9 +575,9 @@
                                                     <i class="fas fa-folder-open text-muted mb-2"
                                                         style="font-size: 3rem;"></i>
                                                     <p class="text-muted">Активлар топилмади</p>
-                                                    <a href="{{ route('aktivs.create') }}"
+                                                    <a href="{{ route('aktivs.myMap') }}"
                                                         class="btn btn-sm btn-primary mt-2">
-                                                        <i class="fas fa-plus me-1"></i> Янги актив яратиш
+                                                        <i class="fas fa-plus me-1"></i> Интерактивная карта
                                                     </a>
                                                 </div>
                                             </td>
