@@ -153,7 +153,7 @@ class RenovationProjectSeeder extends Seeder
                     // Update the Aktiv with the correct decimalized coordinates after polygons are created
                     if (!$latDecimal || !$lonDecimal) {
                         // If we didn't get valid coordinates from the first point,
-                        // try to get them from the polygon records we just created
+                        // try to get them from the polygon records w   e just created
                         $firstPolygon = PolygonAktiv::where('aktiv_id', $aktiv->id)->first();
                         if ($firstPolygon) {
                             $latDecimal = $this->dmsToDecimal($firstPolygon->start_lat);

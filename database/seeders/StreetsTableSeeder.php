@@ -25,7 +25,7 @@ class StreetsTableSeeder extends Seeder
         {
             public function collection(Collection $rows)
             {
-                foreach ($rows as $row) 
+                foreach ($rows as $row)
                 {
                     // Find the district ID based on the district_code
                     $district = Districts::where('code', $row['district_code'])->first();
