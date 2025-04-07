@@ -54,6 +54,7 @@ Route::group(['middleware' => ['auth', 'checkUserRole']], function () {
 
 
     Route::get('/optimize-cache', [HomeController::class, 'optimize'])->name('optimize.command');
+    Route::get('/optimize', [HomeController::class, 'optimize'])->name('home');
 
 
     // Permissions

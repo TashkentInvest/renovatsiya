@@ -29,30 +29,31 @@ class CreateAktivsTable extends Migration
             $table->decimal('latitude', 10, 7)->nullable();
             $table->decimal('longitude', 10, 7)->nullable();
 
-            $table->string('district_name')->nullable();
-            $table->text('start_lat')->nullable();
-            $table->text('start_lon')->nullable();
-            $table->text('end_lat')->nullable();
-            $table->text('end_lon')->nullable();
-            $table->string('neighborhood_name')->nullable();
-            $table->decimal('area_hectare', 15, 6)->nullable();
-            $table->decimal('total_building_area', 15, 2)->nullable();
-            $table->decimal('residential_area', 15, 2)->nullable();
-            $table->decimal('non_residential_area', 15, 2)->nullable();
-            $table->decimal('adjacent_area', 15, 2)->nullable();
-            $table->text('object_information')->nullable();
-            $table->string('umn_coefficient')->nullable();
-            $table->string('qmn_percentage')->nullable();
-            $table->string('designated_floors')->nullable();
-            $table->string('proposed_floors')->nullable();
-            $table->string('decision_number')->nullable();
-            $table->string('cadastre_certificate')->nullable();
-            $table->string('area_strategy')->nullable();
-            $table->string('investor')->nullable();
-            $table->string('status')->nullable();
-            $table->integer('population')->nullable();
-            $table->integer('household_count')->nullable();
-            $table->text('additional_information')->nullable();
+            $table->string('district_name')->nullable(); // Туман номи - District name
+            $table->text('start_lat')->nullable(); // start_lat - Starting latitude (coordinate)
+            $table->text('start_lon')->nullable(); // start_lon - Starting longitude (coordinate)
+            $table->text('end_lat')->nullable(); // end_lat - Ending latitude (coordinate)
+            $table->text('end_lon')->nullable(); // end_lon - Ending longitude (coordinate)
+            $table->string('neighborhood_name')->nullable(); // Маҳалла фуқаролар йиғини номи - Neighborhood (mahalla) name
+            $table->decimal('area_hectare', 15, 6)->nullable(); // Ҳудуд майдони (гектар) - Area in hectares
+            $table->decimal('total_building_area', 15, 2)->nullable(); // Қурилиш ости майдони жами - Total building footprint area (m²)
+            $table->decimal('residential_area', 15, 2)->nullable(); // турар - Residential building area (m²)
+            $table->decimal('non_residential_area', 15, 2)->nullable(); // нотуратор - Non-residential building area (m²)
+            $table->decimal('adjacent_area', 15, 2)->nullable(); // туташ ҳудуд - Adjacent area
+            $table->text('object_information')->nullable(); // Ҳудуддаги объектлар тўғрисида маълумот - Information about objects in the area
+            $table->string('umn_coefficient')->nullable(); // УМН (Umumiy maydonga nisbati) - UMN ratio to total area
+            $table->string('qmn_percentage')->nullable(); // ҚМН (Qurilish maydoniga nisbati) % - QMN ratio to construction area (%)
+            $table->string('designated_floors')->nullable(); // Белгиланган қаватлар - Designated number of floors
+            $table->string('proposed_floors')->nullable(); // Таклиф этилган қаватлар - Proposed number of floors
+            $table->string('decision_number')->nullable(); // Қарор - Decision number
+            $table->string('cadastre_certificate')->nullable(); // Кадастр далолатномаси (кадастр акт) - Cadastral certificate
+            $table->string('area_strategy')->nullable(); // Ҳудуд стратегияси - Area strategy
+            $table->string('investor')->nullable(); // Инвестор - Investor
+            $table->string('status')->nullable(); // Статус - Project status
+            $table->integer('population')->nullable(); // аҳоли сони - Population
+            $table->integer('household_count')->nullable(); // хонадон сони - Number of households
+            $table->text('additional_information')->nullable(); // Қўшимча маълумот - Additional information
+
             $table->timestamps();
         });
     }

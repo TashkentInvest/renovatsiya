@@ -914,7 +914,7 @@
             let polygons = {};
             let currentHighlight = null;
 
-            const defaultColor = 'red';
+            const defaultColor = 'lightgreen';
             const highlightColor = '#EEF5FF';
 
             const kmlFileNames = [
