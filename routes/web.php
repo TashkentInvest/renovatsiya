@@ -26,6 +26,9 @@ Auth::routes(['register' => false]);
 // Welcome page
 
 
+Route::get('/my-map', [AktivController::class, 'myMap'])->name('aktivs.myMap');
+Route::get('/my-taklif-map', [AktivController::class, 'myTaklifMap'])->name('myTaklifMap');
+
 Route::get('/', function () {
     return view('welcome');
 });
