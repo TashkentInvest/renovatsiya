@@ -602,13 +602,15 @@ class AktivController extends Controller
 
     public function myMap()
     {
-        $userRole = auth()->user()->roles->first()->name;
+        return view('pages.aktiv.map_orginal');
 
-        if ($userRole == 'Super Admin') {
-            return view('pages.aktiv.map_orginal');
-        } else {
-            abort(403, 'Unauthorized access.');
-        }
+        // $userRole = auth()->user()->roles->first()->name;
+
+        // if ($userRole == 'Super Admin') {
+        //     return view('pages.aktiv.map_orginal');
+        // } else {
+        //     abort(403, 'Unauthorized access.');
+        // }
     }
 
     public function myTaklifMap()
