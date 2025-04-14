@@ -638,6 +638,8 @@
                 .then(data => {
                     const markersData = data.lots;
                     window.markers = markersData; // Make markers globally accessible
+                    window.markerObjects = []; // Store marker objects for reference
+                    window.polygonObjects = {}; // Store polygon objects by marker ID
 
                     markersData.forEach(markerData => {
                         const lat = parseFloat(markerData.lat);
@@ -650,33 +652,44 @@
                             };
                             const title = markerData.property_name || 'No Title';
 
-
-
                             const marker = new google.maps.Marker({
                                 position: position,
                                 map: map,
                                 title: title,
-
                             });
-                            // icon: {
-                            //         url: 'https://cdn-icons-png.flaticon.com/512/5425/5425870.png',
-                            //         scaledSize: new google.maps.Size(50,
-                            //             50) // Adjust width and height as needed
-                            //     }
+
+                            // Store marker reference with ID
+                            window.markerObjects.push({
+                                id: markerData.id,
+                                marker: marker
+                            });
+
+                            // Store polygons for this marker
+                            window.polygonObjects[markerData.id] = [];
 
                             marker.addListener('click', function() {
+                                // Open sidebar
                                 const sidebar = document.getElementById('info-sidebar');
                                 updateSidebarContent(markerData);
                                 sidebar.classList.add('open');
+
+                                // Zoom to marker
+                                map.setZoom(16); // Adjust zoom level as needed
+                                map.setCenter(marker.getPosition());
+
+                                // Highlight polygons associated with this marker
+                                highlightPolygonsForMarker(markerData.id);
                             });
 
-                            // Draw polygons for this marker
-                            drawPolygons(markerData.polygons, map);
+                            // Draw polygons for this marker and store references
+                            const drawnPolygons = drawPolygons(markerData.polygons, map, markerData.id);
+                            window.polygonObjects[markerData.id] = drawnPolygons;
                         }
                     });
                 })
                 .catch(error => console.error('Error fetching markers:', error));
         }
+
 
         function dmsToDecimal(dms) {
             if (!dms || typeof dms !== 'string') return null;
@@ -692,7 +705,9 @@
             return degrees + minutes + seconds;
         }
 
-        function drawPolygons(polygonsData, map) {
+        function drawPolygons(polygonsData, map, markerId) {
+            const drawnPolygons = [];
+
             polygonsData.forEach(polygonCoords => {
                 const startLat = dmsToDecimal(polygonCoords.start_lat);
                 const startLng = dmsToDecimal(polygonCoords.start_lon);
@@ -712,18 +727,22 @@
 
                     const polygon = new google.maps.Polygon({
                         paths: polygonPath,
-                        strokeColor: 'yellow', // Set border color to yellow
-                        strokeWeight: 4, // Set stroke width
-                        fillColor: 'yellow', // Set fill color to yellow
-                        fillOpacity: 0.5 // Set fill opacity to 50%
+                        strokeColor: 'yellow', // Default border color
+                        strokeWeight: 4,
+                        fillColor: 'yellow', // Default fill color
+                        fillOpacity: 0.5
                     });
 
                     polygon.setMap(map);
+                    drawnPolygons.push(polygon);
                 } else {
                     console.warn('Invalid coordinates for polygon:', polygonCoords);
                 }
             });
+
+            return drawnPolygons;
         }
+
 
 
 
@@ -854,15 +873,15 @@
             ${
                 markerData.documents && markerData.documents.length > 0
                 ? `<ul class="document-list">
-                                                                                ${markerData.documents.map(doc =>
-                                                                                    `<li>
+                                                                                            ${markerData.documents.map(doc =>
+                                                                                                `<li>
                             <a href="${doc.url}" target="_blank" class="document-link">
                                 <i class="fa fa-file-pdf-o" aria-hidden="true"></i>
                                 ${doc.filename || 'Ҳужжат'}
                             </a>
                         </li>`
-                                                                                ).join('')}
-                                                                              </ul>`
+                                                                                            ).join('')}
+                                                                                          </ul>`
                 : '<p>Ҳужжатлар мавжуд эмас</p>'
             }
         </div>
