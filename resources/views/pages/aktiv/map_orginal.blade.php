@@ -656,13 +656,13 @@
                                 position: position,
                                 map: map,
                                 title: title,
-                                icon: {
-                                    url: 'https://cdn-icons-png.flaticon.com/512/5425/5425870.png',
-                                    scaledSize: new google.maps.Size(50,
-                                        50) // Adjust width and height as needed
-                                }
-                            });
 
+                            });
+                            // icon: {
+                            //         url: 'https://cdn-icons-png.flaticon.com/512/5425/5425870.png',
+                            //         scaledSize: new google.maps.Size(50,
+                            //             50) // Adjust width and height as needed
+                            //     }
 
                             marker.addListener('click', function() {
                                 const sidebar = document.getElementById('info-sidebar');
@@ -713,7 +713,7 @@
                     const polygon = new google.maps.Polygon({
                         paths: polygonPath,
                         strokeColor: 'yellow', // Set border color to yellow
-                        strokeWeight: 2, // Set stroke width
+                        strokeWeight: 4, // Set stroke width
                         fillColor: 'yellow', // Set fill color to yellow
                         fillOpacity: 0.5 // Set fill opacity to 50%
                     });
@@ -963,7 +963,7 @@
                         paths: path,
                         strokeColor: 'red',
                         strokeOpacity: 0.8,
-                        strokeWeight: 4,
+                        strokeWeight: 2,
                         fillColor: fillColor,
                         fillOpacity: 0.35,
                         map: map
