@@ -66,7 +66,10 @@ class RenovationProjectSeeder extends Seeder
             // Process each row
             for ($row = 2; $row <= $highestRow; $row++) {
                 try {
-                    // Get cell values one by one
+                    // Log the row data
+                    Log::info("Processing row $row --------------------------------- ");
+
+                    // Extract and log each cell value
                     $district_name = trim($worksheet->getCellByColumnAndRow(2, $row)->getValue() ?? '');
                     $start_lat_raw = $worksheet->getCellByColumnAndRow(3, $row)->getValue();
                     $start_lon_raw = $worksheet->getCellByColumnAndRow(4, $row)->getValue();
@@ -91,6 +94,34 @@ class RenovationProjectSeeder extends Seeder
                     $population = $worksheet->getCellByColumnAndRow(28, $row)->getValue();
                     $household_count = $worksheet->getCellByColumnAndRow(29, $row)->getValue();
                     $additional_information = $worksheet->getCellByColumnAndRow(33, $row)->getValue();
+
+                    // Log the row data in detail
+                    Log::info("Row $row Data: ", [
+                        'district_name' => $district_name,
+                        'start_lat_raw' => $start_lat_raw,
+                        'start_lon_raw' => $start_lon_raw,
+                        'end_lat_raw' => $end_lat_raw,
+                        'end_lon_raw' => $end_lon_raw,
+                        'neighborhood_name' => $neighborhood_name,
+                        'area_hectare' => $area_hectare,
+                        'total_building_area' => $total_building_area,
+                        'residential_area' => $residential_area,
+                        'non_residential_area' => $non_residential_area,
+                        'adjacent_area' => $adjacent_area,
+                        'object_information' => $object_information,
+                        'umn_coefficient' => $umn_coefficient,
+                        'qmn_percentage' => $qmn_percentage,
+                        'designated_floors' => $designated_floors,
+                        'proposed_floors' => $proposed_floors,
+                        'decision_number' => $decision_number,
+                        'cadastre_certificate' => $cadastre_certificate,
+                        'area_strategy' => $area_strategy,
+                        'investor' => $investor,
+                        'status' => $status,
+                        'population' => $population,
+                        'household_count' => $household_count,
+                        'additional_information' => $additional_information,
+                    ]);
 
                     // Skip empty rows
                     if (empty($district_name)) {
@@ -165,15 +196,12 @@ class RenovationProjectSeeder extends Seeder
 
                     // Update the Aktiv with the correct decimalized coordinates after polygons are created
                     if (!$latDecimal || !$lonDecimal) {
-                        // If we didn't get valid coordinates from the first point,
-                        // try to get them from the polygon records we just created
                         $firstPolygon = PolygonAktiv::where('aktiv_id', $aktiv->id)->first();
                         if ($firstPolygon) {
                             $latDecimal = $this->dmsToDecimal($firstPolygon->start_lat);
                             $lonDecimal = $this->dmsToDecimal($firstPolygon->start_lon);
 
                             if ($latDecimal && $lonDecimal) {
-                                // Update the Aktiv with these coordinates
                                 $aktiv->update([
                                     'latitude' => $latDecimal,
                                     'longitude' => $lonDecimal

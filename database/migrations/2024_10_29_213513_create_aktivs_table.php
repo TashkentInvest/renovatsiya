@@ -15,25 +15,13 @@ class CreateAktivsTable extends Migration
     {
         Schema::create('aktivs', function (Blueprint $table) {
             $table->id();
-            $table->unsignedBigInteger('sub_street_id')->nullable();
-            $table->foreign('sub_street_id')->references('id')->on('sub_streets')->onDelete('cascade');
 
-            $table->unsignedBigInteger('street_id')->nullable();
-            $table->foreign('street_id')->references('id')->on('streets')->onDelete('cascade');
-
-            $table->unsignedBigInteger('user_id')->nullable();
-            $table->enum('action', ['created', 'updated', 'deleted'])->nullable();
-            $table->timestamp('action_timestamp')->nullable();
-            $table->softDeletes();
 
             $table->decimal('latitude', 10, 7)->nullable();
             $table->decimal('longitude', 10, 7)->nullable();
 
             $table->string('district_name')->nullable(); // Туман номи - District name
-            $table->text('start_lat')->nullable(); // start_lat - Starting latitude (coordinate)
-            $table->text('start_lon')->nullable(); // start_lon - Starting longitude (coordinate)
-            $table->text('end_lat')->nullable(); // end_lat - Ending latitude (coordinate)
-            $table->text('end_lon')->nullable(); // end_lon - Ending longitude (coordinate)
+
             $table->string('neighborhood_name')->nullable(); // Маҳалла фуқаролар йиғини номи - Neighborhood (mahalla) name
             $table->decimal('area_hectare', 15, 6)->nullable(); // Ҳудуд майдони (гектар) - Area in hectares
             $table->decimal('total_building_area', 15, 2)->nullable(); // Қурилиш ости майдони жами - Total building footprint area (m²)
@@ -54,6 +42,17 @@ class CreateAktivsTable extends Migration
             $table->integer('household_count')->nullable(); // хонадон сони - Number of households
             $table->text('additional_information')->nullable(); // Қўшимча маълумот - Additional information
 
+
+            $table->unsignedBigInteger('sub_street_id')->nullable();
+            $table->foreign('sub_street_id')->references('id')->on('sub_streets')->onDelete('cascade');
+
+            $table->unsignedBigInteger('street_id')->nullable();
+            $table->foreign('street_id')->references('id')->on('streets')->onDelete('cascade');
+
+            $table->unsignedBigInteger('user_id')->nullable();
+            $table->enum('action', ['created', 'updated', 'deleted'])->nullable();
+            $table->timestamp('action_timestamp')->nullable();
+            $table->softDeletes();
             $table->timestamps();
         });
     }
