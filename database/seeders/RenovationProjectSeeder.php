@@ -95,6 +95,24 @@ class RenovationProjectSeeder extends Seeder
                     $household_count = $worksheet->getCellByColumnAndRow(29, $row)->getValue();
                     $additional_information = $worksheet->getCellByColumnAndRow(33, $row)->getValue();
 
+                    $single_house_count = $worksheet->getCellByColumnAndRow(14, $row)->getValue();
+                    $single_house_area = $worksheet->getCellByColumnAndRow(15, $row)->getValue();
+                    $multi_story_house_count = $worksheet->getCellByColumnAndRow(16, $row)->getValue();
+                    $multi_story_house_area = $worksheet->getCellByColumnAndRow(17, $row)->getValue();
+                    $non_residential_count = $worksheet->getCellByColumnAndRow(18, $row)->getValue();
+                    $non_residential_building_area = $worksheet->getCellByColumnAndRow(19, $row)->getValue();
+                    $area_passport = $worksheet->getCellByColumnAndRow(20, $row)->getValue();
+                    $protocol_number = $worksheet->getCellByColumnAndRow(21, $row)->getValue();
+                    $land_assessment = $worksheet->getCellByColumnAndRow(22, $row)->getValue();
+                    $investment_contract = $worksheet->getCellByColumnAndRow(23, $row)->getValue();
+                    $public_discussion = $worksheet->getCellByColumnAndRow(24, $row)->getValue();
+                    $resettlement_start = $worksheet->getCellByColumnAndRow(25, $row)->getValue();
+                    $resettlement_end = $worksheet->getCellByColumnAndRow(26, $row)->getValue();
+                    $project_start = $worksheet->getCellByColumnAndRow(27, $row)->getValue();
+                    $assessment_status = $worksheet->getCellByColumnAndRow(28, $row)->getValue();
+                    $announcement = $worksheet->getCellByColumnAndRow(29, $row)->getValue();
+                    $zone = $worksheet->getCellByColumnAndRow(30, $row)->getValue();
+
                     // Log the row data in detail
                     Log::info("Row $row Data: ", [
                         'district_name' => $district_name,
@@ -185,6 +203,25 @@ class RenovationProjectSeeder extends Seeder
                         // Use the first point's coordinates exactly as they are in DMS format
                         'latitude' => $latDecimal,
                         'longitude' => $lonDecimal,
+
+                        // ... existing fields ...
+                        'single_house_count' => $this->parseNumeric($single_house_count),
+                        'single_house_area' => $this->parseNumeric($single_house_area),
+                        'multi_story_house_count' => $this->parseNumeric($multi_story_house_count),
+                        'multi_story_house_area' => $this->parseNumeric($multi_story_house_area),
+                        'non_residential_count' => $this->parseNumeric($non_residential_count),
+                        'non_residential_building_area' => $this->parseNumeric($non_residential_building_area),
+                        'area_passport' => $area_passport ?? null,
+                        'protocol_number' => $protocol_number ?? null,
+                        'land_assessment' => $land_assessment ?? null,
+                        'investment_contract' => $investment_contract ?? null,
+                        'public_discussion' => $public_discussion ?? null,
+                        'resettlement_start' => $this->parseDate($resettlement_start),
+                        'resettlement_end' => $this->parseDate($resettlement_end),
+                        'project_start' => $this->parseDate($project_start),
+                        'assessment_status' => $assessment_status ?? null,
+                        'announcement' => $announcement ?? null,
+                        'zone' => $zone ?? null,
                     ];
 
                     // Create the project
@@ -237,7 +274,24 @@ class RenovationProjectSeeder extends Seeder
             $this->command->error($e->getTraceAsString());
         }
     }
+    private function parseDate($value)
+    {
+        if (empty($value)) {
+            return null;
+        }
 
+        try {
+            if (is_numeric($value)) {
+                return \PhpOffice\PhpSpreadsheet\Shared\Date::excelToDateTimeObject($value)
+                    ->format('Y-m-d');
+            }
+
+            return date('Y-m-d', strtotime($value));
+        } catch (\Exception $e) {
+            Log::warning("Failed to parse date: $value");
+            return null;
+        }
+    }
     /**
      * Scan the PDF directory and return all PDF files
      */

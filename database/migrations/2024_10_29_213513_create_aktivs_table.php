@@ -22,7 +22,7 @@ class CreateAktivsTable extends Migration
 
             $table->string('district_name')->nullable(); // Туман номи - District name
 
-            $table->string('neighborhood_name')->nullable(); // Маҳалла фуқаролар йиғини номи - Neighborhood (mahalla) name
+            $table->text('neighborhood_name')->nullable(); // Маҳалла фуқаролар йиғини номи - Neighborhood (mahalla) name
             $table->decimal('area_hectare', 15, 6)->nullable(); // Ҳудуд майдони (гектар) - Area in hectares
             $table->decimal('total_building_area', 15, 2)->nullable(); // Қурилиш ости майдони жами - Total building footprint area (m²)
             $table->decimal('residential_area', 15, 2)->nullable(); // турар - Residential building area (m²)
@@ -52,6 +52,32 @@ class CreateAktivsTable extends Migration
             $table->unsignedBigInteger('user_id')->nullable();
             $table->enum('action', ['created', 'updated', 'deleted'])->nullable();
             $table->timestamp('action_timestamp')->nullable();
+
+            //new fields
+            $table->integer('single_house_count')->nullable();
+            $table->decimal('single_house_area', 15, 2)->nullable();
+            $table->integer('multi_story_house_count')->nullable();
+            $table->decimal('multi_story_house_area', 15, 2)->nullable();
+            $table->integer('non_residential_count')->nullable();
+            $table->decimal('non_residential_building_area', 15, 2)->nullable();
+            $table->string('area_passport')->nullable();
+            $table->string('protocol_number')->nullable();
+            $table->string('land_assessment')->nullable();
+            $table->string('investment_contract')->nullable();
+            $table->string('public_discussion')->nullable();
+            $table->date('resettlement_start')->nullable();
+            $table->date('resettlement_end')->nullable();
+            $table->date('project_start')->nullable();
+            $table->string('assessment_status')->nullable();
+            $table->string('announcement')->nullable();
+            $table->string('zone')->nullable();
+
+            // Add indexes for commonly queried fields
+            $table->index('district_name');
+            // $table->index('neighborhood_name');
+            $table->index('investor');
+            $table->index('status');
+            $table->index('zone');
             $table->softDeletes();
             $table->timestamps();
         });

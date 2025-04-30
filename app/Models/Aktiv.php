@@ -34,7 +34,26 @@ class Aktiv extends Model
         'longitude',
         'user_id',
         'action',
-        'action_timestamp'
+        'action_timestamp',
+
+
+        'single_house_count',
+        'single_house_area',
+        'multi_story_house_count',
+        'multi_story_house_area',
+        'non_residential_count',
+        'non_residential_building_area',
+        'area_passport',
+        'protocol_number',
+        'land_assessment',
+        'investment_contract',
+        'public_discussion',
+        'resettlement_start',
+        'resettlement_end',
+        'project_start',
+        'assessment_status',
+        'announcement',
+        'zone'
     ];
 
     // If your relationship is named polygonAktivs, ensure this method matches

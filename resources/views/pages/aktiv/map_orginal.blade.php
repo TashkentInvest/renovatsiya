@@ -47,6 +47,90 @@
     <!-- Font Awesome for Icons -->
     <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.0.0-beta3/css/all.min.css" />
 
+    {{-- new style start --}}
+    <style>
+        .info-section {
+            margin-bottom: 20px;
+            border: 1px solid #e0e0e0;
+            border-radius: 5px;
+            padding: 15px;
+            background-color: #ffffff;
+        }
+
+        .info-section h5 {
+            margin-top: 0;
+            margin-bottom: 15px;
+            color: #333;
+            font-weight: bold;
+            border-bottom: 2px solid #f0f0f0;
+            padding-bottom: 8px;
+        }
+
+        .info-content table {
+            width: 100%;
+            border-collapse: collapse;
+        }
+
+        .info-content th,
+        .info-content td {
+            padding: 8px;
+            border-bottom: 1px solid #f0f0f0;
+        }
+
+        .info-content th.sidebar_key {
+            width: 40%;
+            font-weight: 600;
+            color: #666;
+        }
+
+        .document-links {
+            margin-top: 20px;
+        }
+
+        .document-list {
+            list-style: none;
+            padding: 0;
+        }
+
+        .document-link {
+            display: flex;
+            align-items: center;
+            padding: 8px;
+            margin: 5px 0;
+            background-color: #f8f9fa;
+            border-radius: 4px;
+            color: #007bff;
+            text-decoration: none;
+        }
+
+        .document-link i {
+            margin-right: 8px;
+        }
+
+        .document-link:hover {
+            background-color: #e9ecef;
+            text-decoration: none;
+        }
+
+        .btn-link {
+            display: inline-block;
+            margin-top: 20px;
+            padding: 10px 20px;
+            background-color: #007bff;
+            color: white;
+            text-decoration: none;
+            border-radius: 5px;
+            text-align: center;
+        }
+
+        .btn-link:hover {
+            background-color: #0056b3;
+            text-decoration: none;
+            color: white;
+        }
+    </style>
+    {{-- new style end --}}
+
 
     <!-- Custom Styles -->
     <style>
@@ -752,6 +836,7 @@
             const area = parseFloat(markerData.land_area) || 0;
             const priceUZS = parseFloat(markerData.start_price) || 0;
 
+
             // Calculate lot price per sotix
             const lotPricePerSotixUZS = area > 0 ? priceUZS / (area * 100) : 0;
 
@@ -790,6 +875,7 @@
                 console.error('Error formatting currency:', error);
             }
 
+
             // Generate QR Code URL
             // const qrCodeUrl = `${baseUrl}/api/lot/qr-code/${markerData.lat}/${markerData.lng}`;
 
@@ -798,98 +884,167 @@
     <div class="info-content">
         <img class="custom_sidebar_image" src="${markerData.main_image}" style="display:none;" alt="Marker Image"/>
         <h4 class="custom_sidebar_title" style="margin-top:30px;"><b>${markerData.neighborhood_name || 'No Title'}</b></h4>
-        <table>
-            <tr>
-                <th class="sidebar_key">Маҳалла фуқаролар йиғини номи</th>
-                <td>${markerData.neighborhood_name || 'Мавжуд Эмас'}</td>
-            </tr>
-            <tr>
-                <th class="sidebar_key">Ҳудуд майдони</th>
-                <td>${markerData.area_hectare ? markerData.area_hectare + ' га' : 'Мавжуд Эмас'}</td>
-            </tr>
-            <tr>
-                <th class="sidebar_key">Қурилиш ости майдони</th>
-                <td>${markerData.total_building_area ? markerData.total_building_area + ' кв.м' : 'Мавжуд Эмас'}</td>
-            </tr>
-            <tr>
-                <th class="sidebar_key">Турар жой</th>
-                <td>${markerData.residential_area ? markerData.residential_area + ' кв.м' : 'Мавжуд Эмас'}</td>
-            </tr>
-            <tr>
-                <th class="sidebar_key">Нотурар жой</th>
-                <td>${markerData.non_residential_area ? markerData.non_residential_area + ' кв.м' : 'Мавжуд Эмас'}</td>
-            </tr>
-            <tr>
-                <th class="sidebar_key">УМН коэффициент</th>
-                <td>${markerData.umn_coefficient || 'Мавжуд Эмас'}</td>
-            </tr>
-            <tr>
-                <th class="sidebar_key">ҚМН фоизи</th>
-                <td>${markerData.qmn_percentage || 'Мавжуд Эмас'}</td>
-            </tr>
-            <tr>
-                <th class="sidebar_key">Белгиланган қаватлар</th>
-                <td>${markerData.designated_floors || 'Мавжуд Эмас'}</td>
-            </tr>
-            <tr>
-                <th class="sidebar_key">Таклиф этилган қаватлар</th>
-                <td>${markerData.proposed_floors || 'Мавжуд Эмас'}</td>
-            </tr>
-            <tr>
-                <th class="sidebar_key">Қарор</th>
-                <td>${markerData.decision_number || 'Мавжуд Эмас'}</td>
-            </tr>
-            <tr>
-                <th class="sidebar_key">Кадастр далолатномаси</th>
-                <td>${markerData.cadastre_certificate || 'Мавжуд Эмас'}</td>
-            </tr>
-            <tr>
-                <th class="sidebar_key">Ҳудуд стратегияси</th>
-                <td>${markerData.area_strategy || 'Мавжуд Эмас'}</td>
-            </tr>
-            <tr>
-                <th class="sidebar_key">Инвестор</th>
-                <td>${markerData.investor || 'Мавжуд Эмас'}</td>
-            </tr>
-            <tr>
-                <th class="sidebar_key">Статус</th>
-                <td>${markerData.status || 'Мавжуд Эмас'}</td>
-            </tr>
-            <tr>
-                <th class="sidebar_key">Аҳоли сони</th>
-                <td>${markerData.population || 'Мавжуд Эмас'}</td>
-            </tr>
-            <tr>
-                <th class="sidebar_key">Хонадон сони</th>
-                <td>${markerData.household_count || 'Мавжуд Эмас'}</td>
-            </tr>
-            <tr>
-                <th class="sidebar_key">Қўшимча маълумот</th>
-                <td>${markerData.additional_information || 'Мавжуд Эмас'}</td>
-            </tr>
-        </table>
+
+        <div class="info-section">
+            <h5>Асосий маълумотлар</h5>
+            <table>
+                <tr>
+                    <th class="sidebar_key">Маҳалла фуқаролар йиғини номи</th>
+                    <td>${markerData.neighborhood_name || 'Мавжуд Эмас'}</td>
+                </tr>
+                <tr>
+                    <th class="sidebar_key">Ҳудуд майдони</th>
+                    <td>${markerData.area_hectare || 'Мавжуд Эмас'}</td>
+                </tr>
+            </table>
+        </div>
+
+        <div class="info-section">
+            <h5>Қурилиш маълумотлари</h5>
+            <table>
+                <tr>
+                    <th class="sidebar_key">Якка тартибдаги уйлар сони</th>
+                    <td>${markerData.single_house_count || 'Мавжуд Эмас'}</td>
+                </tr>
+                <tr>
+                    <th class="sidebar_key">Якка тартибдаги уйлар майдони</th>
+                    <td>${markerData.single_house_area || 'Мавжуд Эмас'}</td>
+                </tr>
+                <tr>
+                    <th class="sidebar_key">Кўп қаватли уйлар сони</th>
+                    <td>${markerData.multi_story_house_count || 'Мавжуд Эмас'}</td>
+                </tr>
+                <tr>
+                    <th class="sidebar_key">Кўп қаватли уйлар майдони</th>
+                    <td>${markerData.multi_story_house_area || 'Мавжуд Эмас'}</td>
+                </tr>
+                <tr>
+                    <th class="sidebar_key">Нотурар объектлар сони</th>
+                    <td>${markerData.non_residential_count || 'Мавжуд Эмас'}</td>
+                </tr>
+                <tr>
+                    <th class="sidebar_key">Нотурар объектлар майдони</th>
+                    <td>${markerData.non_residential_building_area || 'Мавжуд Эмас'}</td>
+                </tr>
+                <tr>
+                    <th class="sidebar_key">УМН коэффициент</th>
+                    <td>${markerData.umn_coefficient || 'Мавжуд Эмас'}</td>
+                </tr>
+                <tr>
+                    <th class="sidebar_key">ҚМН фоизи</th>
+                    <td>${markerData.qmn_percentage || 'Мавжуд Эмас'}</td>
+                </tr>
+                <tr>
+                    <th class="sidebar_key">Белгиланган қаватлар</th>
+                    <td>${markerData.designated_floors || 'Мавжуд Эмас'}</td>
+                </tr>
+                <tr>
+                    <th class="sidebar_key">Таклиф этилган қаватлар</th>
+                    <td>${markerData.proposed_floors || 'Мавжуд Эмас'}</td>
+                </tr>
+            </table>
+        </div>
+
+        <div class="info-section">
+            <h5>Ҳужжатлар ва қарорлар</h5>
+            <table>
+                <tr>
+                    <th class="sidebar_key">Қарор</th>
+                    <td>${markerData.decision_number || 'Мавжуд Эмас'}</td>
+                </tr>
+                <tr>
+                    <th class="sidebar_key">Кадастр далолатномаси</th>
+                    <td>${markerData.cadastre_certificate || 'Мавжуд Эмас'}</td>
+                </tr>
+                <tr>
+                    <th class="sidebar_key">Ҳудуд паспорти</th>
+                    <td>${markerData.area_passport || 'Мавжуд Эмас'}</td>
+                </tr>
+                <tr>
+                    <th class="sidebar_key">Протокол</th>
+                    <td>${markerData.protocol_number || 'Мавжуд Эмас'}</td>
+                </tr>
+                <tr>
+                    <th class="sidebar_key">Ер баҳолаш</th>
+                    <td>${markerData.land_assessment || 'Мавжуд Эмас'}</td>
+                </tr>
+                <tr>
+                    <th class="sidebar_key">Инвестиция шартномаси</th>
+                    <td>${markerData.investment_contract || 'Мавжуд Эмас'}</td>
+                </tr>
+                <tr>
+                    <th class="sidebar_key">Жамоатчилик муҳокамаси</th>
+                    <td>${markerData.public_discussion || 'Мавжуд Эмас'}</td>
+                </tr>
+            </table>
+        </div>
+
+        <div class="info-section">
+            <h5>Лойиҳа жадвали</h5>
+            <table>
+                <tr>
+                    <th class="sidebar_key">Кўчириш бошланиши</th>
+                    <td>${markerData.resettlement_start || 'Мавжуд Эмас'}</td>
+                </tr>
+                <tr>
+                    <th class="sidebar_key">Кўчириш якуни</th>
+                    <td>${markerData.resettlement_end || 'Мавжуд Эмас'}</td>
+                </tr>
+                <tr>
+                    <th class="sidebar_key">Лойиҳа бошланиши</th>
+                    <td>${markerData.project_start || 'Мавжуд Эмас'}</td>
+                </tr>
+            </table>
+        </div>
+
+        <div class="info-section">
+            <h5>Қўшимча маълумотлар</h5>
+            <table>
+                <tr>
+                    <th class="sidebar_key">Баҳолаш ҳолати</th>
+                    <td>${markerData.assessment_status || 'Мавжуд Эмас'}</td>
+                </tr>
+                <tr>
+                    <th class="sidebar_key">Эълон</th>
+                    <td>${markerData.announcement || 'Мавжуд Эмас'}</td>
+                </tr>
+                <tr>
+                    <th class="sidebar_key">Зона</th>
+                    <td>${markerData.zone || 'Мавжуд Эмас'}</td>
+                </tr>
+                <tr>
+                    <th class="sidebar_key">Статус</th>
+                    <td>${markerData.status || 'Мавжуд Эмас'}</td>
+                </tr>
+                <tr>
+                    <th class="sidebar_key">Инвестор</th>
+                    <td>${markerData.investor || 'Мавжуд Эмас'}</td>
+                </tr>
+            </table>
+        </div>
 
         <div class="document-links">
-            <h4>Ҳужжатлар</h4>
+            <h5>Ҳужжатлар</h5>
             ${
                 markerData.documents && markerData.documents.length > 0
                 ? `<ul class="document-list">
-                                                                                                ${markerData.documents.map(doc =>
-                                                                                                    `<li>
+                        ${markerData.documents.map(doc =>
+                            `<li>
                             <a href="${doc.url}" target="_blank" class="document-link">
                                 <i class="fa fa-file-pdf-o" aria-hidden="true"></i>
                                 ${doc.filename || 'Ҳужжат'}
                             </a>
                         </li>`
-                                                                                                ).join('')}
-                                                                                              </ul>`
+                        ).join('')}
+                    </ul>`
                 : '<p>Ҳужжатлар мавжуд эмас</p>'
             }
         </div>
 
         <a target="_blank" href="${markerData.lot_link || '#'}" class="btn-link">Батафсил кўриш</a>
     </div>
-`;
+    `;
+
         }
 
 
