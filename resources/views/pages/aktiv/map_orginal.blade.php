@@ -603,6 +603,14 @@
                             <option value="yunusabod.xml">Yunusobod</option>
                             <option value="yangihayot.xml">Yangihayot</option>
                         </select>
+
+                    </li>
+
+                    <li class="pc-h-item" style="margin-left: 10px !important">
+                        <form action="{{ route('aktivs.index') }}">
+
+                            <button class="btn btn-primary">Мониторинг</button>
+                        </form>
                     </li>
                 </ul>
             </div>
@@ -1028,15 +1036,15 @@
             ${
                 markerData.documents && markerData.documents.length > 0
                 ? `<ul class="document-list">
-                        ${markerData.documents.map(doc =>
-                            `<li>
+                                            ${markerData.documents.map(doc =>
+                                                `<li>
                             <a href="${doc.url}" target="_blank" class="document-link">
                                 <i class="fa fa-file-pdf-o" aria-hidden="true"></i>
                                 ${doc.filename || 'Ҳужжат'}
                             </a>
                         </li>`
-                        ).join('')}
-                    </ul>`
+                                            ).join('')}
+                                        </ul>`
                 : '<p>Ҳужжатлар мавжуд эмас</p>'
             }
         </div>

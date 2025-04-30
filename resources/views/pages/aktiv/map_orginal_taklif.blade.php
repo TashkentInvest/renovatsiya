@@ -47,9 +47,136 @@
     <!-- Font Awesome for Icons -->
     <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.0.0-beta3/css/all.min.css" />
 
+    {{-- new style start --}}
+    <style>
+        .info-section {
+            margin-bottom: 20px;
+            border: 1px solid #e0e0e0;
+            border-radius: 5px;
+            padding: 15px;
+            background-color: #ffffff;
+        }
+
+        .info-section h5 {
+            margin-top: 0;
+            margin-bottom: 15px;
+            color: #333;
+            font-weight: bold;
+            border-bottom: 2px solid #f0f0f0;
+            padding-bottom: 8px;
+        }
+
+        .info-content table {
+            width: 100%;
+            border-collapse: collapse;
+        }
+
+        .info-content th,
+        .info-content td {
+            padding: 8px;
+            border-bottom: 1px solid #f0f0f0;
+        }
+
+        .info-content th.sidebar_key {
+            width: 40%;
+            font-weight: 600;
+            color: #666;
+        }
+
+        .document-links {
+            margin-top: 20px;
+        }
+
+        .document-list {
+            list-style: none;
+            padding: 0;
+        }
+
+        .document-link {
+            display: flex;
+            align-items: center;
+            padding: 8px;
+            margin: 5px 0;
+            background-color: #f8f9fa;
+            border-radius: 4px;
+            color: #007bff;
+            text-decoration: none;
+        }
+
+        .document-link i {
+            margin-right: 8px;
+        }
+
+        .document-link:hover {
+            background-color: #e9ecef;
+            text-decoration: none;
+        }
+
+        .btn-link {
+            display: inline-block;
+            margin-top: 20px;
+            padding: 10px 20px;
+            background-color: #007bff;
+            color: white;
+            text-decoration: none;
+            border-radius: 5px;
+            text-align: center;
+        }
+
+        .btn-link:hover {
+            background-color: #0056b3;
+            text-decoration: none;
+            color: white;
+        }
+    </style>
+    {{-- new style end --}}
+
 
     <!-- Custom Styles -->
     <style>
+        .document-links {
+            margin-top: 20px;
+            padding: 10px;
+            background-color: #f9f9f9;
+            border-radius: 5px;
+        }
+
+        .document-links h4 {
+            margin-bottom: 10px;
+            font-size: 18px;
+            color: #333;
+        }
+
+        .document-list {
+            list-style: none;
+            padding: 0;
+            margin: 0;
+        }
+
+        .document-list li {
+            margin-bottom: 8px;
+        }
+
+        .document-link {
+            display: inline-flex;
+            align-items: center;
+            color: #2b5797;
+            text-decoration: none;
+            padding: 5px 8px;
+            border-radius: 4px;
+            transition: background-color 0.2s;
+        }
+
+        .document-link:hover {
+            background-color: #e9f0f7;
+            text-decoration: underline;
+        }
+
+        .document-link i {
+            margin-right: 8px;
+            color: #c00;
+        }
+
         /* Modal Styles */
         .modal {
             display: none;
@@ -298,10 +425,11 @@
                     </li>
 
                     <li class="pc-item">
-                        <a class="pc-link" href="{{ route('aktivs.myMap') }}">
-                            <i class="fas fa-map"></i> Renovatsiya
+                        <a class="pc-link" href="{{ route('myTaklifMap') }}">
+                            <i class="fas fa-map"></i> Takliflar
                         </a>
                     </li>
+
                     <!-- Back Section -->
                     <li class="pc-item">
                         <a class="pc-link" href="{{ route('aktivs.index') }}">
@@ -589,11 +717,14 @@
         }
 
         function fetchMarkers(map) {
-            fetch('/api/taklif/aktivs')
+            fetch('/api/aktivs')
                 .then(response => response.json())
                 .then(data => {
                     const markersData = data.lots;
                     window.markers = markersData; // Make markers globally accessible
+                    window.markerObjects = []; // Store marker objects for reference
+                    window.polygonObjects = {}; // Store polygon objects by marker ID
+                    console.log(markersData);
 
                     markersData.forEach(markerData => {
                         const lat = parseFloat(markerData.lat);
@@ -609,22 +740,41 @@
                             const marker = new google.maps.Marker({
                                 position: position,
                                 map: map,
-                                title: title
+                                title: title,
                             });
 
+                            // Store marker reference with ID
+                            window.markerObjects.push({
+                                id: markerData.id,
+                                marker: marker
+                            });
+
+                            // Store polygons for this marker
+                            window.polygonObjects[markerData.id] = [];
+
                             marker.addListener('click', function() {
+                                // Open sidebar
                                 const sidebar = document.getElementById('info-sidebar');
                                 updateSidebarContent(markerData);
                                 sidebar.classList.add('open');
+
+                                // Zoom to marker
+                                map.setZoom(16); // Adjust zoom level as needed
+                                map.setCenter(marker.getPosition());
+
+                                // Highlight polygons associated with this marker
+                                highlightPolygonsForMarker(markerData.id);
                             });
 
-                            // Draw polygons for this marker
-                            drawPolygons(markerData.polygons, map);
+                            // Draw polygons for this marker and store references
+                            const drawnPolygons = drawPolygons(markerData.polygons, map, markerData.id);
+                            window.polygonObjects[markerData.id] = drawnPolygons;
                         }
                     });
                 })
                 .catch(error => console.error('Error fetching markers:', error));
         }
+
 
         function dmsToDecimal(dms) {
             if (!dms || typeof dms !== 'string') return null;
@@ -640,7 +790,9 @@
             return degrees + minutes + seconds;
         }
 
-        function drawPolygons(polygonsData, map) {
+        function drawPolygons(polygonsData, map, markerId) {
+            const drawnPolygons = [];
+
             polygonsData.forEach(polygonCoords => {
                 const startLat = dmsToDecimal(polygonCoords.start_lat);
                 const startLng = dmsToDecimal(polygonCoords.start_lon);
@@ -660,18 +812,22 @@
 
                     const polygon = new google.maps.Polygon({
                         paths: polygonPath,
-                        strokeColor: 'yellow', // Set border color to yellow
-                        strokeWeight: 2, // Set stroke width
-                        fillColor: 'yellow', // Set fill color to yellow
-                        fillOpacity: 0.5 // Set fill opacity to 50%
+                        strokeColor: 'yellow', // Default border color
+                        strokeWeight: 4,
+                        fillColor: 'yellow', // Default fill color
+                        fillOpacity: 0.5
                     });
 
                     polygon.setMap(map);
+                    drawnPolygons.push(polygon);
                 } else {
                     console.warn('Invalid coordinates for polygon:', polygonCoords);
                 }
             });
+
+            return drawnPolygons;
         }
+
 
 
 
@@ -679,6 +835,7 @@
             const sidebar = document.getElementById('info-sidebar');
             const area = parseFloat(markerData.land_area) || 0;
             const priceUZS = parseFloat(markerData.start_price) || 0;
+
 
             // Calculate lot price per sotix
             const lotPricePerSotixUZS = area > 0 ? priceUZS / (area * 100) : 0;
@@ -718,107 +875,161 @@
                 console.error('Error formatting currency:', error);
             }
 
+
             // Generate QR Code URL
             // const qrCodeUrl = `${baseUrl}/api/lot/qr-code/${markerData.lat}/${markerData.lng}`;
 
             sidebar.innerHTML = `
-          <span class="close-btn">&times;</span>
-<div class="info-content">
-    <img class="custom_sidebar_image" src="${markerData.main_image}" alt="Marker Image"/>
-    <h4 class="custom_sidebar_title"><b>${markerData.property_name || 'No Title'}</b></h4>
-    <table>
-        <tr>
-            <th class="sidebar_key">№</th>
-            <td>${markerData.lot_number || 'Мавжуд Эмас'}</td>
-        </tr>
-        <tr>
-            <th class="sidebar_key">Манзили</th>
-            <td>${markerData.address || 'Мавжуд Эмас'}</td>
-        </tr>
-        ${priceUZS > 0 ? `
-                                        <tr>
-                                            <th class="sidebar_key">Бошланғич нархи</th>
-                                            <td id="price-td">${lotPriceFormatted}</td>
-                                        </tr>
-                                        <tr>
-                                            <th class="sidebar_key">1 сотих учун нарх</th>
-                                            <td>${lotPricePerSotixFormatted}</td>
-                                        </tr>` : ''}
-                                <tr>
-                                    <th class="sidebar_key">Умумий майдон</th>
-                                    <td>${markerData.total_area || 'Мавжуд Эмас'} </td>
-                                </tr>
+    <span class="close-btn">&times;</span>
+    <div class="info-content">
+        <img class="custom_sidebar_image" src="${markerData.main_image}" style="display:none;" alt="Marker Image"/>
+        <h4 class="custom_sidebar_title" style="margin-top:30px;"><b>${markerData.neighborhood_name || 'No Title'}</b></h4>
 
-                                <tr>
-                                    <th class="sidebar_key">Турар жой майдони</th>
-                                    <td>${markerData.turar_joy_maydoni || 'Мавжуд Эмас'} kv.m</td>
-                                </tr>
-                                <tr>
-                                    <th class="sidebar_key">Нотурар жой майдони</th>
-                                    <td>${markerData.noturar_joy_maydoni || 'Мавжуд Эмас'} kv.m</td>
-                                </tr>
-                                <tr>
-                                    <th class="sidebar_key">Вақтинчалик парковка маълумоти</th>
-                                    <td>${markerData.vaqtinchalik_parking_info || 'Мавжуд Эмас'}</td>
-                                </tr>
-                                <tr>
-                                    <th class="sidebar_key">Дўмий парковка маълумоти</th>
-                                    <td>${markerData.doimiy_parking_info || 'Мавжуд Эмас'}</td>
-                                </tr>
-                                <tr>
-                                    <th class="sidebar_key">Мактабгача ташкилот маълумоти</th>
-                                    <td>${markerData.maktabgacha_tashkilot_info || 'Мавжуд Эмас'}</td>
-                                </tr>
-                                <tr>
-                                    <th class="sidebar_key">Умумтаълим мактаб маълумоти</th>
-                                    <td>${markerData.umumtaolim_maktab_info || 'Мавжуд Эмас'}</td>
-                                </tr>
-                                <tr>
-                                    <th class="sidebar_key">Стационар тиббиёт маълумоти</th>
-                                    <td>${markerData.stasionar_tibbiyot_info || 'Мавжуд Эмас'}</td>
-                                </tr>
-                                <tr>
-                                    <th class="sidebar_key">Амбулатор тиббиёт маълумоти</th>
-                                    <td>${markerData.ambulator_tibbiyot_info || 'Мавжуд Эмас'}</td>
-                                </tr>
-                                <tr>
-                                    <th class="sidebar_key">Диний муассаса маълумоти</th>
-                                    <td>${markerData.diniy_muassasa_info || 'Мавжуд Эмас'}</td>
-                                </tr>
-                                <tr>
-                                    <th class="sidebar_key">Спорт соғломлаштириш маълумоти</th>
-                                    <td>${markerData.sport_soglomlashtirish_info || 'Мавжуд Эмас'}</td>
-                                </tr>
-                                <tr>
-                                    <th class="sidebar_key">Сақланадиган кўкаламзор маълумоти</th>
-                                    <td>${markerData.saqlanadigan_kokalamzor_info || 'Мавжуд Эмас'}</td>
-                                </tr>
-                                <tr>
-                                    <th class="sidebar_key">Янгидан ташкил кўкаламзор маълумоти</th>
-                                    <td>${markerData.yangidan_tashkil_kokalamzor_info || 'Мавжуд Эмас'}</td>
-                                </tr>
-                                <tr>
-                                    <th class="sidebar_key">Сақланадиган муҳандислик тармоқлари маълумоти</th>
-                                    <td>${markerData.saqlanadigan_muhandislik_tarmoqlari_info || 'Мавжуд Эмас'}</td>
-                                </tr>
-                                <tr>
-                                    <th class="sidebar_key">Янгидан қуриладиган муҳандислик тармоқлари маълумоти</th>
-                                    <td>${markerData.yangidan_quriladigan_muhandislik_tarmoqlari_info || 'Мавжуд Эмас'}</td>
-                                </tr>
-                                <tr>
-                                    <th class="sidebar_key">Сақланадиган йўллар маълумоти</th>
-                                    <td>${markerData.saqlanadigan_yollar_info || 'Мавжуд Эмас'}</td>
-                                </tr>
-                                <tr>
-                                    <th class="sidebar_key">Янгидан қуриладиган йўллар маълумоти</th>
-                                    <td>${markerData.yangidan_quriladigan_yollar_info || 'Мавжуд Эмас'}</td>
-                                </tr>
-                            </table>
-                            <a target="_blank" href="${markerData.lot_link || '#'}" class="btn-link">Батафсил кўриш</a>
-                        </div>
+        <div class="info-section">
+            <h5>Асосий маълумотлар</h5>
+            <table>
+                <tr>
+                    <th class="sidebar_key">Маҳалла фуқаролар йиғини номи</th>
+                    <td>${markerData.neighborhood_name || 'Мавжуд Эмас'}</td>
+                </tr>
+                <tr>
+                    <th class="sidebar_key">Ҳудуд майдони</th>
+                    <td>${markerData.area_hectare || 'Мавжуд Эмас'}</td>
+                </tr>
+            </table>
+        </div>
 
-        `;
+        <div class="info-section">
+            <h5>Қурилиш маълумотлари</h5>
+            <table>
+                <tr>
+                    <th class="sidebar_key">Якка тартибдаги уйлар сони</th>
+                    <td>${markerData.single_house_count || 'Мавжуд Эмас'}</td>
+                </tr>
+                <tr>
+                    <th class="sidebar_key">Якка тартибдаги уйлар майдони</th>
+                    <td>${markerData.single_house_area || 'Мавжуд Эмас'}</td>
+                </tr>
+                <tr>
+                    <th class="sidebar_key">Кўп қаватли уйлар сони</th>
+                    <td>${markerData.multi_story_house_count || 'Мавжуд Эмас'}</td>
+                </tr>
+                <tr>
+                    <th class="sidebar_key">Кўп қаватли уйлар майдони</th>
+                    <td>${markerData.multi_story_house_area || 'Мавжуд Эмас'}</td>
+                </tr>
+                <tr>
+                    <th class="sidebar_key">Нотурар объектлар сони</th>
+                    <td>${markerData.non_residential_count || 'Мавжуд Эмас'}</td>
+                </tr>
+                <tr>
+                    <th class="sidebar_key">Нотурар объектлар майдони</th>
+                    <td>${markerData.non_residential_building_area || 'Мавжуд Эмас'}</td>
+                </tr>
+                <tr>
+                    <th class="sidebar_key">УМН коэффициент</th>
+                    <td>${markerData.umn_coefficient || 'Мавжуд Эмас'}</td>
+                </tr>
+                <tr>
+                    <th class="sidebar_key">ҚМН фоизи</th>
+                    <td>${markerData.qmn_percentage || 'Мавжуд Эмас'}</td>
+                </tr>
+                <tr>
+                    <th class="sidebar_key">Белгиланган қаватлар</th>
+                    <td>${markerData.designated_floors || 'Мавжуд Эмас'}</td>
+                </tr>
+                <tr>
+                    <th class="sidebar_key">Таклиф этилган қаватлар</th>
+                    <td>${markerData.proposed_floors || 'Мавжуд Эмас'}</td>
+                </tr>
+            </table>
+        </div>
+
+        <div class="info-section">
+            <h5>Ҳужжатлар ва қарорлар</h5>
+            <table>
+                <tr>
+                    <th class="sidebar_key">Қарор</th>
+                    <td>${markerData.decision_number || 'Мавжуд Эмас'}</td>
+                </tr>
+                <tr>
+                    <th class="sidebar_key">Кадастр далолатномаси</th>
+                    <td>${markerData.cadastre_certificate || 'Мавжуд Эмас'}</td>
+                </tr>
+                <tr>
+                    <th class="sidebar_key">Ҳудуд паспорти</th>
+                    <td>${markerData.area_passport || 'Мавжуд Эмас'}</td>
+                </tr>
+                <tr>
+                    <th class="sidebar_key">Протокол</th>
+                    <td>${markerData.protocol_number || 'Мавжуд Эмас'}</td>
+                </tr>
+                <tr>
+                    <th class="sidebar_key">Ер баҳолаш</th>
+                    <td>${markerData.land_assessment || 'Мавжуд Эмас'}</td>
+                </tr>
+                <tr>
+                    <th class="sidebar_key">Инвестиция шартномаси</th>
+                    <td>${markerData.investment_contract || 'Мавжуд Эмас'}</td>
+                </tr>
+                <tr>
+                    <th class="sidebar_key">Жамоатчилик муҳокамаси</th>
+                    <td>${markerData.public_discussion || 'Мавжуд Эмас'}</td>
+                </tr>
+            </table>
+        </div>
+
+        <div class="info-section">
+            <h5>Лойиҳа жадвали</h5>
+            <table>
+                <tr>
+                    <th class="sidebar_key">Кўчириш бошланиши</th>
+                    <td>${markerData.resettlement_start || 'Мавжуд Эмас'}</td>
+                </tr>
+                <tr>
+                    <th class="sidebar_key">Кўчириш якуни</th>
+                    <td>${markerData.resettlement_end || 'Мавжуд Эмас'}</td>
+                </tr>
+                <tr>
+                    <th class="sidebar_key">Лойиҳа бошланиши</th>
+                    <td>${markerData.project_start || 'Мавжуд Эмас'}</td>
+                </tr>
+            </table>
+        </div>
+
+        <div class="info-section">
+            <h5>Қўшимча маълумотлар</h5>
+            <table>
+                <tr>
+                    <th class="sidebar_key">Баҳолаш ҳолати</th>
+                    <td>${markerData.assessment_status || 'Мавжуд Эмас'}</td>
+                </tr>
+                <tr>
+                    <th class="sidebar_key">Эълон</th>
+                    <td>${markerData.announcement || 'Мавжуд Эмас'}</td>
+                </tr>
+                <tr>
+                    <th class="sidebar_key">Зона</th>
+                    <td>${markerData.zone || 'Мавжуд Эмас'}</td>
+                </tr>
+                <tr>
+                    <th class="sidebar_key">Статус</th>
+                    <td>${markerData.status || 'Мавжуд Эмас'}</td>
+                </tr>
+                <tr>
+                    <th class="sidebar_key">Инвестор</th>
+                    <td>${markerData.investor || 'Мавжуд Эмас'}</td>
+                </tr>
+            </table>
+        </div>
+
+        <a target="_blank" href="${markerData.lot_link || '#'}" class="btn-link">Батафсил кўриш</a>
+    </div>
+    `;
+
         }
+
+
 
         function setupEventListeners() {
             document.addEventListener('click', function(event) {
@@ -850,7 +1061,7 @@
             let polygons = {};
             let currentHighlight = null;
 
-            const defaultColor = '#c7a5a594';
+            const defaultColor = 'lightgreen';
             const highlightColor = '#EEF5FF';
 
             const kmlFileNames = [
@@ -907,7 +1118,7 @@
                 const polygonArray = paths.map(path => {
                     const polygon = new google.maps.Polygon({
                         paths: path,
-                        strokeColor: '#fff',
+                        strokeColor: 'red',
                         strokeOpacity: 0.8,
                         strokeWeight: 2,
                         fillColor: fillColor,

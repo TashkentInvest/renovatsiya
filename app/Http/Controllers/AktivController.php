@@ -602,7 +602,13 @@ class AktivController extends Controller
 
     public function myMap()
     {
-        return view('pages.aktiv.map_orginal');
+        // dd('dsa');
+        // Check if the user is a Super Admin
+        if (auth()->user()) {
+            return view('pages.aktiv.map_orginal');
+        }
+        // return view('pages.aktiv.map_orginal_taklif');
+        return view('auth.login');
 
         // $userRole = auth()->user()->roles->first()->name;
 

@@ -27,15 +27,15 @@ Auth::routes(['register' => false]);
 
 
 Route::get('/', [AktivController::class, 'myMap'])->name('aktivs.myMap');
-Route::get('/my-taklif-map', [AktivController::class, 'myTaklifMap'])->name('myTaklifMap');
 
 // Route::get('/', function () {
-//     return view('welcome');
-// });
+    //     return view('welcome');
+    // });
 
 
 
-Route::group(['middleware' => ['auth', 'checkUserRole']], function () {
+    Route::group(['middleware' => ['auth', 'checkUserRole']], function () {
+    Route::get('/my-taklif-map', [AktivController::class, 'myTaklifMap'])->name('myTaklifMap');
 
     Route::get('aktivs', [AktivController::class, 'index'])->name('aktivs.index');
     Route::get('/aktivs/{aktiv}/get-data', [AktivController::class, 'getData'])->name('aktivs.getData');
