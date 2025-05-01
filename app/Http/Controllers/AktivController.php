@@ -607,8 +607,8 @@ class AktivController extends Controller
         if (auth()->user()) {
             return view('pages.aktiv.map_orginal');
         }
-        // return view('pages.aktiv.map_orginal_taklif');
-        return view('auth.login');
+
+        return view('pages.aktiv.map_orginal_taklif');
 
         // $userRole = auth()->user()->roles->first()->name;
 

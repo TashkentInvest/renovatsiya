@@ -963,7 +963,7 @@
         @php(message_clear())
     @endif
 
-    
+
     @yield('scripts')
 
 </body>

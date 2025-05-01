@@ -573,38 +573,95 @@
     </nav>
 
 
+    <script>
+        document.addEventListener("DOMContentLoaded", () => {
+            const logoutBtn = document.getElementById("logout-btn");
+            if (logoutBtn) {
+                logoutBtn.addEventListener("click", function(e) {
+                    e.preventDefault();
+                    document.getElementById("logout-form").submit();
+                });
+            }
+        });
+    </script>
 
     <!-- Header -->
-    <header class="pc-header">
-        <div class="header-wrapper">
-            <div class="me-auto pc-mob-drp">
-                <ul class="list-unstyled">
-                    <li class="pc-h-item pc-sidebar-collapse">
-                        <a href="#" class="pc-head-link ms-0" id="sidebar-hide"><i
-                                class="ti ti-menu-2"></i></a>
-                    </li>
-                    <li class="pc-h-item pc-sidebar-popup" id="hide_in_mobile">
-                        <a href="#" class="pc-head-link ms-0" id="mobile-collapse"><i
-                                class="ti ti-menu-2"></i></a>
-                    </li>
-                    <li class="pc-h-item">
-                        <select id="xml-selector" class="form-select form-control">
-                            <option id="testTashkent" value="tashkent">Toshkent shahri</option>
-                            <option value="bektemir.xml">Bektemir</option>
-                            <option value="chilonzor.xml">Chilonzor</option>
-                            <option value="mirabod.xml">Mirobod</option>
-                            <option value="mirzo_ulugbek.xml">Mirzo Ulug‘bek</option>
-                            <option value="olmazor.xml">Olmazor</option>
-                            <option value="sergeli.xml">Sergeli</option>
-                            <option value="shayhontaxur.xml">Shayxontohur</option>
-                            <option value="uchtepa.xml">Uchtepa</option>
-                            <option value="yakkasaroy.xml">Yakkasaroy</option>
-                            <option value="yashnabod.xml">Yashnobod</option>
-                            <option value="yunusabod.xml">Yunusobod</option>
-                            <option value="yangihayot.xml">Yangihayot</option>
-                        </select>
-                    </li>
-                </ul>
+    <header class="pc-header bg-light shadow-sm py-2">
+        <div class="container-fluid">
+            <div class="d-flex align-items-center justify-content-between">
+                <!-- Left Controls -->
+                <div class="d-flex align-items-center">
+                    <!-- Sidebar toggle (desktop) -->
+                    <a href="#" class="btn btn-outline-secondary me-2 d-none d-md-inline-block"
+                        id="sidebar-hide">
+                        <i class="ti ti-menu-2"></i>
+                    </a>
+
+                    <!-- Sidebar toggle (mobile) -->
+                    <a href="#" class="btn btn-outline-secondary me-2 d-md-none" id="mobile-collapse">
+                        <i class="ti ti-menu-2"></i>
+                    </a>
+
+                    <!-- District selector -->
+                    <select id="xml-selector" class="form-select form-control me-3">
+                        <option value="tashkent">Toshkent shahri</option>
+                        <option value="bektemir.xml">Bektemir</option>
+                        <option value="chilonzor.xml">Chilonzor</option>
+                        <option value="mirabod.xml">Mirobod</option>
+                        <option value="mirzo_ulugbek.xml">Mirzo Ulug‘bek</option>
+                        <option value="olmazor.xml">Olmazor</option>
+                        <option value="sergeli.xml">Sergeli</option>
+                        <option value="shayhontaxur.xml">Shayxontohur</option>
+                        <option value="uchtepa.xml">Uchtepa</option>
+                        <option value="yakkasaroy.xml">Yakkasaroy</option>
+                        <option value="yashnabod.xml">Yashnobod</option>
+                        <option value="yunusabod.xml">Yunusobod</option>
+                        <option value="yangihayot.xml">Yangihayot</option>
+                    </select>
+
+                    <!-- Monitoring Button -->
+                    @if (auth()->user())
+                        <form action="{{ route('aktivs.index') }}" class="d-inline">
+                            <button class="btn btn-primary">Мониторинг</button>
+                        </form>
+                    @endif
+                </div>
+
+                <!-- Right User Menu -->
+                <div class="dropdown">
+                    <button class="btn btn-light dropdown-toggle d-flex align-items-center" id="userDropdown"
+                        data-bs-toggle="dropdown" aria-expanded="false">
+                        <img src="{{ asset('assets/images/avatar-dafault.png') }}" alt="Avatar"
+                            class="rounded-circle me-2" width="32" height="32">
+                        @auth
+                            <span class="d-none d-xl-inline">{{ auth()->user()->name }}</span>
+                        @endauth
+                    </button>
+
+                    <ul class="dropdown-menu dropdown-menu-end" aria-labelledby="userDropdown">
+                        @auth
+                            <li>
+                                <a class="dropdown-item text-danger" href="#" id="logout-btn">
+                                    <i class="bx bx-power-off me-2"></i> @lang('global.logout')
+                                </a>
+                            </li>
+                        @else
+                            <li>
+                                <a class="dropdown-item" href="{{ route('login') }}">
+                                    <i class="bx bx-log-in me-2"></i> @lang('global.login')
+                                </a>
+                            </li>
+                        @endauth
+                    </ul>
+
+                    <!-- Hidden logout form -->
+                    @auth
+                        <form id="logout-form" action="{{ route('logout') }}" method="POST" style="display: none;">
+                            @csrf
+                        </form>
+                    @endauth
+                </div>
+
             </div>
         </div>
     </header>
@@ -1022,6 +1079,7 @@
                 </tr>
             </table>
         </div>
+
 
         <a target="_blank" href="${markerData.lot_link || '#'}" class="btn-link">Батафсил кўриш</a>
     </div>
