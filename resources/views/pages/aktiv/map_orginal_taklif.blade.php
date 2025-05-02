@@ -2,1408 +2,1503 @@
 <html lang="en">
 
 <head>
-    <title>Toshkent Invest Projects</title>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Investment Map - InvestUz</title>
 
-    <!-- Meta Tags -->
-    <meta charset="utf-8" />
-    <meta name="viewport" content="width=device-width,initial-scale=1,user-scalable=0,minimal-ui" />
-    <meta http-equiv="X-UA-Compatible" content="IE=edge" />
-    <meta name="description" content="Toshkent Invest Projects" />
-    <meta name="keywords" content="Invest, Toshkent, Tashkent Invest, Investitsiya, Aksiyadorlik jamiyati" />
-    <meta name="author" content="Tashkent Invest" />
+    <!-- Leaflet CSS -->
+    <link rel="stylesheet" href="https://unpkg.com/leaflet@1.9.4/dist/leaflet.css" />
+    <link rel="stylesheet" href="https://unpkg.com/leaflet.markercluster@1.4.1/dist/MarkerCluster.css" />
+    <link rel="stylesheet" href="https://unpkg.com/leaflet.markercluster@1.4.1/dist/MarkerCluster.Default.css" />
 
-    <!-- Open Graph / Facebook -->
-    <meta property="og:type" content="website" />
-    <meta property="og:url" content="https://www.toshkentinvest.uz" />
-    <meta property="og:title" content="Toshkent Invest Projects" />
-    <meta property="og:description" content="Toshkent Invest" />
-    <meta property="og:image" content="{{ asset('assets/projects-map/images/og-image.png') }}" />
+    <!-- Font Awesome -->
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.0.0/css/all.min.css" />
 
-    <!-- Twitter -->
-    <meta name="twitter:card" content="summary_large_image" />
-    <meta name="twitter:title" content="Toshkent Invest Projects" />
-    <meta name="twitter:description" content="Toshkent Invest" />
-    <meta name="twitter:image" content="{{ asset('assets/projects-map/images/twitter-image.png') }}" />
+    <!-- Google Fonts -->
+    <link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Roboto:wght@300;400;500;700&display=swap">
 
-    <!-- Favicon -->
-    <link rel="icon" href="{{ asset('assets/projects-map/images/logo.png') }}" type="image/x-icon" />
-
-    <!-- Include SimpleBar CSS -->
-    <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/simplebar@latest/dist/simplebar.min.css">
-
-    <!-- Stylesheets -->
-    <link rel="stylesheet" href="{{ asset('assets/projects-map/fonts/tabler-icons.min.css') }}" />
-    <link rel="stylesheet" href="{{ asset('assets/projects-map/fonts/material.css') }}" />
-    <link rel="stylesheet" href="{{ asset('assets/projects-map/css/style.css') }}" id="main-style-link" />
-    <link rel="stylesheet" href="{{ asset('assets/projects-map/css/custom.style.css') }}" />
-    <link rel="stylesheet" href="{{ asset('assets/projects-map/css/icon.css') }}" />
-
-    <script src="https://cdn.jsdelivr.net/npm/whatwg-fetch@3.6.2/dist/fetch.umd.min.js"></script>
-    <script src="https://cdn.jsdelivr.net/npm/@babel/standalone@7.19.3/babel.min.js"></script>
-    <script src="https://cdn.jsdelivr.net/npm/axios/dist/axios.min.js"></script>
-
-
-
-    <!-- Font Awesome for Icons -->
-    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.0.0-beta3/css/all.min.css" />
-
-    {{-- new style start --}}
+    <!-- Application Styles -->
     <style>
-        .info-section {
-            margin-bottom: 20px;
-            border: 1px solid #e0e0e0;
-            border-radius: 5px;
-            padding: 15px;
-            background-color: #ffffff;
+        :root {
+            --primary-color: #2b5797;
+            --secondary-color: #0078d7;
+            --accent-color: #0056b3;
+            --success-color: #107c10;
+            --warning-color: #ff8c00;
+            --danger-color: #e81123;
+            --light-gray: #f3f3f3;
+            --medium-gray: #e0e0e0;
+            --dark-gray: #767676;
+            --text-color: #333333;
+            --text-light: #666666;
+            --white: #ffffff;
+            --shadow-sm: 0 2px 4px rgba(0, 0, 0, 0.1);
+            --shadow-md: 0 4px 8px rgba(0, 0, 0, 0.1);
+            --shadow-lg: 0 8px 16px rgba(0, 0, 0, 0.1);
+            --border-radius: 4px;
+            --transition: all 0.3s ease;
         }
 
-        .info-section h5 {
-            margin-top: 0;
-            margin-bottom: 15px;
-            color: #333;
-            font-weight: bold;
-            border-bottom: 2px solid #f0f0f0;
-            padding-bottom: 8px;
-        }
-
-        .info-content table {
-            width: 100%;
-            border-collapse: collapse;
-        }
-
-        .info-content th,
-        .info-content td {
-            padding: 8px;
-            border-bottom: 1px solid #f0f0f0;
-        }
-
-        .info-content th.sidebar_key {
-            width: 40%;
-            font-weight: 600;
-            color: #666;
-        }
-
-        .document-links {
-            margin-top: 20px;
-        }
-
-        .document-list {
-            list-style: none;
-            padding: 0;
-        }
-
-        .document-link {
-            display: flex;
-            align-items: center;
-            padding: 8px;
-            margin: 5px 0;
-            background-color: #f8f9fa;
-            border-radius: 4px;
-            color: #007bff;
-            text-decoration: none;
-        }
-
-        .document-link i {
-            margin-right: 8px;
-        }
-
-        .document-link:hover {
-            background-color: #e9ecef;
-            text-decoration: none;
-        }
-
-        .btn-link {
-            display: inline-block;
-            margin-top: 20px;
-            padding: 10px 20px;
-            background-color: #007bff;
-            color: white;
-            text-decoration: none;
-            border-radius: 5px;
-            text-align: center;
-        }
-
-        .btn-link:hover {
-            background-color: #0056b3;
-            text-decoration: none;
-            color: white;
-        }
-    </style>
-    {{-- new style end --}}
-
-
-    <!-- Custom Styles -->
-    <style>
-        .document-links {
-            margin-top: 20px;
-            padding: 10px;
-            background-color: #f9f9f9;
-            border-radius: 5px;
-        }
-
-        .document-links h4 {
-            margin-bottom: 10px;
-            font-size: 18px;
-            color: #333;
-        }
-
-        .document-list {
-            list-style: none;
-            padding: 0;
+        * {
             margin: 0;
+            padding: 0;
+            box-sizing: border-box;
         }
 
-        .document-list li {
-            margin-bottom: 8px;
+        body {
+            font-family: 'Roboto', -apple-system, BlinkMacSystemFont, 'Segoe UI', Oxygen, Ubuntu, Cantarell, sans-serif;
+            line-height: 1.5;
+            color: var(--text-color);
+            background-color: var(--light-gray);
         }
 
-        .document-link {
-            display: inline-flex;
-            align-items: center;
-            color: #2b5797;
-            text-decoration: none;
-            padding: 5px 8px;
-            border-radius: 4px;
-            transition: background-color 0.2s;
-        }
-
-        .document-link:hover {
-            background-color: #e9f0f7;
-            text-decoration: underline;
-        }
-
-        .document-link i {
-            margin-right: 8px;
-            color: #c00;
-        }
-
-        /* Modal Styles */
-        .modal {
-            display: none;
-            position: fixed;
-            z-index: 10000;
-            left: 0;
-            top: 0;
+        #map {
             width: 100%;
-            height: 100%;
-            background-color: rgba(0, 0, 0, 0.5);
-            justify-content: center;
+            height: 100vh;
+            background: var(--light-gray);
+            z-index: 1;
+        }
+
+        .app-header {
+            position: fixed;
+            top: 0;
+            left: 0;
+            right: 0;
+            height: 60px;
+            background-color: var(--primary-color);
+            color: var(--white);
+            display: flex;
+            align-items: center;
+            padding: 0 20px;
+            z-index: 1000;
+            box-shadow: var(--shadow-md);
+        }
+
+        .app-title {
+            font-weight: 500;
+            font-size: 20px;
+            display: flex;
             align-items: center;
         }
 
-        .modal-content {
-            background-color: white;
-            padding: 20px;
-            border-radius: 10px;
-            position: relative;
-            max-width: 400px;
-            text-align: center;
+        .app-title i {
+            margin-right: 10px;
         }
 
-        .modal .close {
-            color: #aaa;
-            font-size: 28px;
-            font-weight: bold;
-            position: absolute;
-            right: 20px;
-            top: 15px;
-            cursor: pointer;
-        }
-
-        .modal .close:hover,
-        .modal .close:focus {
-            color: #000;
-        }
-
-        .modal .modal-text {
-            font-size: 18px;
-            margin-bottom: 20px;
-        }
-
-        .modal .social-icons {
-            display: flex;
+        .loading {
+            position: fixed;
+            inset: 0;
+            background: rgba(255, 255, 255, 0.9);
+            backdrop-filter: blur(5px);
+            display: none;
             justify-content: center;
-            gap: 15px;
+            align-items: center;
+            z-index: 9999;
         }
 
-        .modal .social-icons a {
-            color: inherit;
-            text-decoration: none;
+        .loading.active {
+            display: flex;
         }
 
-        .modal .social-icons i {
-            font-size: 30px;
-            transition: color 0.3s;
+        .spinner {
+            width: 40px;
+            height: 40px;
+            border: 4px solid rgba(43, 87, 151, 0.2);
+            border-top-color: var(--primary-color);
+            border-radius: 50%;
+            animation: spin 1s linear infinite;
         }
 
-        .modal .social-icons i:hover {
-            color: #007bff;
+        @keyframes spin {
+            to {
+                transform: rotate(360deg);
+            }
         }
 
-        .telegram {
-            color: #0088cc;
-        }
-
-        .facebook {
-            color: #3b5998;
-        }
-
-        .instagram {
-            color: #e4405f;
-        }
-
-        /* Sidebar Styles */
-        #info-sidebar {
+        .sidebar {
             position: fixed;
             top: 0;
-            right: -550px;
-            width: 550px;
-            height: 100%;
-            background-color: #fff;
+            right: -400px;
+            width: 400px;
+            height: 100vh;
+            background: var(--white);
+            box-shadow: var(--shadow-lg);
+            z-index: 1001;
+            transition: var(--transition);
             overflow-y: auto;
-            transition: right 0.3s ease;
-            z-index: 1000;
-            padding: 20px;
-            box-shadow: -2px 0 5px rgba(0, 0, 0, 0.3);
+            padding-top: 60px;
         }
 
-        #info-sidebar.open {
+        .sidebar.open {
             right: 0;
         }
 
-        #info-sidebar .close-btn {
-            position: absolute;
-            top: 15px;
-            left: 15px;
-            font-size: 24px;
+        .sidebar-header {
+            padding: 20px;
+            border-bottom: 1px solid var(--medium-gray);
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+        }
+
+        .sidebar-header h2 {
+            font-size: 18px;
+            font-weight: 500;
+            color: var(--primary-color);
+        }
+
+        .sidebar-header button {
+            background: transparent;
+            border: none;
+            color: var(--dark-gray);
             cursor: pointer;
+            font-size: 18px;
+            transition: var(--transition);
         }
 
-        #info-sidebar .info-content img.custom_sidebar_image {
-            margin-top: 15px;
-            width: 300px;
-            /* height: auto; */
-            margin-bottom: 15px;
+        .sidebar-header button:hover {
+            color: var(--danger-color);
         }
 
-        #info-sidebar .custom_sidebar_title {
-            font-size: 1.5rem;
-            margin-bottom: 15px;
-            color: #007bff;
+        .sidebar-content {
+            padding: 20px;
         }
 
-        #info-sidebar table {
+        .toolbar {
+            position: fixed;
+            top: 70px;
+            left: 10px;
+            z-index: 1000;
+            display: flex;
+            flex-direction: column;
+            gap: 10px;
+        }
+
+        .control-panel {
+            background: var(--white);
+            padding: 12px;
+            border-radius: var(--border-radius);
+            box-shadow: var(--shadow-md);
+            min-width: 250px;
+        }
+
+        .control-panel-header {
+            font-weight: 500;
+            font-size: 14px;
+            margin-bottom: 10px;
+            color: var(--primary-color);
+            display: flex;
+            align-items: center;
+            justify-content: space-between;
+        }
+
+        .control-panel-header i {
+            margin-right: 8px;
+        }
+
+        .control-panel-body {
+            margin-top: 10px;
+        }
+
+        select.form-control {
             width: 100%;
-            border-collapse: collapse;
-            margin-bottom: 15px;
+            padding: 8px 10px;
+            border: 1px solid var(--medium-gray);
+            border-radius: var(--border-radius);
+            background-color: var(--white);
+            font-size: 14px;
+            color: var(--text-color);
+            appearance: none;
+            background-image: url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' width='16' height='16' viewBox='0 0 24 24' fill='none' stroke='%23333333' stroke-width='2' stroke-linecap='round' stroke-linejoin='round'%3E%3Cpolyline points='6 9 12 15 18 9'%3E%3C/polyline%3E%3C/svg%3E");
+            background-repeat: no-repeat;
+            background-position: right 10px center;
+            background-size: 16px;
         }
 
-        #info-sidebar table th,
-        #info-sidebar table td {
-            padding: 8px;
-            text-align: left;
-            border-bottom: 1px solid #ddd;
-        }
-
-        #info-sidebar .btn-link {
-            display: inline-block;
-            padding: 10px 15px;
-            background-color: #007bff;
-            color: #fff;
-            text-decoration: none;
-            border-radius: 4px;
-        }
-
-        #info-sidebar .btn-link:hover {
-            background-color: #0056b3;
-        }
-
-        #toggle-currency-btn {
-            margin-bottom: 15px;
-            background-color: #007bff;
-            color: #fff;
+        .btn {
+            display: inline-flex;
+            align-items: center;
+            justify-content: center;
             padding: 8px 16px;
             border: none;
-            border-radius: 4px;
+            border-radius: var(--border-radius);
             cursor: pointer;
+            font-size: 14px;
+            font-weight: 500;
+            transition: var(--transition);
         }
 
-        #toggle-currency-btn:hover {
-            background-color: #0056b3;
+        .btn-primary {
+            background-color: var(--primary-color);
+            color: var(--white);
         }
 
-        /* QR Code Styles */
-        #qr-code-container {
-            text-align: center;
+        .btn-primary:hover {
+            background-color: var(--accent-color);
+        }
+
+        .btn-sm {
+            padding: 6px 12px;
+            font-size: 13px;
+        }
+
+        .btn i {
+            margin-right: 6px;
+        }
+
+        .mobile-toggle {
+            position: fixed;
+            top: 70px;
+            right: 10px;
+            z-index: 1000;
+            background: var(--white);
+            width: 40px;
+            height: 40px;
+            border-radius: var(--border-radius);
+            box-shadow: var(--shadow-md);
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            cursor: pointer;
+            transition: var(--transition);
+        }
+
+        .mobile-toggle:hover {
+            background-color: var(--light-gray);
+        }
+
+        .details-table {
+            width: 100%;
+            border-collapse: collapse;
             margin-top: 20px;
         }
 
-        #qr-code-container img {
-            width: 200px;
-            height: 200px;
-            margin-bottom: 10px;
+        .details-table td {
+            padding: 10px 8px;
+            border-bottom: 1px solid var(--medium-gray);
+            font-size: 14px;
         }
 
-        #qr-code-container a {
+        .details-table td:first-child {
+            font-weight: 500;
+            width: 40%;
+            color: var(--text-light);
+        }
+
+        .details-table tr:last-child td {
+            border-bottom: none;
+        }
+
+        .badge {
             display: inline-block;
-            padding: 8px 16px;
-            background-color: #007bff;
-            color: white;
-            text-decoration: none;
-            border-radius: 4px;
+            padding: 4px 8px;
+            border-radius: 12px;
+            font-size: 12px;
+            font-weight: 500;
         }
 
-        #qr-code-container a:hover {
-            background-color: #0056b3;
+        .badge-success {
+            background-color: rgba(16, 124, 16, 0.1);
+            color: var(--success-color);
         }
 
-        /* Responsive Adjustments */
-        @media (max-width: 767px) {
-            #info-sidebar {
-                width: 100%;
+        .badge-warning {
+            background-color: rgba(255, 140, 0, 0.1);
+            color: var(--warning-color);
+        }
+
+        .badge-info {
+            background-color: rgba(0, 120, 215, 0.1);
+            color: var(--secondary-color);
+        }
+
+        .error-toast {
+            position: fixed;
+            top: 70px;
+            right: 10px;
+            background: var(--danger-color);
+            color: var(--white);
+            padding: 12px 20px;
+            border-radius: var(--border-radius);
+            box-shadow: var(--shadow-md);
+            z-index: 10000;
+            display: flex;
+            align-items: center;
+            gap: 10px;
+            animation: slideIn 0.3s forwards;
+        }
+
+        @keyframes slideIn {
+            from {
+                transform: translateX(100%);
+                opacity: 0;
+            }
+
+            to {
+                transform: translateX(0);
+                opacity: 1;
             }
         }
 
-        /* Map Styles */
-        #map {
-            width: 100%;
-            /* height: calc(100vh - 70px); */
+        .leaflet-popup-content-wrapper {
+            border-radius: var(--border-radius);
+            box-shadow: var(--shadow-md);
+        }
+
+        .leaflet-popup-content {
+            margin: 12px 16px;
+            min-width: 200px;
+        }
+
+        .popup-content h3 {
+            margin: 0 0 8px;
+            font-size: 16px;
+            color: var(--primary-color);
+        }
+
+        .popup-content p {
+            margin: 0 0 10px;
+            font-size: 14px;
+            color: var(--text-light);
+        }
+
+        .popup-footer {
+            margin-top: 10px;
+            display: flex;
+            justify-content: flex-end;
+        }
+
+        .debug-panel {
+            position: fixed;
+            bottom: 10px;
+            left: 10px;
+            background: rgba(0, 0, 0, 0.8);
+            color: var(--white);
+            padding: 10px;
+            border-radius: var(--border-radius);
+            font-family: monospace;
+            font-size: 12px;
+            z-index: 1000;
+            max-width: 300px;
+            max-height: 150px;
+            overflow: auto;
+        }
+
+        @media (max-width: 768px) {
+            .sidebar {
+                width: 100%;
+                right: -100%;
+            }
+
+            .control-panel {
+                min-width: unset;
+                width: calc(100vw - 20px);
+            }
+
+            .app-title {
+                font-size: 18px;
+            }
+        }
+
+        .section-title {
+            font-size: 16px;
+            font-weight: 500;
+            color: var(--primary-color);
+            margin: 20px 0 10px;
+            padding-bottom: 5px;
+            border-bottom: 1px solid var(--medium-gray);
+        }
+
+        .document-list {
+            list-style: none;
+            margin: 0;
+            padding: 0;
+        }
+
+        .document-item {
+            display: flex;
+            align-items: center;
+            padding: 8px 0;
+            border-bottom: 1px solid var(--light-gray);
+        }
+
+        .document-item:last-child {
+            border-bottom: none;
+        }
+
+        .document-icon {
+            margin-right: 10px;
+            color: var(--primary-color);
+        }
+
+        .document-link {
+            color: var(--secondary-color);
+            text-decoration: none;
+            transition: var(--transition);
+        }
+
+        .document-link:hover {
+            color: var(--accent-color);
+            text-decoration: underline;
+        }
+
+        .legend {
+            position: fixed;
+            bottom: 20px;
+            right: 10px;
+            background: var(--white);
+            padding: 10px;
+            border-radius: var(--border-radius);
+            box-shadow: var(--shadow-md);
+            z-index: 1000;
+            font-size: 12px;
+        }
+
+        .legend-title {
+            font-weight: 500;
+            margin-bottom: 5px;
+            color: var(--primary-color);
+        }
+
+        .legend-item {
+            display: flex;
+            align-items: center;
+            margin-bottom: 5px;
+        }
+
+        .legend-color {
+            width: 16px;
+            height: 16px;
+            margin-right: 8px;
+            border-radius: 3px;
         }
     </style>
+
+    <!-- Leaflet JS -->
+    <script src="https://unpkg.com/leaflet@1.9.4/dist/leaflet.js"></script>
+    <script src="https://unpkg.com/leaflet.markercluster@1.4.1/dist/leaflet.markercluster.js"></script>
 </head>
 
-<body data-pc-preset="preset-1" data-pc-sidebar-caption="true" data-pc-layout="vertical" data-pc-direction="ltr"
-    data-pc-theme="light">
-
-    <!-- Modal -->
-    <div id="myModal" class="modal">
-        <div class="modal-content">
-            <span class="close">&times;</span>
-            <p class="modal-text">Пожалуйста, следите за нами в социальных сетях для получения дополнительной информации
-            </p>
-            <div class="social-icons">
-                <a href="https://t.me/toshkentinvestuz" target="_blank" title="Telegram">
-                    <i class="fab fa-telegram telegram"></i>
-                </a>
-                <a href="https://www.facebook.com/profile.php?id=61567396581686" target="_blank" title="Facebook">
-                    <i class="fab fa-facebook facebook"></i>
-                </a>
-                <a href="https://www.instagram.com/toshkentinvest" target="_blank" title="Instagram">
-                    <i class="fab fa-instagram instagram"></i>
-                </a>
-            </div>
-        </div>
-    </div>
-
-    <!-- Page Loader -->
-    <div class="page-loader">
-        <div class="bar"></div>
-    </div>
-
-    <!-- Sidebar -->
-    <nav class="pc-sidebar">
-        <div class="navbar-wrapper">
-            <!-- Logo Section -->
-            <div class="m-header">
-                <a href="{{ route('aktivs.index') }}" class="b-brand text-primary">
-                    <img src="{{ asset('assets/projects-map/images/logo.png') }}" class="img-fluid logo-lg custom_logo"
-                        alt="logo" />
-                </a>
-            </div>
-
-            <!-- Font Awesome Icons -->
-            <link href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.0.0-beta3/css/all.min.css"
-                rel="stylesheet">
-
-            <div class="navbar-content">
-                <ul class="pc-navbar">
-                    <!-- Create Section -->
-                    <li class="pc-item">
-                        <a class="pc-link" href="{{ route('aktivs.create') }}">
-                            <i class="fas fa-plus-circle"></i> Yaratisih
-                        </a>
-                    </li>
-
-                    <li class="pc-item">
-                        <a class="pc-link" href="{{ route('myTaklifMap') }}">
-                            <i class="fas fa-map"></i> Takliflar
-                        </a>
-                    </li>
-
-                    <!-- Back Section -->
-                    <li class="pc-item">
-                        <a class="pc-link" href="{{ route('aktivs.index') }}">
-                            <i class="fas fa-arrow-left"></i> Ortga
-                        </a>
-                    </li>
-                </ul>
-
-                <!-- Separator -->
-                <hr class="sidebar-divider">
-
-                <!-- District Information -->
-                <div id="district-info">
-                    <div id="district-name" class="px-2 text-primary text-center font-weight-bold">Toshkent</div>
-                    <table id="info-table" class="table">
-                        <thead>
-                            <tr>
-                                <th colspan="2"><i class="fas fa-info-circle"></i> Ma'lumotlar</th>
-                            </tr>
-                        </thead>
-                        <tbody>
-                            <tr>
-                                <td><i class="fas fa-map-marked-alt"></i> Maydoni</td>
-                                <td id="maydoni">43.5 km²</td>
-                            </tr>
-                            <tr>
-                                <td><i class="fas fa-users"></i> Aholi soni</td>
-                                <td id="aholiSoni">3 mln</td>
-                            </tr>
-                            <tr>
-                                <td><i class="fas fa-city"></i> Tumanlar soni</td>
-                                <td id="TumanlarSoni">12</td>
-                            </tr>
-                            <tr>
-                                <td><i class="fas fa-home"></i> Mahalla soni</td>
-                                <td id="MahallaSoni">585</td>
-                            </tr>
-                            <tr>
-                                <td><i class="fas fa-store"></i> Savdodagi obyektlar</td>
-                                <td id="savdodaTurganJamiSoni">---</td>
-                            </tr>
-                        </tbody>
-                    </table>
-
-                    <!-- Clear Cache Button -->
-                    <form action="{{ route('aktiv.clearCache') }}" method="POST">
-                        @csrf
-                        @method('POST')
-                        <button id="clear-cache-btn"><i class="fas fa-trash-alt"></i> Кешни тозалаш</button>
-                        <div id="message"></div>
-                    </form>
-                </div>
-
-                <!-- Separator -->
-                <hr class="sidebar-divider">
-
-                <!-- User Production Mode -->
-                <div id="user-production-mode" class="text-center">
-                    <h5 class="text-success font-weight-bold"><i class="fas fa-cogs"></i> Ish Rejimi</h5>
-                    <ul class="list-unstyled">
-                        {{-- <li><i class="fas fa-lightbulb"></i> Yaratuvchi Mod</li> --}}
-                        <li><i class="fas fa-chart-line"></i>Tizim test jarayonida</li>
-                        {{-- <li><i class="fas fa-tasks"></i> Harakatdagi ma'lumotlar</li> --}}
-                    </ul>
-                </div>
-            </div>
-        </div>
-
-        <!-- Custom Styles -->
-        <style>
-            .navbar-wrapper {
-                background: linear-gradient(135deg, #6a11cb, #2575fc);
-                color: #000;
-                font-family: 'Arial', sans-serif;
-                padding: 1rem;
-                border-radius: 0.5rem;
-            }
-
-            .pc-item a {
-                color: #000;
-                text-decoration: none;
-                display: flex;
-                align-items: center;
-                gap: 0.5rem;
-                transition: background 0.3s, color 0.3s;
-            }
-
-            .pc-item a:hover {
-                background: #6a11cb;
-                color: #fff;
-                border-radius: 0.3rem;
-            }
-
-            #clear-cache-btn {
-                width: 100%;
-                background: #6a11cb;
-                color: #fff;
-                border: none;
-                padding: 0.5rem 0;
-                border-radius: 0.5rem;
-                font-size: 1rem;
-                transition: background 0.3s;
-            }
-
-            #clear-cache-btn:hover {
-                background: #2575fc;
-            }
-
-            #district-info,
-            #user-production-mode {
-                margin-top: 1rem;
-            }
-
-            .sidebar-divider {
-                border: 1px solid #000;
-                margin: 1rem 0;
-            }
-
-            .text-primary {
-                color: #6a11cb !important;
-            }
-
-            .text-success {
-                color: #28a745 !important;
-            }
-
-            .font-weight-bold {
-                font-weight: bold;
-            }
-
-            #info-table td,
-            #info-table th {
-                color: #000;
-            }
-
-            #info-table {
-                background: rgba(255, 255, 255, 0.1);
-                border-radius: 0.5rem;
-            }
-        </style>
-    </nav>
-
-
-    <script>
-        document.addEventListener("DOMContentLoaded", () => {
-            const logoutBtn = document.getElementById("logout-btn");
-            if (logoutBtn) {
-                logoutBtn.addEventListener("click", function(e) {
-                    e.preventDefault();
-                    document.getElementById("logout-form").submit();
-                });
-            }
-        });
-    </script>
-
-    <!-- Header -->
-    <header class="pc-header bg-light shadow-sm py-2">
-        <div class="container-fluid">
-            <div class="d-flex align-items-center justify-content-between">
-                <!-- Left Controls -->
-                <div class="d-flex align-items-center">
-                    <!-- Sidebar toggle (desktop) -->
-                    <a href="#" class="btn btn-outline-secondary me-2 d-none d-md-inline-block"
-                        id="sidebar-hide">
-                        <i class="ti ti-menu-2"></i>
-                    </a>
-
-                    <!-- Sidebar toggle (mobile) -->
-                    <a href="#" class="btn btn-outline-secondary me-2 d-md-none" id="mobile-collapse">
-                        <i class="ti ti-menu-2"></i>
-                    </a>
-
-                    <!-- District selector -->
-                    <select id="xml-selector" class="form-select form-control me-3">
-                        <option value="tashkent">Toshkent shahri</option>
-                        <option value="bektemir.xml">Bektemir</option>
-                        <option value="chilonzor.xml">Chilonzor</option>
-                        <option value="mirabod.xml">Mirobod</option>
-                        <option value="mirzo_ulugbek.xml">Mirzo Ulug‘bek</option>
-                        <option value="olmazor.xml">Olmazor</option>
-                        <option value="sergeli.xml">Sergeli</option>
-                        <option value="shayhontaxur.xml">Shayxontohur</option>
-                        <option value="uchtepa.xml">Uchtepa</option>
-                        <option value="yakkasaroy.xml">Yakkasaroy</option>
-                        <option value="yashnabod.xml">Yashnobod</option>
-                        <option value="yunusabod.xml">Yunusobod</option>
-                        <option value="yangihayot.xml">Yangihayot</option>
-                    </select>
-
-                    <!-- Monitoring Button -->
-                    @if (auth()->user())
-                        <form action="{{ route('aktivs.index') }}" class="d-inline">
-                            <button class="btn btn-primary">Мониторинг</button>
-                        </form>
-                    @endif
-                </div>
-
-                <!-- Right User Menu -->
-                <div class="dropdown">
-                    <button class="btn btn-light dropdown-toggle d-flex align-items-center" id="userDropdown"
-                        data-bs-toggle="dropdown" aria-expanded="false">
-                        <img src="{{ asset('assets/images/avatar-dafault.png') }}" alt="Avatar"
-                            class="rounded-circle me-2" width="32" height="32">
-                        @auth
-                            <span class="d-none d-xl-inline">{{ auth()->user()->name }}</span>
-                        @endauth
-                    </button>
-
-                    <ul class="dropdown-menu dropdown-menu-end" aria-labelledby="userDropdown">
-                        @auth
-                            <li>
-                                <a class="dropdown-item text-danger" href="#" id="logout-btn">
-                                    <i class="bx bx-power-off me-2"></i> @lang('global.logout')
-                                </a>
-                            </li>
-                        @else
-                            <li>
-                                <a class="dropdown-item" href="{{ route('login') }}">
-                                    <i class="bx bx-log-in me-2"></i> @lang('global.login')
-                                </a>
-                            </li>
-                        @endauth
-                    </ul>
-
-                    <!-- Hidden logout form -->
-                    @auth
-                        <form id="logout-form" action="{{ route('logout') }}" method="POST" style="display: none;">
-                            @csrf
-                        </form>
-                    @endauth
-                </div>
-
-            </div>
-        </div>
+<body>
+    <!-- App Header -->
+    <header class="app-header">
+        <div class="app-title"><i class="fas fa-map-marked-alt"></i> InvestUz - Investment Map</div>
     </header>
 
     <!-- Map Container -->
     <div id="map"></div>
 
-    <!-- Info Sidebar -->
-    <div id="info-sidebar" data-currency="UZS">
-        <span class="close-btn">&times;</span>
-        <!-- Content will be injected here -->
+    <!-- Loading Indicator -->
+    <div id="loading-indicator" class="loading">
+        <div class="spinner"></div>
     </div>
 
-    <script src="https://cdn.jsdelivr.net/npm/simplebar@latest/dist/simplebar.min.js"></script>
-    <script src="{{ asset('assets/projects-map/js/pcoded.js') }}"></script>
-    <script src="{{ asset('assets/projects-map/js/plugins/feather.min.js') }}"></script>
+    <!-- Toolbar -->
+    <div class="toolbar">
+        <div class="control-panel">
+            <div class="control-panel-header">
+                <span><i class="fas fa-layer-group"></i> District Filter</span>
+            </div>
+            <div class="control-panel-body">
+                <select id="district-selector" class="form-control">
+                    <option value="all">All Districts</option>
+                    <option value="bektemir">Bektemir</option>
+                    <option value="chilonzor">Chilonzor</option>
+                    <option value="mirobod">Mirobod</option>
+                    <option value="mirzo_ulugbek">Mirzo Ulugʻbek</option>
+                    <option value="sergeli">Sergeli</option>
+                    <option value="shayhontohur">Shayhontohur</option>
+                    <option value="uchtepa">Uchtepa</option>
+                    <option value="yangihayot">Yangihayot</option>
+                    <option value="yashnobod">Yashnobod</option>
+                    <option value="yunusabod">Yunusobod</option>
+                </select>
+            </div>
+        </div>
 
+        <div class="control-panel">
+            <div class="control-panel-header">
+                <span><i class="fas fa-filter"></i> Display Options</span>
+            </div>
+            <div class="control-panel-body">
+                <label style="display: flex; align-items: center; margin-bottom: 8px;">
+                    <input type="checkbox" id="show-markers" checked style="margin-right: 8px;">
+                    <span>Show Markers</span>
+                </label>
+                <label style="display: flex; align-items: center;">
+                    <input type="checkbox" id="show-polygons" checked style="margin-right: 8px;">
+                    <span>Show Polygons</span>
+                </label>
+            </div>
+        </div>
+    </div>
 
-    <!-- Your existing scripts -->
-    <script src="{{ asset('assets/projects-map/js/pcoded.js') }}"></script>
-    <script src="{{ asset('assets/projects-map/js/plugins/feather.min.js') }}"></script>
+    <!-- Mobile Toggle -->
+    <div id="mobile-toggle" class="mobile-toggle">
+        <i class="fas fa-bars"></i>
+    </div>
 
-    <!-- Initialize Modal -->
-    <script type="text/babel">
-        document.addEventListener('DOMContentLoaded', function () {
-            const modal = document.getElementById("myModal");
-            const closeButton = document.querySelector(".modal .close");
-            const modalShown = localStorage.getItem('modalShown');
+    <!-- Legend -->
+    <div class="legend">
+        <div class="legend-title">Legend</div>
+        <div class="legend-item">
+            <div class="legend-color" style="background-color: rgba(43, 87, 151, 0.5);"></div>
+            <span>Investment Areas</span>
+        </div>
+        <div class="legend-item">
+            <div class="legend-color" style="background-color: rgba(16, 124, 16, 0.5);"></div>
+            <span>Approved Projects</span>
+        </div>
+    </div>
 
-            if (!modalShown) {
-                modal.style.display = "flex";
-                localStorage.setItem('modalShown', 'true');
-            }
+    <!-- Debug Panel (only shown when DEBUG is true) -->
+    <div id="debug-panel" class="debug-panel" style="display: none;">
+        <div>Debug Information</div>
+        <div id="debug-content"></div>
+    </div>
 
-            closeButton.onclick = function () {
-                modal.style.display = "none";
-            };
-
-            window.onclick = function (event) {
-                if (event.target == modal) {
-                    modal.style.display = "none";
-                }
-            };
-        });
-    </script>
-
-    <!-- Main JavaScript -->
+    <!-- Application Script -->
     <script>
-        const baseUrl = "{{ url('') }}";
-        let usdRate = null; // Declare usdRate at the global scope
+        // Create global namespace
+        window.MapApp = {
+            DEBUG: false,
+            VERSION: '1.0.1',
+            CURRENT_DATE: new Date().toISOString(),
+            USER: 'InvestUz'
+        };
 
-        document.addEventListener('DOMContentLoaded', function() {
-            // Initialize Google Maps
-            const script = document.createElement('script');
-            script.src =
-                `https://maps.googleapis.com/maps/api/js?key=AIzaSyAAnUwWTguBMsDU8UrQ7Re-caVeYCmcHQY&libraries&callback=initMap`;
-            script.async = true;
-            script.defer = true;
-            document.head.appendChild(script);
-        });
+        // Debug Logger
+        const Logger = {
+            log(type, ...args) {
+                const timestamp = new Date().toISOString();
+                console.log(`[${timestamp}] [${type}]`, ...args);
 
+                if (window.MapApp.DEBUG) {
+                    const debugPanel = document.getElementById('debug-panel');
+                    const debugContent = document.getElementById('debug-content');
 
+                    if (debugPanel && debugContent) {
+                        debugPanel.style.display = 'block';
+                        const message = document.createElement('div');
+                        message.textContent = `[${type}] ${args.map(arg =>
+                    typeof arg === 'object' ? JSON.stringify(arg) : arg).join(' ')}`;
+                        debugContent.appendChild(message);
 
-        function initMap() {
-            const urlParams = new URLSearchParams(window.location.search);
-            const urlLat = parseFloat(urlParams.get('lat'));
-            const urlLng = parseFloat(urlParams.get('lng'));
+                        // Keep only the last 5 messages
+                        while (debugContent.children.length > 5) {
+                            debugContent.removeChild(debugContent.firstChild);
+                        }
+                    }
+                }
+            },
+            debug(...args) {
+                this.log('DEBUG', ...args);
+            },
+            info(...args) {
+                this.log('INFO', ...args);
+            },
+            error(...args) {
+                this.log('ERROR', ...args);
+            }
+        };
 
-            const map = new google.maps.Map(document.getElementById('map'), {
-                zoom: urlLat && urlLng ? 15 : 12,
-                center: {
-                    lat: urlLat || 41.311,
-                    lng: urlLng || 69.279
+        // Utility Functions
+        const Utils = {
+            // Convert DMS (degrees, minutes, seconds) to decimal degrees
+            dmsToDecimal(dmsStr) {
+                try {
+                    // Example: "41°19'7.54"С"
+                    const regex = /(\d+)°(\d+)'(\d+\.\d+)"([СNЮSВEЗW])/;
+                    const match = dmsStr.match(regex);
+
+                    if (!match) {
+                        throw new Error(`Invalid DMS format: ${dmsStr}`);
+                    }
+
+                    const degrees = parseFloat(match[1]);
+                    const minutes = parseFloat(match[2]);
+                    const seconds = parseFloat(match[3]);
+                    const direction = match[4];
+
+                    let decimal = degrees + (minutes / 60) + (seconds / 3600);
+
+                    // If south or west, negate the value
+                    if (['Ю', 'S', 'З', 'W'].includes(direction)) {
+                        decimal *= -1;
+                    }
+
+                    return decimal;
+                } catch (error) {
+                    Logger.error('Error converting DMS to decimal:', error);
+                    return null;
+                }
+            },
+
+            // Format status for display
+            formatStatus(status) {
+                switch (status) {
+                    case "9":
+                        return {
+                            text: "Инвест договор", class: "badge-success"
+                        };
+                    case "1":
+                        return {
+                            text: "В разработке", class: "badge-warning"
+                        };
+                    default:
+                        return {
+                            text: "Статус: " + status, class: "badge-info"
+                        };
+                }
+            },
+
+            // Show loading indicator
+            showLoading() {
+                document.getElementById('loading-indicator').classList.add('active');
+            },
+
+            // Hide loading indicator
+            hideLoading() {
+                document.getElementById('loading-indicator').classList.remove('active');
+            },
+
+            // Show error toast
+            showError(message, duration = 5000) {
+                const toast = document.createElement('div');
+                toast.className = 'error-toast';
+                toast.innerHTML = `
+            <i class="fas fa-exclamation-circle"></i>
+            <span>${message}</span>
+        `;
+                document.body.appendChild(toast);
+
+                setTimeout(() => {
+                    toast.style.opacity = '0';
+                    toast.style.transform = 'translateX(100%)';
+                    setTimeout(() => toast.remove(), 300);
+                }, duration);
+            }
+        };
+
+        // Initialize Application
+        (function(APP) {
+            // Configuration
+            APP.CONFIG = {
+                MAP: {
+                    CENTER: [41.311, 69.279],
+                    DEFAULT_ZOOM: 12,
+                    MIN_ZOOM: 10,
+                    MAX_ZOOM: 18,
+                    TILE_URL: 'https://{s}.tile.openstreetmap.org/{z}/{x}/{y}.png',
+                    ATTRIBUTION: '© OpenStreetMap contributors | InvestUz'
                 },
-                mapTypeId: google.maps.MapTypeId.HYBRID
-            });
-
-            // Fetch USD exchange rate and then fetch markers
-            fetchUsdRate()
-                .then(rate => {
-                    usdRate = rate;
-                    fetchMarkers(map, usdRate, urlLat, urlLng);
-                    setupEventListeners(); // Move event listener setup here
-                })
-                .catch(error => {
-                    console.error('Error fetching USD rate:', error);
-                    // Proceed without usdRate
-                    fetchMarkers(map, usdRate, urlLat, urlLng);
-                    setupEventListeners(); // Ensure event listeners are set
-                });
-
-            // Handle district selection and KML processing
-            handleDistricts(map);
-        }
-
-        async function fetchUsdRate() {
-            try {
-                const response = await fetch('https://cbu.uz/uz/arkhiv-kursov-valyut/json/');
-                const rates = await response.json();
-                const usdRateObj = rates.find(rate => rate.Ccy === 'USD');
-                if (usdRateObj && usdRateObj.Rate) {
-                    return parseFloat(usdRateObj.Rate);
-                } else {
-                    throw new Error('USD rate not found in API response');
-                }
-            } catch (error) {
-                console.error('Error fetching USD rate:', error);
-                return null; // Return null if fetching failed
-            }
-        }
-
-        function fetchMarkers(map) {
-            fetch('/api/aktivs')
-                .then(response => response.json())
-                .then(data => {
-                    const markersData = data.lots;
-                    window.markers = markersData; // Make markers globally accessible
-                    window.markerObjects = []; // Store marker objects for reference
-                    window.polygonObjects = {}; // Store polygon objects by marker ID
-                    console.log(markersData);
-
-                    markersData.forEach(markerData => {
-                        const lat = parseFloat(markerData.lat);
-                        const lng = parseFloat(markerData.lng);
-
-                        if (!isNaN(lat) && !isNaN(lng)) {
-                            const position = {
-                                lat,
-                                lng
-                            };
-                            const title = markerData.property_name || 'No Title';
-
-                            const marker = new google.maps.Marker({
-                                position: position,
-                                map: map,
-                                title: title,
-                            });
-
-                            // Store marker reference with ID
-                            window.markerObjects.push({
-                                id: markerData.id,
-                                marker: marker
-                            });
-
-                            // Store polygons for this marker
-                            window.polygonObjects[markerData.id] = [];
-
-                            marker.addListener('click', function() {
-                                // Open sidebar
-                                const sidebar = document.getElementById('info-sidebar');
-                                updateSidebarContent(markerData);
-                                sidebar.classList.add('open');
-
-                                // Zoom to marker
-                                map.setZoom(16); // Adjust zoom level as needed
-                                map.setCenter(marker.getPosition());
-
-                                // Highlight polygons associated with this marker
-                                highlightPolygonsForMarker(markerData.id);
-                            });
-
-                            // Draw polygons for this marker and store references
-                            const drawnPolygons = drawPolygons(markerData.polygons, map, markerData.id);
-                            window.polygonObjects[markerData.id] = drawnPolygons;
-                        }
-                    });
-                })
-                .catch(error => console.error('Error fetching markers:', error));
-        }
-
-
-        function dmsToDecimal(dms) {
-            if (!dms || typeof dms !== 'string') return null;
-
-            dms = dms.replace(/[^\d°'".]/g, '').trim();
-
-            const parts = dms.match(/(\d{1,3})°(\d{1,2})'(\d{1,2}(?:\.\d+)?)"/);
-            if (!parts) return null;
-
-            const degrees = parseFloat(parts[1]);
-            const minutes = parseFloat(parts[2]) / 60;
-            const seconds = parseFloat(parts[3]) / 3600;
-            return degrees + minutes + seconds;
-        }
-
-        function drawPolygons(polygonsData, map, markerId) {
-            const drawnPolygons = [];
-
-            polygonsData.forEach(polygonCoords => {
-                const startLat = dmsToDecimal(polygonCoords.start_lat);
-                const startLng = dmsToDecimal(polygonCoords.start_lon);
-                const endLat = dmsToDecimal(polygonCoords.end_lat);
-                const endLng = dmsToDecimal(polygonCoords.end_lon);
-
-                if (startLat !== null && startLng !== null && endLat !== null && endLng !== null) {
-                    const polygonPath = [{
-                            lat: startLat,
-                            lng: startLng
-                        },
-                        {
-                            lat: endLat,
-                            lng: endLng
-                        }
-                    ];
-
-                    const polygon = new google.maps.Polygon({
-                        paths: polygonPath,
-                        strokeColor: 'yellow', // Default border color
-                        strokeWeight: 4,
-                        fillColor: 'yellow', // Default fill color
-                        fillOpacity: 0.5
-                    });
-
-                    polygon.setMap(map);
-                    drawnPolygons.push(polygon);
-                } else {
-                    console.warn('Invalid coordinates for polygon:', polygonCoords);
-                }
-            });
-
-            return drawnPolygons;
-        }
-
-
-
-
-        function updateSidebarContent(markerData, isInUSD, usdRate) {
-            const sidebar = document.getElementById('info-sidebar');
-            const area = parseFloat(markerData.land_area) || 0;
-            const priceUZS = parseFloat(markerData.start_price) || 0;
-
-
-            // Calculate lot price per sotix
-            const lotPricePerSotixUZS = area > 0 ? priceUZS / (area * 100) : 0;
-
-            // Convert price and per-sotix based on currency
-            let lotPriceFormatted = 'Мавжуд Эмас';
-            let lotPricePerSotixFormatted = 'Мавжуд Эмас';
-
-            try {
-                if (isInUSD && usdRate && priceUZS > 0) {
-                    const priceUSD = priceUZS / usdRate;
-                    const pricePerSotixUSD = lotPricePerSotixUZS / usdRate;
-
-                    lotPriceFormatted = new Intl.NumberFormat('en-US', {
-                        style: 'currency',
-                        currency: 'USD'
-                    }).format(priceUSD);
-
-                    lotPricePerSotixFormatted = new Intl.NumberFormat('en-US', {
-                        style: 'currency',
-                        currency: 'USD'
-                    }).format(pricePerSotixUSD);
-                } else if (priceUZS > 0) {
-                    lotPriceFormatted = new Intl.NumberFormat('uz-UZ', {
-                        style: 'currency',
-                        currency: 'UZS',
-                        minimumFractionDigits: 0
-                    }).format(priceUZS);
-
-                    lotPricePerSotixFormatted = new Intl.NumberFormat('uz-UZ', {
-                        style: 'currency',
-                        currency: 'UZS',
-                        minimumFractionDigits: 0
-                    }).format(lotPricePerSotixUZS);
-                }
-            } catch (error) {
-                console.error('Error formatting currency:', error);
-            }
-
-
-            // Generate QR Code URL
-            // const qrCodeUrl = `${baseUrl}/api/lot/qr-code/${markerData.lat}/${markerData.lng}`;
-
-            sidebar.innerHTML = `
-    <span class="close-btn">&times;</span>
-    <div class="info-content">
-        <img class="custom_sidebar_image" src="${markerData.main_image}" style="display:none;" alt="Marker Image"/>
-        <h4 class="custom_sidebar_title" style="margin-top:30px;"><b>${markerData.neighborhood_name || 'No Title'}</b></h4>
-
-        <div class="info-section">
-            <h5>Асосий маълумотлар</h5>
-            <table>
-                <tr>
-                    <th class="sidebar_key">Маҳалла фуқаролар йиғини номи</th>
-                    <td>${markerData.neighborhood_name || 'Мавжуд Эмас'}</td>
-                </tr>
-                <tr>
-                    <th class="sidebar_key">Ҳудуд майдони</th>
-                    <td>${markerData.area_hectare || 'Мавжуд Эмас'}</td>
-                </tr>
-            </table>
-        </div>
-
-        <div class="info-section">
-            <h5>Қурилиш маълумотлари</h5>
-            <table>
-                <tr>
-                    <th class="sidebar_key">Якка тартибдаги уйлар сони</th>
-                    <td>${markerData.single_house_count || 'Мавжуд Эмас'}</td>
-                </tr>
-                <tr>
-                    <th class="sidebar_key">Якка тартибдаги уйлар майдони</th>
-                    <td>${markerData.single_house_area || 'Мавжуд Эмас'}</td>
-                </tr>
-                <tr>
-                    <th class="sidebar_key">Кўп қаватли уйлар сони</th>
-                    <td>${markerData.multi_story_house_count || 'Мавжуд Эмас'}</td>
-                </tr>
-                <tr>
-                    <th class="sidebar_key">Кўп қаватли уйлар майдони</th>
-                    <td>${markerData.multi_story_house_area || 'Мавжуд Эмас'}</td>
-                </tr>
-                <tr>
-                    <th class="sidebar_key">Нотурар объектлар сони</th>
-                    <td>${markerData.non_residential_count || 'Мавжуд Эмас'}</td>
-                </tr>
-                <tr>
-                    <th class="sidebar_key">Нотурар объектлар майдони</th>
-                    <td>${markerData.non_residential_building_area || 'Мавжуд Эмас'}</td>
-                </tr>
-                <tr>
-                    <th class="sidebar_key">УМН коэффициент</th>
-                    <td>${markerData.umn_coefficient || 'Мавжуд Эмас'}</td>
-                </tr>
-                <tr>
-                    <th class="sidebar_key">ҚМН фоизи</th>
-                    <td>${markerData.qmn_percentage || 'Мавжуд Эмас'}</td>
-                </tr>
-                <tr>
-                    <th class="sidebar_key">Белгиланган қаватлар</th>
-                    <td>${markerData.designated_floors || 'Мавжуд Эмас'}</td>
-                </tr>
-                <tr>
-                    <th class="sidebar_key">Таклиф этилган қаватлар</th>
-                    <td>${markerData.proposed_floors || 'Мавжуд Эмас'}</td>
-                </tr>
-            </table>
-        </div>
-
-        <div class="info-section">
-            <h5>Ҳужжатлар ва қарорлар</h5>
-            <table>
-                <tr>
-                    <th class="sidebar_key">Қарор</th>
-                    <td>${markerData.decision_number || 'Мавжуд Эмас'}</td>
-                </tr>
-                <tr>
-                    <th class="sidebar_key">Кадастр далолатномаси</th>
-                    <td>${markerData.cadastre_certificate || 'Мавжуд Эмас'}</td>
-                </tr>
-                <tr>
-                    <th class="sidebar_key">Ҳудуд паспорти</th>
-                    <td>${markerData.area_passport || 'Мавжуд Эмас'}</td>
-                </tr>
-                <tr>
-                    <th class="sidebar_key">Протокол</th>
-                    <td>${markerData.protocol_number || 'Мавжуд Эмас'}</td>
-                </tr>
-                <tr>
-                    <th class="sidebar_key">Ер баҳолаш</th>
-                    <td>${markerData.land_assessment || 'Мавжуд Эмас'}</td>
-                </tr>
-                <tr>
-                    <th class="sidebar_key">Инвестиция шартномаси</th>
-                    <td>${markerData.investment_contract || 'Мавжуд Эмас'}</td>
-                </tr>
-                <tr>
-                    <th class="sidebar_key">Жамоатчилик муҳокамаси</th>
-                    <td>${markerData.public_discussion || 'Мавжуд Эмас'}</td>
-                </tr>
-            </table>
-        </div>
-
-        <div class="info-section">
-            <h5>Лойиҳа жадвали</h5>
-            <table>
-                <tr>
-                    <th class="sidebar_key">Кўчириш бошланиши</th>
-                    <td>${markerData.resettlement_start || 'Мавжуд Эмас'}</td>
-                </tr>
-                <tr>
-                    <th class="sidebar_key">Кўчириш якуни</th>
-                    <td>${markerData.resettlement_end || 'Мавжуд Эмас'}</td>
-                </tr>
-                <tr>
-                    <th class="sidebar_key">Лойиҳа бошланиши</th>
-                    <td>${markerData.project_start || 'Мавжуд Эмас'}</td>
-                </tr>
-            </table>
-        </div>
-
-        <div class="info-section">
-            <h5>Қўшимча маълумотлар</h5>
-            <table>
-                <tr>
-                    <th class="sidebar_key">Баҳолаш ҳолати</th>
-                    <td>${markerData.assessment_status || 'Мавжуд Эмас'}</td>
-                </tr>
-                <tr>
-                    <th class="sidebar_key">Эълон</th>
-                    <td>${markerData.announcement || 'Мавжуд Эмас'}</td>
-                </tr>
-                <tr>
-                    <th class="sidebar_key">Зона</th>
-                    <td>${markerData.zone || 'Мавжуд Эмас'}</td>
-                </tr>
-                <tr>
-                    <th class="sidebar_key">Статус</th>
-                    <td>${markerData.status || 'Мавжуд Эмас'}</td>
-                </tr>
-                <tr>
-                    <th class="sidebar_key">Инвестор</th>
-                    <td>${markerData.investor || 'Мавжуд Эмас'}</td>
-                </tr>
-            </table>
-        </div>
-
-
-        <a target="_blank" href="${markerData.lot_link || '#'}" class="btn-link">Батафсил кўриш</a>
-    </div>
-    `;
-
-        }
-
-
-
-        function setupEventListeners() {
-            document.addEventListener('click', function(event) {
-                if (event.target.matches('.close-btn')) {
-                    const sidebar = document.getElementById('info-sidebar');
-                    sidebar.classList.remove('open');
-                } else if (event.target.matches('#toggle-currency-btn')) {
-                    const sidebar = document.getElementById('info-sidebar');
-                    const isInUSD = sidebar.getAttribute('data-currency') === 'USD';
-                    sidebar.setAttribute('data-currency', isInUSD ? 'UZS' : 'USD');
-                    event.target.textContent = isInUSD ? 'Valyutani tahrirlash USD' : 'Valyutani tahrirlash UZS';
-
-                    const currentTitle = sidebar.querySelector('.custom_sidebar_title b').textContent;
-                    const markerData = window.markers.find(marker => marker.property_name === currentTitle);
-
-                    if (markerData) {
-                        if (usdRate !== null || !isInUSD) {
-                            updateSidebarContent(markerData, !isInUSD, usdRate);
-                        } else {
-                            alert('USD rate is not available at the moment. Please try again later.');
-                        }
+                POLYGON: {
+                    STYLE: {
+                        color: '#2b5797',
+                        weight: 2,
+                        opacity: 0.7,
+                        fillColor: '#2b5797',
+                        fillOpacity: 0.2
+                    },
+                    HOVER_STYLE: {
+                        weight: 3,
+                        color: '#0078d7',
+                        fillOpacity: 0.4
+                    },
+                    APPROVED_STYLE: {
+                        color: '#107c10',
+                        fillColor: '#107c10'
                     }
-                }
-            });
-        }
-
-        // Handle District Selection and KML Files
-        function handleDistricts(map) {
-            let polygons = {};
-            let currentHighlight = null;
-
-            const defaultColor = 'lightgreen';
-            const highlightColor = '#EEF5FF';
-
-            const kmlFileNames = [
-                'bektemir.xml', 'chilonzor.xml', 'mirabod.xml', 'mirzo_ulugbek.xml', 'olmazor.xml',
-                'sergeli.xml', 'shayhontaxur.xml', 'uchtepa.xml', 'yakkasaroy.xml', 'yashnabod.xml',
-                'yunusabod.xml', 'yangihayot.xml'
-            ];
-
-            kmlFileNames.forEach(fileName => {
-                processKML(fileName, defaultColor, map, polygons);
-            });
-
-            document.getElementById('xml-selector').addEventListener('change', function(event) {
-                const selectedFile = event.target.value;
-                if (selectedFile) {
-                    if (currentHighlight && currentHighlight !== 'tashkent') {
-                        setPolygonColor(currentHighlight, defaultColor, polygons);
-                    }
-
-                    if (selectedFile === 'tashkent') {
-                        map.setCenter({
-                            lat: 41.311,
-                            lng: 69.279
-                        });
-                        map.setZoom(12);
-                        fetchDistrictInfo('tashkent');
-                        currentHighlight = 'tashkent';
-                    } else {
-                        processKML(selectedFile, highlightColor, map, polygons);
-                        currentHighlight = selectedFile;
-                        fetchDistrictInfo(selectedFile);
-                    }
-                }
-            });
-
-            function processKML(fileName, color, map, polygons) {
-                fetch(`{{ asset('xml-map') }}/${fileName}`)
-                    .then(response => response.text())
-                    .then(kmlText => {
-                        const paths = parseKML(kmlText);
-                        addPolygon(fileName, [paths], color, map, polygons);
-                        const bounds = new google.maps.LatLngBounds();
-                        paths.forEach(coord => bounds.extend(new google.maps.LatLng(coord.lat, coord.lng)));
-                        map.fitBounds(bounds);
+                },
+                MARKER: {
+                    ICON: L.icon({
+                        iconUrl: 'https://cdn.jsdelivr.net/npm/leaflet@1.9.4/dist/images/marker-icon.png',
+                        iconRetinaUrl: 'https://cdn.jsdelivr.net/npm/leaflet@1.9.4/dist/images/marker-icon-2x.png',
+                        shadowUrl: 'https://cdn.jsdelivr.net/npm/leaflet@1.9.4/dist/images/marker-shadow.png',
+                        iconSize: [25, 41],
+                        iconAnchor: [12, 41],
+                        popupAnchor: [1, -34],
+                        shadowSize: [41, 41]
                     })
-                    .catch(error => console.error(`Error fetching ${fileName}:`, error));
-            }
-
-            function addPolygon(fileName, paths, fillColor, map, polygons) {
-                if (polygons[fileName]) {
-                    polygons[fileName].forEach(polygon => polygon.setMap(null));
-                }
-
-                const polygonArray = paths.map(path => {
-                    const polygon = new google.maps.Polygon({
-                        paths: path,
-                        strokeColor: 'red',
-                        strokeOpacity: 0.8,
-                        strokeWeight: 2,
-                        fillColor: fillColor,
-                        fillOpacity: 0.35,
-                        map: map
-                    });
-                    return polygon;
-                });
-
-                polygons[fileName] = polygonArray;
-            }
-
-            function setPolygonColor(fileName, color, polygons) {
-                if (polygons[fileName]) {
-                    polygons[fileName].forEach(polygon => polygon.setOptions({
-                        fillColor: color
-                    }));
-                }
-            }
-
-            function parseKML(kmlText) {
-                const parser = new DOMParser();
-                const xmlDoc = parser.parseFromString(kmlText, "application/xml");
-                const coordinates = xmlDoc.getElementsByTagName('coordinates')[0]?.textContent.trim();
-                return coordinates ? coordinates.split(' ').map(coord => {
-                    const [lng, lat] = coord.split(',').map(Number);
-                    return {
-                        lat,
-                        lng
-                    };
-                }) : [];
-            }
-
-            function fetchDistrictInfo(districtFile) {
-                const districtInfo = {
-                    'bektemir.xml': {
-                        name: 'Bektemir',
-                        maydoni: '32.0 (km²)',
-                        aholiSoni: '60,5 ming',
-                        TumanlarSoni: '20',
-                        MahallaSoni: '18',
-                        savdodaTurganJamiSoni: 'Мавжуд Эмас'
-                    },
-                    'chilonzor.xml': {
-                        name: 'Chilonzor',
-                        maydoni: '30,0 (km²)',
-                        aholiSoni: '275,1 ming',
-                        TumanlarSoni: '45',
-                        MahallaSoni: '45',
-                        savdodaTurganJamiSoni: 'Мавжуд Эмас'
-                    },
-                    'mirabod.xml': {
-                        name: 'Mirobod',
-                        maydoni: '17,0 (km²)',
-                        aholiSoni: '152,2 ming',
-                        TumanlarSoni: '30',
-                        MahallaSoni: '39',
-                        savdodaTurganJamiSoni: 'Мавжуд Эмас'
-                    },
-                    'mirzo_ulugbek.xml': {
-                        name: 'Mirzo Ulug‘bek',
-                        maydoni: '59,06 (km²)',
-                        aholiSoni: '331,2 ming',
-                        TumanlarSoni: '35',
-                        MahallaSoni: '70',
-                        savdodaTurganJamiSoni: 'Мавжуд Эмас'
-                    },
-                    'olmazor.xml': {
-                        name: 'Olmazor',
-                        maydoni: '34,0 (km²)',
-                        aholiSoni: '404,4 ming',
-                        TumanlarSoni: '50',
-                        MahallaSoni: '64',
-                        savdodaTurganJamiSoni: 'Мавжуд Эмас'
-                    },
-                    'sergeli.xml': {
-                        name: 'Sergeli',
-                        maydoni: '54,75 (km²)',
-                        aholiSoni: '168,2 ming',
-                        TumanlarSoni: '55',
-                        MahallaSoni: '46',
-                        savdodaTurganJamiSoni: 'Мавжуд Эмас'
-                    },
-                    'shayhontaxur.xml': {
-                        name: 'Shayxontohur',
-                        maydoni: '27,0 (km²)',
-                        aholiSoni: '365,4 ming',
-                        TumanlarSoni: '15',
-                        MahallaSoni: '51',
-                        savdodaTurganJamiSoni: 'Мавжуд Эмас'
-                    },
-                    'uchtepa.xml': {
-                        name: 'Uchtepa',
-                        maydoni: '28,0 (km²)',
-                        aholiSoni: '299,4 ming',
-                        TumanlarSoni: '60',
-                        MahallaSoni: '60',
-                        savdodaTurganJamiSoni: 'Мавжуд Эмас'
-                    },
-                    'yakkasaroy.xml': {
-                        name: 'Yakkasaroy',
-                        maydoni: '14,0 (km²)',
-                        aholiSoni: '133,4 ming',
-                        TumanlarSoni: '40',
-                        MahallaSoni: '21',
-                        savdodaTurganJamiSoni: 'Мавжуд Эмас'
-                    },
-                    'yashnabod.xml': {
-                        name: 'Yashnobod',
-                        maydoni: '67,42 (km²)',
-                        aholiSoni: '300,1 ming',
-                        TumanlarSoni: '25',
-                        MahallaSoni: '67',
-                        savdodaTurganJamiSoni: 'Мавжуд Эмас'
-                    },
-                    'yunusabod.xml': {
-                        name: 'Yunusobod',
-                        maydoni: '41,0 (km²)',
-                        aholiSoni: '376,1 ming',
-                        TumanlarSoni: '30',
-                        MahallaSoni: '64',
-                        savdodaTurganJamiSoni: 'Мавжуд Эмас'
-                    },
-                    'yangihayot.xml': {
-                        name: 'Yangihayot',
-                        maydoni: '44,2 (km²)',
-                        aholiSoni: '174,7 ming',
-                        TumanlarSoni: '52',
-                        MahallaSoni: '30',
-                        savdodaTurganJamiSoni: 'Мавжуд Эмас'
-                    },
-                    'tashkent': {
-                        name: 'Tashkent',
-                        maydoni: '43,5 (km²)',
-                        aholiSoni: '3 mln',
-                        TumanlarSoni: '12',
-                        MahallaSoni: '585',
-                        savdodaTurganJamiSoni: 'Мавжуд Эмас'
-                    } // Static info for Tashkent
-                };
-
-                // Get information for the selected district
-                const info = districtInfo[districtFile] || {
-                    name: '',
-                    maydoni: 'Мавжуд Эмас',
-                    aholiSoni: 'Мавжуд Эмас',
-                    TumanlarSoni: 'Мавжуд Эмас',
-                    MahallaSoni: 'Мавжуд Эмас',
-                    savdodaTurganJamiSoni: 'Мавжуд Эмас'
-                };
-
-                updateInfoTable(info);
-            }
-
-            function updateInfoTable(data) {
-                // Create the info array conditionally
-                const info = [{
-                        metric: 'Maydoni',
-                        value: data.maydoni
-                    },
-                    {
-                        metric: 'Aholi Soni',
-                        value: data.aholiSoni
-                    },
-                    // Conditionally include 'Tumanlar soni' only if the name is 'Tashkent'
-                    ...(data.name === 'Tashkent' ? [{
-                        metric: 'Tumanlar soni',
-                        value: data.TumanlarSoni
-                    }] : []),
-                    {
-                        metric: 'Mahalla soni',
-                        value: data.MahallaSoni
-                    },
-                    {
-                        metric: 'Savdodagi obyektlar',
-                        value: data.savdodaTurganJamiSoni
+                },
+                API: {
+                    BASE_URL: '/api',
+                    ENDPOINTS: {
+                        LOTS: '/aktivs'
                     }
+                },
+                LAYERS: {
+                    STREET: {
+                        url: 'https://{s}.tile.openstreetmap.org/{z}/{x}/{y}.png',
+                        attribution: '© OpenStreetMap contributors',
+                        name: 'Street'
+                    },
+                    SATELLITE: {
+                        url: 'https://server.arcgisonline.com/ArcGIS/rest/services/World_Imagery/MapServer/tile/{z}/{y}/{x}',
+                        attribution: '© Esri',
+                        name: 'Satellite'
+                    },
+                    HYBRID: {
+                        url: 'https://{s}.google.com/vt/lyrs=s,h&x={x}&y={y}&z={z}',
+                        attribution: '© Google',
+                        subdomains: ['mt0', 'mt1', 'mt2', 'mt3'],
+                        name: 'Hybrid'
+                    }
+                },
+
+            };
+
+            // Application state
+            APP.state = {
+                map: null,
+                markerCluster: null,
+                markers: [],
+                polygons: {},
+                currentDistrict: 'all',
+                currentSidebar: null,
+                filters: {
+                    showMarkers: true,
+                    showPolygons: true
+                },
+                mockApiData: {
+                    lots: [{
+                        id: "1",
+                        neighborhood_name: "Кашгар (0,12 га)",
+                        area_hectare: 0.12,
+                        status: "9",
+                        district_name: "Юнусабадский",
+                        lat: 41.3187611,
+                        lng: 69.2739611,
+                        designated_floors: "520-14-0-Q/24 \n01.08.2024",
+                        decision_number: "1",
+                        area_strategy: "заключение инвест договора",
+                        cadastre_certificate: "Dream Visualization",
+                        proposed_floors: "кадастр акт",
+                        qmn_percentage: "11",
+                        umn_coefficient: "7",
+                        adjacent_area: 800,
+                        residential_area: 400,
+                        non_residential_area: 0,
+                        total_building_area: 400,
+                        documents: [{
+                            id: 1,
+                            doc_type: 'pdf-document',
+                            filename: '1.Кашгар (0,12 га).pdf',
+                            url: 'http://127.0.0.1:8000/assets/data/RENOVATSIYA ISXOD PDF/1.Кашгар (0,12 га).pdf'
+                        }],
+                        polygons: [{
+                                start_lat: `41°19'7.54"С`,
+                                start_lon: `69°16'26.26"В`,
+                                end_lat: `41°19'7.18"С`,
+                                end_lon: `69°16'28.05"В`
+                            },
+                            {
+                                start_lat: `41°19'7.18"С`,
+                                start_lon: `69°16'28.05"В`,
+                                end_lat: `41°19'8.02"С`,
+                                end_lon: `69°16'28.35"В`
+                            },
+                            {
+                                start_lat: `41°19'8.02"С`,
+                                start_lon: `69°16'28.35"В`,
+                                end_lat: `41°19'8.40"С`,
+                                end_lon: `69°16'26.60"В`
+                            },
+                            {
+                                start_lat: `41°19'8.40"С`,
+                                start_lon: `69°16'26.60"В`,
+                                end_lat: `41°19'7.54"С`,
+                                end_lon: `69°16'26.26"В`
+                            }
+                        ]
+                    }]
+                }
+            };
+
+            // Initialize map
+            APP.initMap = function() {
+                try {
+                    Logger.info('Initializing map...');
+                    Utils.showLoading();
+
+                    // Create map instance
+                    const map = L.map('map', {
+                        center: APP.CONFIG.MAP.CENTER,
+                        zoom: APP.CONFIG.MAP.DEFAULT_ZOOM,
+                        minZoom: APP.CONFIG.MAP.MIN_ZOOM,
+                        maxZoom: APP.CONFIG.MAP.MAX_ZOOM,
+                        zoomControl: false
+                    });
+
+                    // Add zoom control
+                    L.control.zoom({
+                        position: 'bottomright'
+                    }).addTo(map);
+
+                    // Add tile layer
+                    L.tileLayer(APP.CONFIG.MAP.TILE_URL, {
+                        attribution: APP.CONFIG.MAP.ATTRIBUTION
+                    }).addTo(map);
+
+                    // Initialize marker cluster
+                    const markerCluster = L.markerClusterGroup({
+                        chunkedLoading: true,
+                        maxClusterRadius: 50,
+                        spiderfyOnMaxZoom: true,
+                        showCoverageOnHover: false,
+                        disableClusteringAtZoom: 16
+                    });
+
+                    map.addLayer(markerCluster);
+
+                    // Update state references
+                    APP.state.map = map;
+                    APP.state.markerCluster = markerCluster;
+
+                    Logger.info('Map initialized successfully');
+                    Utils.hideLoading();
+                    return true;
+                } catch (error) {
+                    Logger.error('Map initialization failed:', error);
+                    Utils.hideLoading();
+                    Utils.showError('Failed to initialize map. Please reload the page.');
+                    return false;
+                }
+            };
+
+            // Load lots data
+            APP.loadData = async function() {
+                try {
+                    Logger.info('Loading lots data...');
+                    Utils.showLoading();
+
+                    // Fetch data from API
+                    const response = await fetch(APP.CONFIG.API.BASE_URL + APP.CONFIG.API.ENDPOINTS.LOTS);
+                    if (!response.ok) {
+                        throw new Error(`HTTP error! status: ${response.status}`);
+                    }
+                    const data = await response.json();
+
+                    if (!data.lots || !Array.isArray(data.lots)) {
+                        throw new Error('Invalid data format - lots array missing');
+                    }
+
+                    // Process each lot
+                    await Promise.all(data.lots.map(lot => {
+                        try {
+                            // Add marker if coordinates exist
+                            if (lot.lat && lot.lng) {
+                                APP.addMarker(lot);
+                            }
+
+                            // Add polygon if polygon data exists
+                            if (lot.polygons && lot.polygons.length > 0) {
+                                APP.addPolygon(lot);
+                            }
+                        } catch (error) {
+                            Logger.error('Failed to process lot:', lot.id, error);
+                        }
+                    }));
+
+                    Logger.info('Data loaded successfully:', data.lots.length, 'lots');
+                    Utils.hideLoading();
+                } catch (error) {
+                    Logger.error('Failed to load data:', error);
+                    Utils.hideLoading();
+                    Utils.showError('Failed to load investment data. Please try again later.');
+
+                    // Optionally, you can fall back to mock data in development mode
+                    if (APP.DEBUG) {
+                        Logger.info('Falling back to mock data in debug mode...');
+                        return APP.loadMockData();
+                    }
+                }
+            };
+
+            APP.loadMockData = async function() {
+                try {
+                    const data = APP.state.mockApiData;
+
+                    if (!data.lots || !Array.isArray(data.lots)) {
+                        throw new Error('Invalid mock data format - lots array missing');
+                    }
+
+                    // Process mock data
+                    await Promise.all(data.lots.map(lot => {
+                        try {
+                            if (lot.lat && lot.lng) {
+                                APP.addMarker(lot);
+                            }
+                            if (lot.polygons && lot.polygons.length > 0) {
+                                APP.addPolygon(lot);
+                            }
+                        } catch (error) {
+                            Logger.error('Failed to process mock lot:', lot.id, error);
+                        }
+                    }));
+
+                    Logger.info('Mock data loaded successfully:', data.lots.length, 'lots');
+                    Utils.hideLoading();
+                } catch (error) {
+                    Logger.error('Failed to load mock data:', error);
+                    Utils.hideLoading();
+                    Utils.showError('Failed to load data');
+                }
+            };
+
+            // Add marker to map
+            APP.addMarker = function(lot) {
+                try {
+                    const marker = L.marker([lot.lat, lot.lng], {
+                        icon: APP.CONFIG.MARKER.ICON
+                    });
+
+                    marker.bindPopup(APP.createPopupContent(lot));
+                    APP.state.markerCluster.addLayer(marker);
+
+                    // Store reference to marker and data
+                    APP.state.markers.push({
+                        marker,
+                        data: lot
+                    });
+
+                    Logger.debug('Added marker for lot:', lot.id);
+                    return marker;
+                } catch (error) {
+                    Logger.error('Failed to add marker for lot:', lot.id, error);
+                    return null;
+                }
+            };
+
+            // Add polygon to map
+            APP.addPolygon = function(lot) {
+                try {
+                    // Extract coordinates from polygon data
+                    const polygonCoords = APP.extractPolygonCoordinates(lot.polygons);
+
+                    if (!polygonCoords || polygonCoords.length < 3) {
+                        Logger.warn('Invalid polygon coordinates for lot:', lot.id);
+                        return null;
+                    }
+
+                    // Determine polygon style based on lot status
+                    let style = {
+                        ...APP.CONFIG.POLYGON.STYLE
+                    };
+                    if (lot.status === "9") { // Approved status
+                        style = {
+                            ...style,
+                            ...APP.CONFIG.POLYGON.APPROVED_STYLE
+                        };
+                    }
+
+                    // Create polygon
+                    const polygon = L.polygon(polygonCoords, style);
+
+                    // Add event listeners
+                    polygon.on('mouseover', function() {
+                        polygon.setStyle(APP.CONFIG.POLYGON.HOVER_STYLE);
+                    });
+
+                    polygon.on('mouseout', function() {
+                        polygon.setStyle(style);
+                    });
+
+                    polygon.on('click', function() {
+                        APP.showDetails(lot.id);
+                    });
+
+                    // Add to map
+                    polygon.addTo(APP.state.map);
+
+                    // Store reference
+                    APP.state.polygons[lot.id] = {
+                        polygon,
+                        data: lot
+                    };
+
+                    Logger.debug('Added polygon for lot:', lot.id);
+                    return polygon;
+                } catch (error) {
+                    Logger.error('Failed to add polygon for lot:', lot.id, error);
+                    return null;
+                }
+            };
+
+            // Extract polygon coordinates from DMS format
+            APP.extractPolygonCoordinates = function(polygonData) {
+                try {
+                    if (!polygonData || !Array.isArray(polygonData) || polygonData.length < 3) {
+                        return null;
+                    }
+
+                    // Convert DMS coordinates to decimal
+                    const coordinates = polygonData.map(point => {
+                        const lat = Utils.dmsToDecimal(point.start_lat);
+                        const lng = Utils.dmsToDecimal(point.start_lon);
+
+                        if (lat === null || lng === null) {
+                            throw new Error(
+                                `Invalid coordinates: ${point.start_lat}, ${point.start_lon}`);
+                        }
+
+                        return [lat, lng];
+                    });
+
+                    return coordinates;
+                } catch (error) {
+                    Logger.error('Failed to extract polygon coordinates:', error);
+                    return null;
+                }
+            };
+
+            // Create popup content
+            APP.createPopupContent = function(lot) {
+                const statusInfo = Utils.formatStatus(lot.status);
+
+                return `
+            <div class="popup-content">
+                <h3>${lot.neighborhood_name || 'Unnamed Location'}</h3>
+                <p>${lot.district_name || ''}</p>
+                <p>
+                    ${lot.area_hectare ? `<strong>Площадь:</strong> ${lot.area_hectare} га` : ''}
+                    ${statusInfo ? `<span class="badge ${statusInfo.class}">${statusInfo.text}</span>` : ''}
+                </p>
+                <div class="popup-footer">
+                    <button class="btn btn-primary btn-sm" onclick="MapApp.showDetails('${lot.id}')">
+                        <i class="fas fa-info-circle"></i> Подробнее
+                    </button>
+                </div>
+            </div>
+        `;
+            };
+
+            // Show lot details in sidebar
+            APP.showDetails = function(lotId) {
+                try {
+                    Logger.info('Showing details for lot:', lotId);
+
+                    // Find lot data
+                    const markerData = APP.state.markers.find(m => m.data.id === lotId);
+                    const polygonData = APP.state.polygons[lotId];
+                    const lot = (markerData ? markerData.data : (polygonData ? polygonData.data : null));
+
+                    if (!lot) {
+                        throw new Error(`Lot with ID ${lotId} not found`);
+                    }
+
+                    // Close existing sidebar if any
+                    APP.closeSidebar();
+
+                    // Get status formatting
+                    const statusInfo = Utils.formatStatus(lot.status);
+
+                    // Create sidebar element
+                    const sidebar = document.createElement('div');
+                    sidebar.className = 'sidebar';
+                    sidebar.innerHTML = `
+                <div class="sidebar-header">
+                    <h2>${lot.neighborhood_name || 'Unnamed Location'}</h2>
+                    <button onclick="MapApp.closeSidebar()">
+                        <i class="fas fa-times"></i>
+                    </button>
+                </div>
+                <div class="sidebar-content">
+                    <div class="section-title">
+                        <i class="fas fa-info-circle"></i> Основная информация
+                    </div>
+                    <table class="details-table">
+                        <tr>
+                            <td>Район:</td>
+                            <td>${lot.district_name || 'Н/Д'}</td>
+                        </tr>
+                        <tr>
+                            <td>Площадь:</td>
+                            <td>${lot.area_hectare ? lot.area_hectare + ' га' : 'Н/Д'}</td>
+                        </tr>
+                        <tr>
+                            <td>Статус:</td>
+                            <td><span class="badge ${statusInfo.class}">${statusInfo.text}</span></td>
+                        </tr>
+                        <tr>
+                            <td>Стратегия:</td>
+                            <td>${lot.area_strategy || 'Н/Д'}</td>
+                        </tr>
+                        <tr>
+                            <td>Номер решения:</td>
+                            <td>${lot.decision_number || 'Н/Д'}</td>
+                        </tr>
+                    </table>
+
+                    <div class="section-title">
+                        <i class="fas fa-building"></i> Технические параметры
+                    </div>
+                    <table class="details-table">
+                        <tr>
+                            <td>Кадастр:</td>
+                            <td>${lot.cadastre_certificate || 'Н/Д'}</td>
+                        </tr>
+                        <tr>
+                            <td>Этажность:</td>
+                            <td>${lot.proposed_floors || 'Н/Д'}</td>
+                        </tr>
+                        <tr>
+                            <td>Коэффициент КМН:</td>
+                            <td>${lot.qmn_percentage || 'Н/Д'}</td>
+                        </tr>
+                        <tr>
+                            <td>Коэффициент УМН:</td>
+                            <td>${lot.umn_coefficient || 'Н/Д'}</td>
+                        </tr>
+                    </table>
+
+                    <div class="section-title">
+                        <i class="fas fa-expand-arrows-alt"></i> Площади
+                    </div>
+                    <table class="details-table">
+                        <tr>
+                            <td>Жилая площадь:</td>
+                            <td>${lot.residential_area ? lot.residential_area + ' м²' : 'Н/Д'}</td>
+                        </tr>
+                        <tr>
+                            <td>Нежилая площадь:</td>
+                            <td>${lot.non_residential_area ? lot.non_residential_area + ' м²' : 'Н/Д'}</td>
+                        </tr>
+                        <tr>
+                            <td>Общая площадь:</td>
+                            <td>${lot.total_building_area ? lot.total_building_area + ' м²' : 'Н/Д'}</td>
+                        </tr>
+                    </table>
+
+                    ${lot.documents && lot.documents.length > 0 ? `
+                                            <div class="section-title">
+                                                <i class="fas fa-file-alt"></i> Документы
+                                            </div>
+                                            <ul class="document-list">
+                                                ${lot.documents.map(doc => `
+                                <li class="document-item">
+                                    <span class="document-icon"><i class="fas fa-file-pdf"></i></span>
+                                    <a href="${doc.url}" target="_blank" class="document-link">
+                                        ${doc.filename}
+                                    </a>
+                                </li>
+                            `).join('')}
+                                            </ul>
+                                        ` : ''}
+                </div>
+            `;
+
+                    // Append to body and open
+                    document.body.appendChild(sidebar);
+                    APP.state.currentSidebar = sidebar;
+
+                    // Use a small timeout to trigger CSS transition
+                    setTimeout(() => sidebar.classList.add('open'), 10);
+
+                    // If we have polygon data, zoom to it
+                    if (polygonData && polygonData.polygon) {
+                        APP.state.map.fitBounds(polygonData.polygon.getBounds(), {
+                            padding: [50, 50],
+                            maxZoom: 17
+                        });
+                    }
+                    // Otherwise, if we have marker data, zoom to it
+                    else if (markerData && markerData.marker) {
+                        APP.state.map.setView(markerData.marker.getLatLng(), 17);
+                    }
+
+                } catch (error) {
+                    Logger.error('Failed to show details:', error);
+                    Utils.showError('Failed to load investment details');
+                }
+            };
+
+            // Close sidebar
+            APP.closeSidebar = function() {
+                if (APP.state.currentSidebar) {
+                    APP.state.currentSidebar.classList.remove('open');
+                    setTimeout(() => {
+                        APP.state.currentSidebar.remove();
+                        APP.state.currentSidebar = null;
+                    }, 300);
+                }
+            };
+
+            // Filter markers and polygons by district
+            APP.filterByDistrict = function(districtName) {
+                try {
+                    Logger.info('Filtering by district:', districtName);
+                    APP.state.currentDistrict = districtName;
+
+                    // Clear existing markers and add filtered ones
+                    APP.state.markerCluster.clearLayers();
+
+                    // Add markers that match the filter or all if 'all' is selected
+                    APP.state.markers.forEach(({
+                        marker,
+                        data
+                    }) => {
+                        const shouldShow =
+                            districtName === 'all' ||
+                            (data.district_name && data.district_name.toLowerCase().includes(
+                                districtName.toLowerCase()));
+
+                        if (shouldShow && APP.state.filters.showMarkers) {
+                            APP.state.markerCluster.addLayer(marker);
+                        }
+                    });
+
+                    // Handle polygons visibility
+                    Object.values(APP.state.polygons).forEach(({
+                        polygon,
+                        data
+                    }) => {
+                        const shouldShow =
+                            districtName === 'all' ||
+                            (data.district_name && data.district_name.toLowerCase().includes(
+                                districtName.toLowerCase()));
+
+                        if (shouldShow && APP.state.filters.showPolygons) {
+                            if (!APP.state.map.hasLayer(polygon)) {
+                                polygon.addTo(APP.state.map);
+                            }
+                        } else {
+                            if (APP.state.map.hasLayer(polygon)) {
+                                APP.state.map.removeLayer(polygon);
+                            }
+                        }
+                    });
+
+                    Logger.debug('Filter applied:', districtName);
+                } catch (error) {
+                    Logger.error('Failed to apply filter:', error);
+                    Utils.showError('Failed to apply filter');
+                }
+            };
+
+            // Toggle markers visibility
+            APP.toggleMarkers = function(show) {
+                try {
+                    APP.state.filters.showMarkers = show;
+
+                    if (show) {
+                        // Re-apply district filter to show only relevant markers
+                        APP.filterByDistrict(APP.state.currentDistrict);
+                    } else {
+                        // Clear all markers
+                        APP.state.markerCluster.clearLayers();
+                    }
+
+                    Logger.debug('Markers visibility toggled:', show);
+                } catch (error) {
+                    Logger.error('Failed to toggle markers:', error);
+                }
+            };
+
+            // Toggle polygons visibility
+            APP.togglePolygons = function(show) {
+                try {
+                    APP.state.filters.showPolygons = show;
+
+                    Object.values(APP.state.polygons).forEach(({
+                        polygon,
+                        data
+                    }) => {
+                        const matchesDistrict =
+                            APP.state.currentDistrict === 'all' ||
+                            (data.district_name && data.district_name.toLowerCase().includes(APP.state
+                                .currentDistrict.toLowerCase()));
+
+                        if (show && matchesDistrict) {
+                            if (!APP.state.map.hasLayer(polygon)) {
+                                polygon.addTo(APP.state.map);
+                            }
+                        } else {
+                            if (APP.state.map.hasLayer(polygon)) {
+                                APP.state.map.removeLayer(polygon);
+                            }
+                        }
+                    });
+
+                    Logger.debug('Polygons visibility toggled:', show);
+                } catch (error) {
+                    Logger.error('Failed to toggle polygons:', error);
+                }
+            };
+
+            // Generate mock data for testing
+            APP.generateMockData = function() {
+                if (!APP.DEBUG) return;
+
+                Logger.info('Generating additional mock data for testing...');
+
+                // Define districts of Tashkent
+                const districts = [
+                    'Bektemir', 'Chilonzor', 'Mirobod', 'Mirzo Ulugʻbek',
+                    'Sergeli', 'Shayhontohur', 'Uchtepa', 'Yangihayot',
+                    'Yashnobod', 'Yunusobod'
                 ];
 
-                // Update the district name
-                document.getElementById('district-name').textContent = data.name || 'Мавжуд Эмас';
+                // Base coordinates for Tashkent
+                const baseLatCenter = 41.311;
+                const baseLngCenter = 69.279;
 
-                // Update the table with the provided info
-                updateTable(info);
-            }
+                // Generate 20 additional random lots
+                for (let i = 0; i < 20; i++) {
+                    const id = (100 + i).toString();
+                    const district = districts[Math.floor(Math.random() * districts.length)];
 
-            function updateTable(info) {
-                // Define the icon mapping for each metric
-                const iconMapping = {
-                    'Maydoni': 'fas fa-map-marked-alt',
-                    'Aholi Soni': 'fas fa-users',
-                    'Tumanlar soni': 'fas fa-city',
-                    'Mahalla soni': 'fas fa-home',
-                    'Savdodagi obyektlar': 'fas fa-store'
-                };
+                    // Random coordinates within Tashkent area
+                    const latOffset = (Math.random() - 0.5) * 0.1;
+                    const lngOffset = (Math.random() - 0.5) * 0.1;
+                    const lat = baseLatCenter + latOffset;
+                    const lng = baseLngCenter + lngOffset;
 
-                // Get the table body
-                const tableBody = document.getElementById('info-table').getElementsByTagName('tbody')[0];
-                tableBody.innerHTML = ''; // Clear existing rows
+                    // Random area
+                    const area = (Math.random() * 5 + 0.1).toFixed(2);
 
-                // Add rows to the table
-                info.forEach(item => {
-                    const row = document.createElement('tr');
+                    // Random status
+                    const status = Math.random() > 0.5 ? "9" : "1";
 
-                    // Create metric cell with an icon
-                    const metricCell = document.createElement('td');
-                    const icon = document.createElement('i');
-                    icon.className = iconMapping[item.metric] || ''; // Add the icon class
-                    icon.style.marginRight = '8px'; // Add spacing between the icon and the text
-                    metricCell.appendChild(icon); // Append the icon
-                    metricCell.appendChild(document.createTextNode(item.metric)); // Append the text
+                    const lot = {
+                        id: id,
+                        neighborhood_name: `Участок ${id} (${area} га)`,
+                        area_hectare: parseFloat(area),
+                        status: status,
+                        district_name: district,
+                        lat: lat,
+                        lng: lng,
+                        decision_number: Math.floor(Math.random() * 100).toString(),
+                        area_strategy: "заключение инвест договора",
+                        cadastre_certificate: `Сертификат ${Math.floor(Math.random() * 1000)}`,
+                        proposed_floors: Math.floor(Math.random() * 20 + 1).toString(),
+                        qmn_percentage: Math.floor(Math.random() * 20).toString(),
+                        umn_coefficient: Math.floor(Math.random() * 10).toString(),
+                        adjacent_area: Math.floor(Math.random() * 2000),
+                        residential_area: Math.floor(Math.random() * 1000),
+                        non_residential_area: Math.floor(Math.random() * 500),
+                        total_building_area: Math.floor(Math.random() * 1500),
+                        documents: []
+                    };
 
-                    // Create value cell
-                    const valueCell = document.createElement('td');
-                    valueCell.textContent = item.value;
+                    // Add to mock data
+                    APP.state.mockApiData.lots.push(lot);
+                }
 
-                    // Append cells to the row
-                    row.appendChild(metricCell);
-                    row.appendChild(valueCell);
+                Logger.info('Mock data generated:', APP.state.mockApiData.lots.length, 'total lots');
+            };
 
-                    // Append the row to the table body
-                    tableBody.appendChild(row);
-                });
-            }
+            // Setup event listeners
+            APP.setupEventListeners = function() {
+                try {
+                    Logger.info('Setting up event listeners...');
 
-        }
+                    // District selector change event
+                    const districtSelector = document.getElementById('district-selector');
+                    if (districtSelector) {
+                        districtSelector.addEventListener('change', function() {
+                            const selectedDistrict = this.value;
+                            APP.filterByDistrict(selectedDistrict);
+                        });
+                    }
+
+                    // Show markers checkbox
+                    const showMarkersCheckbox = document.getElementById('show-markers');
+                    if (showMarkersCheckbox) {
+                        showMarkersCheckbox.addEventListener('change', function() {
+                            APP.toggleMarkers(this.checked);
+                        });
+                    }
+
+                    // Show polygons checkbox
+                    const showPolygonsCheckbox = document.getElementById('show-polygons');
+                    if (showPolygonsCheckbox) {
+                        showPolygonsCheckbox.addEventListener('change', function() {
+                            APP.togglePolygons(this.checked);
+                        });
+                    }
+
+                    // Mobile menu toggle
+                    const mobileToggle = document.getElementById('mobile-toggle');
+                    if (mobileToggle) {
+                        mobileToggle.addEventListener('click', function() {
+                            const toolbar = document.querySelector('.toolbar');
+                            if (toolbar) {
+                                toolbar.classList.toggle('show-mobile');
+                            }
+                        });
+                    }
+
+                    // Map click event to close sidebar on mobile
+                    APP.state.map.on('click', function() {
+                        if (window.innerWidth <= 768) {
+                            APP.closeSidebar();
+                        }
+                    });
+
+                    // Window resize event
+                    window.addEventListener('resize', function() {
+                        APP.state.map.invalidateSize();
+                    });
+
+                    Logger.info('Event listeners setup complete');
+                } catch (error) {
+                    Logger.error('Failed to setup event listeners:', error);
+                }
+            };
+
+            // Initialize application
+            APP.init = async function() {
+                try {
+                    Utils.showLoading();
+
+                    // Enable debug panel if in debug mode
+                    if (APP.DEBUG) {
+                        document.getElementById('debug-panel').style.display = 'block';
+                    }
+
+                    // Initialize map
+                    if (!APP.initMap()) {
+                        throw new Error('Map initialization failed');
+                    }
+
+                    // Generate mock data if in debug mode
+                    APP.generateMockData();
+
+                    // Load data
+                    await APP.loadData();
+
+                    // Setup event listeners
+                    APP.setupEventListeners();
+
+                    // Close loading indicator
+                    Utils.hideLoading();
+
+                    Logger.info('Application initialized successfully');
+                } catch (error) {
+                    Logger.error('Application initialization failed:', error);
+                    Utils.hideLoading();
+                    Utils.showError('Failed to initialize application. Please reload the page.');
+                }
+            };
+
+            // Initialize on DOM ready
+            document.addEventListener('DOMContentLoaded', function() {
+                APP.init();
+            });
+        })(window.MapApp = window.MapApp || {});
     </script>
-</body>
 
-</html>
+
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/leaflet/1.7.1/leaflet.js"></script>
+    <script src="https://unpkg.com/leaflet.markercluster@1.4.1/dist/leaflet.markercluster.js"></script>
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/leaflet-control-geocoder/1.13.0/Control.Geocoder.js"></script>
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/leaflet-control-geocoder/1.13.0/Control.Geocoder.js.map"></script>
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/leaflet-ajax/2.1.0/leaflet.ajax.min.js"></script>
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/leaflet-zoomhome/1.0.0/leaflet.zoomhome.min.js"></script>
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/leaflet-zoomhome/1.0.0/leaflet.zoomhome.js.map"></script>
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/leaflet-zoomhome/1.0.0/leaflet.zoomhome.min.js.map"></script>
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/leaflet-zoomhome/1.0.0/leaflet.zoomhome.js"></script>
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/leaflet-zoomhome/1.0.0/leaflet.zoomhome.min.js.map"></script>
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/leaflet-zoomhome/1.0.0/leaflet.zoomhome.min.js"></script>
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/leaflet-zoomhome/1.0.0/leaflet.zoomhome.min.js.map"></script>
