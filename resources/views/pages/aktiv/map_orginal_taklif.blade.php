@@ -760,59 +760,7 @@
                     showMarkers: true,
                     showPolygons: true
                 },
-                mockApiData: {
-                    lots: [{
-                        id: "1",
-                        neighborhood_name: "Кашгар (0,12 га)",
-                        area_hectare: 0.12,
-                        status: "9",
-                        district_name: "Юнусабадский",
-                        lat: 41.3187611,
-                        lng: 69.2739611,
-                        designated_floors: "520-14-0-Q/24 \n01.08.2024",
-                        decision_number: "1",
-                        area_strategy: "заключение инвест договора",
-                        cadastre_certificate: "Dream Visualization",
-                        proposed_floors: "кадастр акт",
-                        qmn_percentage: "11",
-                        umn_coefficient: "7",
-                        adjacent_area: 800,
-                        residential_area: 400,
-                        non_residential_area: 0,
-                        total_building_area: 400,
-                        documents: [{
-                            id: 1,
-                            doc_type: 'pdf-document',
-                            filename: '1.Кашгар (0,12 га).pdf',
-                            url: 'http://127.0.0.1:8000/assets/data/RENOVATSIYA ISXOD PDF/1.Кашгар (0,12 га).pdf'
-                        }],
-                        polygons: [{
-                                start_lat: `41°19'7.54"С`,
-                                start_lon: `69°16'26.26"В`,
-                                end_lat: `41°19'7.18"С`,
-                                end_lon: `69°16'28.05"В`
-                            },
-                            {
-                                start_lat: `41°19'7.18"С`,
-                                start_lon: `69°16'28.05"В`,
-                                end_lat: `41°19'8.02"С`,
-                                end_lon: `69°16'28.35"В`
-                            },
-                            {
-                                start_lat: `41°19'8.02"С`,
-                                start_lon: `69°16'28.35"В`,
-                                end_lat: `41°19'8.40"С`,
-                                end_lon: `69°16'26.60"В`
-                            },
-                            {
-                                start_lat: `41°19'8.40"С`,
-                                start_lon: `69°16'26.60"В`,
-                                end_lat: `41°19'7.54"С`,
-                                end_lon: `69°16'26.26"В`
-                            }
-                        ]
-                    }]
-                }
+                mockApiData: {}
             };
 
             // Initialize map
@@ -1171,11 +1119,11 @@
                     </table>
 
                     ${lot.documents && lot.documents.length > 0 ? `
-                                            <div class="section-title">
-                                                <i class="fas fa-file-alt"></i> Документы
-                                            </div>
-                                            <ul class="document-list">
-                                                ${lot.documents.map(doc => `
+                                                <div class="section-title">
+                                                    <i class="fas fa-file-alt"></i> Документы
+                                                </div>
+                                                <ul class="document-list">
+                                                    ${lot.documents.map(doc => `
                                 <li class="document-item">
                                     <span class="document-icon"><i class="fas fa-file-pdf"></i></span>
                                     <a href="${doc.url}" target="_blank" class="document-link">
@@ -1183,8 +1131,8 @@
                                     </a>
                                 </li>
                             `).join('')}
-                                            </ul>
-                                        ` : ''}
+                                                </ul>
+                                            ` : ''}
                 </div>
             `;
 

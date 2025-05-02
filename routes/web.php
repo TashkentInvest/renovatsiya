@@ -182,3 +182,8 @@ Route::post('/aktivs/clear-cache', [AktivController::class, 'clearCache'])->name
 
 Route::get('/maps-api', [MarkerController::class, 'getApiKey']);
 Route::get('/api/markersing', [MarkerController::class, 'getLots']);
+Route::get('/demo', function () {
+    return view('pages.aktiv.map_orginal_google');
+});
+
+
