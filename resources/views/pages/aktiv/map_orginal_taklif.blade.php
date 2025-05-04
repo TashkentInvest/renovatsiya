@@ -684,6 +684,16 @@
         (function(APP) {
             // Configuration
             APP.CONFIG = {
+                SIDEBAR_WIDTH: 400,
+                MOBILE_BREAKPOINT: 768,
+                ANIMATION_DURATION: 300,
+                MAP_ANIMATION: {
+                    ZOOM_DURATION: 0.5,
+                    PAN_DURATION: 0.3,
+                    EASE_LINEARITY: 0.5,
+                    TOTAL_DURATION: 1000
+
+                },
                 MAP: {
                     CENTER: [41.311, 69.279],
                     DEFAULT_ZOOM: 12,
@@ -760,7 +770,13 @@
                     showMarkers: true,
                     showPolygons: true
                 },
-                mockApiData: {}
+                mockApiData: {},
+                view: {
+                    currentItem: null,
+                    isAnimating: false,
+                    lastZoom: null,
+                    lastCenter: null
+                },
             };
 
             // Initialize map
@@ -1021,10 +1037,14 @@
         `;
             };
 
-            // Show lot details in sidebar
             APP.showDetails = function(lotId) {
                 try {
                     Logger.info('Showing details for lot:', lotId);
+
+                    // Prevent multiple simultaneous animations
+                    if (APP.state.view.isAnimating) {
+                        return;
+                    }
 
                     // Find lot data
                     const markerData = APP.state.markers.find(m => m.data.id === lotId);
@@ -1035,143 +1055,264 @@
                         throw new Error(`Lot with ID ${lotId} not found`);
                     }
 
+                    // Define statusInfo based on lot.status (example mapping)
+                    const statusMap = {
+                        'approved': {
+                            class: 'badge-success',
+                            text: 'Утверждено'
+                        },
+                        'pending': {
+                            class: 'badge-warning',
+                            text: 'В ожидании'
+                        },
+                        'rejected': {
+                            class: 'badge-danger',
+                            text: 'Отклонено'
+                        }
+                    };
+                    const statusInfo = statusMap[lot.status] || {
+                        class: 'badge-secondary',
+                        text: 'Неизвестно'
+                    };
+
+                    // Store current view state before changing
+                    APP.state.view.lastZoom = APP.state.map.getZoom();
+                    APP.state.view.lastCenter = APP.state.map.getCenter();
+
                     // Close existing sidebar if any
                     APP.closeSidebar();
 
-                    // Get status formatting
-                    const statusInfo = Utils.formatStatus(lot.status);
+                    // Update current item
+                    APP.state.view.currentItem = lotId;
+                    APP.state.view.isAnimating = true;
 
-                    // Create sidebar element
+                    // Calculate view parameters
+                    const sidebarWidth = window.innerWidth <= APP.CONFIG.MOBILE_BREAKPOINT ? 0 : APP.CONFIG
+                        .SIDEBAR_WIDTH;
+                    const padding = window.innerWidth <= APP.CONFIG.MOBILE_BREAKPOINT ? [50, 50] : [50, 50 +
+                        sidebarWidth
+                    ];
+
+                    // Create and setup sidebar
                     const sidebar = document.createElement('div');
                     sidebar.className = 'sidebar';
                     sidebar.innerHTML = `
-                <div class="sidebar-header">
-                    <h2>${lot.neighborhood_name || 'Unnamed Location'}</h2>
-                    <button onclick="MapApp.closeSidebar()">
-                        <i class="fas fa-times"></i>
-                    </button>
+            <div class="sidebar-header">
+                <h2>${lot.neighborhood_name || 'Unnamed Location'}</h2>
+                <button onclick="MapApp.closeSidebar()">
+                    <i class="fas fa-times"></i>
+                </button>
+            </div>
+            <div class="sidebar-content">
+                <div class="section-title">
+                    <i class="fas fa-info-circle"></i> Основная информация
                 </div>
-                <div class="sidebar-content">
-                    <div class="section-title">
-                        <i class="fas fa-info-circle"></i> Основная информация
-                    </div>
-                    <table class="details-table">
-                        <tr>
-                            <td>Район:</td>
-                            <td>${lot.district_name || 'Н/Д'}</td>
-                        </tr>
-                        <tr>
-                            <td>Площадь:</td>
-                            <td>${lot.area_hectare ? lot.area_hectare + ' га' : 'Н/Д'}</td>
-                        </tr>
-                        <tr>
-                            <td>Статус:</td>
-                            <td><span class="badge ${statusInfo.class}">${statusInfo.text}</span></td>
-                        </tr>
-                        <tr>
-                            <td>Стратегия:</td>
-                            <td>${lot.area_strategy || 'Н/Д'}</td>
-                        </tr>
-                        <tr>
-                            <td>Номер решения:</td>
-                            <td>${lot.decision_number || 'Н/Д'}</td>
-                        </tr>
-                    </table>
+                <table class="details-table">
+                    <tr><td>Район:</td><td>${lot.district_name || 'Н/Д'}</td></tr>
+                    <tr><td>Площадь:</td><td>${lot.area_hectare ? lot.area_hectare + ' га' : 'Н/Д'}</td></tr>
+                    <tr><td>Статус:</td><td><span class="badge ${statusInfo.class}">${statusInfo.text}</span></td></tr>
+                    <tr><td>Стратегия:</td><td>${lot.area_strategy || 'Н/Д'}</td></tr>
+                    <tr><td>Номер решения:</td><td>${lot.decision_number || 'Н/Д'}</td></tr>
+                </table>
 
-                    <div class="section-title">
-                        <i class="fas fa-building"></i> Технические параметры
-                    </div>
-                    <table class="details-table">
-                        <tr>
-                            <td>Кадастр:</td>
-                            <td>${lot.cadastre_certificate || 'Н/Д'}</td>
-                        </tr>
-                        <tr>
-                            <td>Этажность:</td>
-                            <td>${lot.proposed_floors || 'Н/Д'}</td>
-                        </tr>
-                        <tr>
-                            <td>Коэффициент КМН:</td>
-                            <td>${lot.qmn_percentage || 'Н/Д'}</td>
-                        </tr>
-                        <tr>
-                            <td>Коэффициент УМН:</td>
-                            <td>${lot.umn_coefficient || 'Н/Д'}</td>
-                        </tr>
-                    </table>
-
-                    <div class="section-title">
-                        <i class="fas fa-expand-arrows-alt"></i> Площади
-                    </div>
-                    <table class="details-table">
-                        <tr>
-                            <td>Жилая площадь:</td>
-                            <td>${lot.residential_area ? lot.residential_area + ' м²' : 'Н/Д'}</td>
-                        </tr>
-                        <tr>
-                            <td>Нежилая площадь:</td>
-                            <td>${lot.non_residential_area ? lot.non_residential_area + ' м²' : 'Н/Д'}</td>
-                        </tr>
-                        <tr>
-                            <td>Общая площадь:</td>
-                            <td>${lot.total_building_area ? lot.total_building_area + ' м²' : 'Н/Д'}</td>
-                        </tr>
-                    </table>
-
-                    ${lot.documents && lot.documents.length > 0 ? `
-                                                <div class="section-title">
-                                                    <i class="fas fa-file-alt"></i> Документы
-                                                </div>
-                                                <ul class="document-list">
-                                                    ${lot.documents.map(doc => `
-                                <li class="document-item">
-                                    <span class="document-icon"><i class="fas fa-file-pdf"></i></span>
-                                    <a href="${doc.url}" target="_blank" class="document-link">
-                                        ${doc.filename}
-                                    </a>
-                                </li>
-                            `).join('')}
-                                                </ul>
-                                            ` : ''}
+                <div class="section-title">
+                    <i class="fas fa-building"></i> Технические параметры
                 </div>
-            `;
+                <table class="details-table">
+                    <tr><td>Кадастр:</td><td>${lot.cadastre_certificate || 'Н/Д'}</td></tr>
+                    <tr><td>Этажность:</td><td>${lot.proposed_floors || 'Н/Д'}</td></tr>
+                    <tr><td>Коэффициент КМН:</td><td>${lot.qmn_percentage || 'Н/Д'}</td></tr>
+                    <tr><td>Коэффициент УМН:</td><td>${lot.umn_coefficient || 'Н/Д'}</td></tr>
+                </table>
 
-                    // Append to body and open
+                <div class="section-title">
+                    <i class="fas fa-expand-arrows-alt"></i> Площади
+                </div>
+                <table class="details-table">
+                    <tr><td>Жилая площадь:</td><td>${lot.residential_area ? lot.residential_area + ' м²' : 'Н/Д'}</td></tr>
+                    <tr><td>Нежилая площадь:</td><td>${lot.non_residential_area ? lot.non_residential_area + ' м²' : 'Н/Д'}</td></tr>
+                    <tr><td>Общая площадь:</td><td>${lot.total_building_area ? lot.total_building_area + ' м²' : 'Н/Д'}</td></tr>
+                </table>
+
+                ${lot.documents && lot.documents.length > 0 ? `
+                                            <div class="section-title">
+                                                <i class="fas fa-file-alt"></i> Документы
+                                            </div>
+                                            <ul class="document-list">
+                                                ${lot.documents.map(doc => `
+                            <li class="document-item">
+                                <span class="document-icon"><i class="fas fa-file-pdf"></i></span>
+                                <a href="${doc.url}" target="_blank" class="document-link">
+                                    ${doc.filename}
+                                </a>
+                            </li>
+                        `).join('')}
+                                            </ul>` : ''}
+            </div>
+        `;
+
+                    // Append sidebar to body
                     document.body.appendChild(sidebar);
                     APP.state.currentSidebar = sidebar;
 
-                    // Use a small timeout to trigger CSS transition
-                    setTimeout(() => sidebar.classList.add('open'), 10);
+                    // Handle view transitions
+                    requestAnimationFrame(() => {
+                        // First open sidebar
+                        sidebar.classList.add('open');
 
-                    // If we have polygon data, zoom to it
-                    if (polygonData && polygonData.polygon) {
-                        APP.state.map.fitBounds(polygonData.polygon.getBounds(), {
-                            padding: [50, 50],
-                            maxZoom: 17
-                        });
-                    }
-                    // Otherwise, if we have marker data, zoom to it
-                    else if (markerData && markerData.marker) {
-                        APP.state.map.setView(markerData.marker.getLatLng(), 17);
-                    }
+                        // Wait for sidebar animation to start
+                        setTimeout(() => {
+                            // Clear any existing map animations
+                            APP.state.map.stop();
 
+                            // Adjust view based on item type
+                            if (polygonData && polygonData.polygon) {
+                                APP.adjustPolygonView(polygonData.polygon, padding);
+                            } else if (markerData && markerData.marker) {
+                                APP.adjustMarkerView(markerData.marker, sidebarWidth);
+                            }
+
+                            // Reset animation state after all transitions complete
+                            setTimeout(() => {
+                                APP.state.view.isAnimating = false;
+                            }, APP.CONFIG.MAP_ANIMATION.TOTAL_DURATION);
+                        }, APP.CONFIG.ANIMATION_DURATION / 3);
+                    });
                 } catch (error) {
                     Logger.error('Failed to show details:', error);
                     Utils.showError('Failed to load investment details');
+                    APP.state.view.isAnimating = false;
                 }
             };
 
-            // Close sidebar
+            // Add these helper functions for view management
+            APP.adjustPolygonView = function(polygon, padding) {
+                if (!polygon) return;
+
+                const bounds = polygon.getBounds();
+
+                // Clear any existing animations
+                APP.state.map.stop();
+
+                APP.state.map.once('moveend', () => {
+                    // Ensure proper centering after bounds are set
+                    const center = bounds.getCenter();
+                    const zoom = APP.state.map.getBoundsZoom(bounds);
+
+                    APP.state.map.setView(center, Math.min(zoom, 17), {
+                        animate: true,
+                        duration: APP.CONFIG.MAP_ANIMATION.PAN_DURATION,
+                        paddingTopLeft: [50, 50],
+                        paddingBottomRight: padding
+                    });
+                });
+
+                APP.state.map.fitBounds(bounds, {
+                    paddingTopLeft: [50, 50],
+                    paddingBottomRight: padding,
+                    maxZoom: 17,
+                    animate: true,
+                    duration: APP.CONFIG.MAP_ANIMATION.ZOOM_DURATION
+                });
+            };
+
+            APP.adjustMarkerView = function(marker, sidebarWidth) {
+                if (!marker) return;
+
+                const point = marker.getLatLng();
+
+                // Clear any existing animations
+                APP.state.map.stop();
+
+                // Calculate offset based on sidebar
+                const offset = window.innerWidth > APP.CONFIG.MOBILE_BREAKPOINT ? [-sidebarWidth / 2, 0] : [0, 0];
+
+                // Set initial view
+                APP.state.map.once('moveend', () => {
+                    APP.state.map.panBy(offset, {
+                        animate: true,
+                        duration: APP.CONFIG.MAP_ANIMATION.PAN_DURATION,
+                        easeLinearity: APP.CONFIG.MAP_ANIMATION.EASE_LINEARITY
+                    });
+                });
+
+                APP.state.map.setView(point, 17, {
+                    animate: true,
+                    duration: APP.CONFIG.MAP_ANIMATION.ZOOM_DURATION
+                });
+            };
+
+            APP.adjustMarkerView = function(marker, sidebarWidth) {
+                const point = marker.getLatLng();
+
+                // First zoom to marker
+                APP.state.map.setView(point, 17, {
+                    animate: true,
+                    duration: APP.CONFIG.MAP_ANIMATION.ZOOM_DURATION
+                });
+
+                // Then pan to account for sidebar if on desktop
+                if (window.innerWidth > APP.CONFIG.MOBILE_BREAKPOINT) {
+                    setTimeout(() => {
+                        APP.state.map.panBy([-sidebarWidth / 2, 0], {
+                            animate: true,
+                            duration: APP.CONFIG.MAP_ANIMATION.PAN_DURATION,
+                            easeLinearity: APP.CONFIG.MAP_ANIMATION.EASE_LINEARITY
+                        });
+                    }, APP.CONFIG.MAP_ANIMATION.ZOOM_DURATION * 1000);
+                }
+            };
+
+            // Add this helper function to create sidebar content
+            APP.createSidebarContent = function(lot) {
+                const statusInfo = Utils.formatStatus(lot.status);
+
+                return `
+        <div class="section-title">
+            <i class="fas fa-info-circle"></i> Основная информация
+        </div>
+        <!-- Your existing sidebar content template -->
+    `;
+            };
+
+
+            // Update the close sidebar function to handle state properly
             APP.closeSidebar = function() {
                 if (APP.state.currentSidebar) {
                     APP.state.currentSidebar.classList.remove('open');
+
                     setTimeout(() => {
-                        APP.state.currentSidebar.remove();
-                        APP.state.currentSidebar = null;
-                    }, 300);
+                        if (APP.state.currentSidebar) {
+                            // Clear any existing animations
+                            APP.state.map.stop();
+
+                            APP.state.currentSidebar.remove();
+                            APP.state.currentSidebar = null;
+
+                            // Reset view state
+                            APP.state.view.currentItem = null;
+
+                            if (APP.state.view.lastCenter && APP.state.view.lastZoom) {
+                                APP.state.map.setView(
+                                    APP.state.view.lastCenter,
+                                    APP.state.view.lastZoom, {
+                                        animate: true,
+                                        duration: APP.CONFIG.MAP_ANIMATION.ZOOM_DURATION
+                                    }
+                                );
+                            }
+                        }
+                    }, APP.CONFIG.ANIMATION_DURATION);
                 }
             };
 
+            APP.cleanupMapEvents = function() {
+                if (APP.state.map) {
+                    APP.state.map.stop();
+                    APP.state.map.off('moveend');
+                    APP.state.map.off('zoomend');
+                }
+            };
             // Filter markers and polygons by district
             APP.filterByDistrict = function(districtName) {
                 try {
