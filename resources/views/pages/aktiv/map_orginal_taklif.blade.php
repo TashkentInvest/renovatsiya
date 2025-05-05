@@ -1967,6 +1967,228 @@ const Utils = {
             };
 
             // Setup event listeners
+            APP.shareLotDetails = function(lot) {
+                try {
+                    Logger.info('Sharing lot details:', lot.id);
+
+                    // Create a shareable URL with lot ID
+                    const shareUrl = new URL(window.location.href);
+                    shareUrl.searchParams.set('lot', lot.id);
+
+                    // Check if Web Share API is available
+                    if (navigator.share) {
+                        navigator.share({
+                            title: `ИнвестУз - ${lot.neighborhood_name || 'Инвестиция майдони'}`,
+                            text: `${lot.neighborhood_name || 'Инвестиция майдони'} - ${lot.district_name || ''}, ${lot.area_hectare || ''} га`,
+                            url: shareUrl.toString()
+                        }).then(() => {
+                            Logger.info('Successfully shared');
+                        }).catch((error) => {
+                            Logger.error('Share failed:', error);
+                            APP.fallbackShare(shareUrl.toString());
+                        });
+                    } else {
+                        // Fallback for browsers that don't support the Web Share API
+                        APP.fallbackShare(shareUrl.toString());
+                    }
+                } catch (error) {
+                    Logger.error('Share failed:', error);
+                    Utils.showError('Улашиш амалиётида хатолик юз берди');
+                }
+            };
+
+            APP.fallbackShare = function(url) {
+                try {
+                    // Create a temporary input element
+                    const tempInput = document.createElement('input');
+                    tempInput.style.position = 'absolute';
+                    tempInput.style.left = '-1000px';
+                    tempInput.value = url;
+                    document.body.appendChild(tempInput);
+
+                    // Select and copy the URL
+                    tempInput.select();
+                    document.execCommand('copy');
+                    document.body.removeChild(tempInput);
+
+                    // Show success notification
+                    APP.showNotification('success', 'URL нусхаланди - уни улашишингиз мумкин', 3000);
+                } catch (error) {
+                    Logger.error('Fallback share failed:', error);
+                    Utils.showError('URL нусхалашда хатолик юз берди');
+                }
+            };
+
+            APP.exportLotDetails = function(lot) {
+                try {
+                    Logger.info('Exporting lot details to PDF:', lot.id);
+
+                    // This would normally use a PDF library like jsPDF
+                    // For this demo, we'll just show a notification
+                    APP.showNotification('success', 'PDF экспорт қилиш амалиёти бошланди...', 2000);
+
+                    // Simulate download after a delay
+                    setTimeout(() => {
+                        APP.showNotification('success', 'PDF файл тайёрланди ва юклаб олинди', 3000);
+                    }, 2000);
+                } catch (error) {
+                    Logger.error('Export failed:', error);
+                    Utils.showError('PDF экспорт қилишда хатолик юз берди');
+                }
+            };
+
+            // Generate mock data for testing
+            APP.generateMockData = function() {
+                Logger.info('Generating mock data for testing...');
+
+                // Define districts of Tashkent
+                const districts = [
+                    'Бектемир', 'Чилонзор', 'Миробод', 'Мирзо Улуғбек',
+                    'Олмазор', 'Сергели', 'Шайхонтоҳур', 'Учтепа',
+                    'Яккасарой', 'Яшнобод', 'Юнусобод', 'Янгиҳаёт'
+                ];
+
+                // Base coordinates for Tashkent
+                const baseLatCenter = 41.311;
+                const baseLngCenter = 69.279;
+
+                // Mock polygon data generator
+                const generateMockPolygon = (centerLat, centerLng, size = 0.003) => {
+                    const points = [];
+                    const sides = 5 + Math.floor(Math.random() * 4); // 5-8 sides
+
+                    for (let i = 0; i < sides; i++) {
+                        const angle = (i / sides) * 2 * Math.PI;
+                        const variation = 0.4 + Math.random() * 0.6; // Random variation in size
+                        const lat = centerLat + Math.sin(angle) * size * variation;
+                        const lng = centerLng + Math.cos(angle) * size * variation;
+
+                        // Create DMS format
+                        const latDeg = Math.floor(lat);
+                        const latMin = Math.floor((lat - latDeg) * 60);
+                        const latSec = ((lat - latDeg - latMin/60) * 3600).toFixed(2);
+                        const lngDeg = Math.floor(lng);
+                        const lngMin = Math.floor((lng - lngDeg) * 60);
+                        const lngSec = ((lng - lngDeg - lngMin/60) * 3600).toFixed(2);
+
+                        points.push({
+                            start_lat: `${latDeg}°${latMin}'${latSec}"С`,
+                            start_lon: `${lngDeg}°${lngMin}'${lngSec}"E`
+                        });
+                    }
+
+                    return points;
+                };
+
+                // Generate 40 random lots
+                APP.state.mockApiData.lots = [];
+                for (let i = 0; i < 40; i++) {
+                    const id = (100 + i).toString();
+                    const district = districts[Math.floor(Math.random() * districts.length)];
+
+                    // Random coordinates within Tashkent area
+                    const latOffset = (Math.random() - 0.5) * 0.1;
+                    const lngOffset = (Math.random() - 0.5) * 0.1;
+                    const lat = baseLatCenter + latOffset;
+                    const lng = baseLngCenter + lngOffset;
+
+                    // Random area
+                    const area = (Math.random() * 5 + 0.1).toFixed(2);
+
+                    // Random status
+                    const statuses = ["9", "1", "2"];
+                    const status = statuses[Math.floor(Math.random() * statuses.length)];
+
+                    const lot = {
+                        id: id,
+                        neighborhood_name: `Участок ${id} (${area} га)`,
+                        area_hectare: parseFloat(area),
+                        status: status,
+                        district_name: district,
+                        lat: lat,
+                        lng: lng,
+                        decision_number: Math.floor(Math.random() * 100).toString(),
+                        area_strategy: "инвест шартномаси тузиш",
+                        cadastre_certificate: `Сертификат ${Math.floor(Math.random() * 1000)}`,
+                        proposed_floors: Math.floor(Math.random() * 20 + 1).toString(),
+                        qmn_percentage: Math.floor(Math.random() * 20).toString(),
+                        umn_coefficient: Math.floor(Math.random() * 10).toString(),
+                        adjacent_area: Math.floor(Math.random() * 2000),
+                        residential_area: Math.floor(Math.random() * 1000),
+                        non_residential_area: Math.floor(Math.random() * 500),
+                        total_building_area: Math.floor(Math.random() * 1500),
+                        documents: []
+                    };
+
+                    // Add random mock polygon to 70% of lots
+                    if (Math.random() > 0.3) {
+                        lot.polygons = generateMockPolygon(lat, lng);
+                    }
+
+                    // Add to mock data
+                    APP.state.mockApiData.lots.push(lot);
+                }
+
+                Logger.info('Mock data generated:', APP.state.mockApiData.lots.length, 'total lots');
+            };
+
+            // Perform search
+            APP.performSearch = function(query) {
+                try {
+                    Logger.info('Performing search:', query);
+
+                    const searchResults = document.querySelector('.search-results');
+                    searchResults.innerHTML = '';
+
+                    // Find matching lots
+                    const results = [];
+
+                    // Search in markers
+                    APP.state.markers.forEach(({ data }) => {
+                        if (
+                            (data.neighborhood_name && data.neighborhood_name.toLowerCase().includes(query)) ||
+                            (data.district_name && data.district_name.toLowerCase().includes(query)) ||
+                            (data.cadastre_certificate && data.cadastre_certificate.toLowerCase().includes(query))
+                        ) {
+                            results.push(data);
+                        }
+                    });
+
+                    // Display results
+                    if (results.length > 0) {
+                        results.forEach(lot => {
+                            const resultItem = document.createElement('div');
+                            resultItem.className = 'search-result-item';
+                            resultItem.innerHTML = `
+                                <div class="search-result-title">${lot.neighborhood_name || 'Номсиз жой'}</div>
+                                <div class="search-result-address">${lot.district_name || ''}</div>
+                            `;
+
+                            resultItem.addEventListener('click', function() {
+                                APP.showDetails(lot.id);
+                                searchResults.classList.remove('active');
+                            });
+
+                            searchResults.appendChild(resultItem);
+                        });
+
+                        searchResults.classList.add('active');
+                    } else {
+                        // No results
+                        const noResults = document.createElement('div');
+                        noResults.className = 'search-result-item';
+                        noResults.innerHTML = `<div class="search-result-title">Натижалар топилмади</div>`;
+                        searchResults.appendChild(noResults);
+                        searchResults.classList.add('active');
+                    }
+
+                    Logger.debug('Search completed, results:', results.length);
+                } catch (error) {
+                    Logger.error('Search failed:', error);
+                }
+            };
+
+            // Setup event listeners
             APP.setupEventListeners = function() {
                 try {
                     Logger.info('Setting up event listeners...');
