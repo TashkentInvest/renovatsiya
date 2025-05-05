@@ -1004,8 +1004,8 @@ APP.addDistrictPolygon = function(districtName, coordinates) {
                             ${lot.documents.map(doc => `
                                 <li class="document-item">
                                     <span class="document-icon"><i class="fas fa-file-pdf"></i></span>
-                                    <a href="${doc.url}" target="_blank" class="document-link">
-                                        ${doc.filename}
+                                    <a href="${doc.url_keremas ?? 'test'}" target="_blank" class="document-link">
+                                        ${doc.filename_keremas ?? 'Ҳужжат'}
                                     </a>
                                 </li>
                             `).join('')}
