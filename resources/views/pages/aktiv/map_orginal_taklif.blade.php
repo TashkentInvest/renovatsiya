@@ -959,10 +959,11 @@ APP.addDistrictPolygon = function(districtName, coordinates) {
             sidebar.className = 'sidebar';
             sidebar.innerHTML = `
                 <div class="sidebar-header">
-                    <h2>${lot.neighborhood_name || 'Номсиз жой'}</h2>
                     <button onclick="MapApp.closeSidebar()">
-                        <i class="fas fa-times"></i>
+                            <i class="fas fa-times"></i>
                     </button>
+                    <h2>${lot.neighborhood_name || 'Номсиз жой'} </h2>
+
                 </div>
                 <div class="sidebar-content">
                     <div class="section-title">
