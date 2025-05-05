@@ -31,7 +31,7 @@
     <header class="app-header">
         <div class="app-logo">
             <i class="fas fa-map-marked-alt fa-2x"></i>
-            <div class="app-title">ИнвестУз - Инвестиция харитаси</div>
+            <div class="app-title">ИнвестУз - Инвестиция харитаси (Сайт тест режимида ишламоқда)</div>
         </div>
         <div class="lang-switcher">
             <button class="lang-btn active">УЗ</button>
