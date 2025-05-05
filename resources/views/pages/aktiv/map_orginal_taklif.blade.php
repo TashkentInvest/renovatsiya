@@ -1,10 +1,10 @@
 <!DOCTYPE html>
-<html lang="en">
+<html lang="uz">
 
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Investment Map - InvestUz</title>
+    <title>Инвестиция харитаси - ИнвестУз</title>
 
     <!-- Leaflet CSS -->
     <link rel="stylesheet" href="https://unpkg.com/leaflet@1.9.4/dist/leaflet.css" />
@@ -14,465 +14,11 @@
     <!-- Font Awesome -->
     <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.0.0/css/all.min.css" />
 
-    <!-- Google Fonts -->
-    <link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Roboto:wght@300;400;500;700&display=swap">
+    <!-- Google Fonts - Roboto and Noto Sans -->
+    <link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Roboto:wght@300;400;500;700&family=Noto+Sans:wght@400;500;600;700&display=swap">
 
     <!-- Application Styles -->
-    <style>
-        :root {
-            --primary-color: #2b5797;
-            --secondary-color: #0078d7;
-            --accent-color: #0056b3;
-            --success-color: #107c10;
-            --warning-color: #ff8c00;
-            --danger-color: #e81123;
-            --light-gray: #f3f3f3;
-            --medium-gray: #e0e0e0;
-            --dark-gray: #767676;
-            --text-color: #333333;
-            --text-light: #666666;
-            --white: #ffffff;
-            --shadow-sm: 0 2px 4px rgba(0, 0, 0, 0.1);
-            --shadow-md: 0 4px 8px rgba(0, 0, 0, 0.1);
-            --shadow-lg: 0 8px 16px rgba(0, 0, 0, 0.1);
-            --border-radius: 4px;
-            --transition: all 0.3s ease;
-        }
-
-        * {
-            margin: 0;
-            padding: 0;
-            box-sizing: border-box;
-        }
-
-        body {
-            font-family: 'Roboto', -apple-system, BlinkMacSystemFont, 'Segoe UI', Oxygen, Ubuntu, Cantarell, sans-serif;
-            line-height: 1.5;
-            color: var(--text-color);
-            background-color: var(--light-gray);
-        }
-
-        #map {
-            width: 100%;
-            height: 100vh;
-            background: var(--light-gray);
-            z-index: 1;
-        }
-
-        .app-header {
-            position: fixed;
-            top: 0;
-            left: 0;
-            right: 0;
-            height: 60px;
-            background-color: var(--primary-color);
-            color: var(--white);
-            display: flex;
-            align-items: center;
-            padding: 0 20px;
-            z-index: 1000;
-            box-shadow: var(--shadow-md);
-        }
-
-        .app-title {
-            font-weight: 500;
-            font-size: 20px;
-            display: flex;
-            align-items: center;
-        }
-
-        .app-title i {
-            margin-right: 10px;
-        }
-
-        .loading {
-            position: fixed;
-            inset: 0;
-            background: rgba(255, 255, 255, 0.9);
-            backdrop-filter: blur(5px);
-            display: none;
-            justify-content: center;
-            align-items: center;
-            z-index: 9999;
-        }
-
-        .loading.active {
-            display: flex;
-        }
-
-        .spinner {
-            width: 40px;
-            height: 40px;
-            border: 4px solid rgba(43, 87, 151, 0.2);
-            border-top-color: var(--primary-color);
-            border-radius: 50%;
-            animation: spin 1s linear infinite;
-        }
-
-        @keyframes spin {
-            to {
-                transform: rotate(360deg);
-            }
-        }
-
-        .sidebar {
-            position: fixed;
-            top: 0;
-            right: -400px;
-            width: 400px;
-            height: 100vh;
-            background: var(--white);
-            box-shadow: var(--shadow-lg);
-            z-index: 1001;
-            transition: var(--transition);
-            overflow-y: auto;
-            padding-top: 60px;
-        }
-
-        .sidebar.open {
-            right: 0;
-        }
-
-        .sidebar-header {
-            padding: 20px;
-            border-bottom: 1px solid var(--medium-gray);
-            display: flex;
-            justify-content: space-between;
-            align-items: center;
-        }
-
-        .sidebar-header h2 {
-            font-size: 18px;
-            font-weight: 500;
-            color: var(--primary-color);
-        }
-
-        .sidebar-header button {
-            background: transparent;
-            border: none;
-            color: var(--dark-gray);
-            cursor: pointer;
-            font-size: 18px;
-            transition: var(--transition);
-        }
-
-        .sidebar-header button:hover {
-            color: var(--danger-color);
-        }
-
-        .sidebar-content {
-            padding: 20px;
-        }
-
-        .toolbar {
-            position: fixed;
-            top: 70px;
-            left: 10px;
-            z-index: 1000;
-            display: flex;
-            flex-direction: column;
-            gap: 10px;
-        }
-
-        .control-panel {
-            background: var(--white);
-            padding: 12px;
-            border-radius: var(--border-radius);
-            box-shadow: var(--shadow-md);
-            min-width: 250px;
-        }
-
-        .control-panel-header {
-            font-weight: 500;
-            font-size: 14px;
-            margin-bottom: 10px;
-            color: var(--primary-color);
-            display: flex;
-            align-items: center;
-            justify-content: space-between;
-        }
-
-        .control-panel-header i {
-            margin-right: 8px;
-        }
-
-        .control-panel-body {
-            margin-top: 10px;
-        }
-
-        select.form-control {
-            width: 100%;
-            padding: 8px 10px;
-            border: 1px solid var(--medium-gray);
-            border-radius: var(--border-radius);
-            background-color: var(--white);
-            font-size: 14px;
-            color: var(--text-color);
-            appearance: none;
-            background-image: url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' width='16' height='16' viewBox='0 0 24 24' fill='none' stroke='%23333333' stroke-width='2' stroke-linecap='round' stroke-linejoin='round'%3E%3Cpolyline points='6 9 12 15 18 9'%3E%3C/polyline%3E%3C/svg%3E");
-            background-repeat: no-repeat;
-            background-position: right 10px center;
-            background-size: 16px;
-        }
-
-        .btn {
-            display: inline-flex;
-            align-items: center;
-            justify-content: center;
-            padding: 8px 16px;
-            border: none;
-            border-radius: var(--border-radius);
-            cursor: pointer;
-            font-size: 14px;
-            font-weight: 500;
-            transition: var(--transition);
-        }
-
-        .btn-primary {
-            background-color: var(--primary-color);
-            color: var(--white);
-        }
-
-        .btn-primary:hover {
-            background-color: var(--accent-color);
-        }
-
-        .btn-sm {
-            padding: 6px 12px;
-            font-size: 13px;
-        }
-
-        .btn i {
-            margin-right: 6px;
-        }
-
-        .mobile-toggle {
-            position: fixed;
-            top: 70px;
-            right: 10px;
-            z-index: 1000;
-            background: var(--white);
-            width: 40px;
-            height: 40px;
-            border-radius: var(--border-radius);
-            box-shadow: var(--shadow-md);
-            display: flex;
-            align-items: center;
-            justify-content: center;
-            cursor: pointer;
-            transition: var(--transition);
-        }
-
-        .mobile-toggle:hover {
-            background-color: var(--light-gray);
-        }
-
-        .details-table {
-            width: 100%;
-            border-collapse: collapse;
-            margin-top: 20px;
-        }
-
-        .details-table td {
-            padding: 10px 8px;
-            border-bottom: 1px solid var(--medium-gray);
-            font-size: 14px;
-        }
-
-        .details-table td:first-child {
-            font-weight: 500;
-            width: 40%;
-            color: var(--text-light);
-        }
-
-        .details-table tr:last-child td {
-            border-bottom: none;
-        }
-
-        .badge {
-            display: inline-block;
-            padding: 4px 8px;
-            border-radius: 12px;
-            font-size: 12px;
-            font-weight: 500;
-        }
-
-        .badge-success {
-            background-color: rgba(16, 124, 16, 0.1);
-            color: var(--success-color);
-        }
-
-        .badge-warning {
-            background-color: rgba(255, 140, 0, 0.1);
-            color: var(--warning-color);
-        }
-
-        .badge-info {
-            background-color: rgba(0, 120, 215, 0.1);
-            color: var(--secondary-color);
-        }
-
-        .error-toast {
-            position: fixed;
-            top: 70px;
-            right: 10px;
-            background: var(--danger-color);
-            color: var(--white);
-            padding: 12px 20px;
-            border-radius: var(--border-radius);
-            box-shadow: var(--shadow-md);
-            z-index: 10000;
-            display: flex;
-            align-items: center;
-            gap: 10px;
-            animation: slideIn 0.3s forwards;
-        }
-
-        @keyframes slideIn {
-            from {
-                transform: translateX(100%);
-                opacity: 0;
-            }
-
-            to {
-                transform: translateX(0);
-                opacity: 1;
-            }
-        }
-
-        .leaflet-popup-content-wrapper {
-            border-radius: var(--border-radius);
-            box-shadow: var(--shadow-md);
-        }
-
-        .leaflet-popup-content {
-            margin: 12px 16px;
-            min-width: 200px;
-        }
-
-        .popup-content h3 {
-            margin: 0 0 8px;
-            font-size: 16px;
-            color: var(--primary-color);
-        }
-
-        .popup-content p {
-            margin: 0 0 10px;
-            font-size: 14px;
-            color: var(--text-light);
-        }
-
-        .popup-footer {
-            margin-top: 10px;
-            display: flex;
-            justify-content: flex-end;
-        }
-
-        .debug-panel {
-            position: fixed;
-            bottom: 10px;
-            left: 10px;
-            background: rgba(0, 0, 0, 0.8);
-            color: var(--white);
-            padding: 10px;
-            border-radius: var(--border-radius);
-            font-family: monospace;
-            font-size: 12px;
-            z-index: 1000;
-            max-width: 300px;
-            max-height: 150px;
-            overflow: auto;
-        }
-
-        @media (max-width: 768px) {
-            .sidebar {
-                width: 100%;
-                right: -100%;
-            }
-
-            .control-panel {
-                min-width: unset;
-                width: calc(100vw - 20px);
-            }
-
-            .app-title {
-                font-size: 18px;
-            }
-        }
-
-        .section-title {
-            font-size: 16px;
-            font-weight: 500;
-            color: var(--primary-color);
-            margin: 20px 0 10px;
-            padding-bottom: 5px;
-            border-bottom: 1px solid var(--medium-gray);
-        }
-
-        .document-list {
-            list-style: none;
-            margin: 0;
-            padding: 0;
-        }
-
-        .document-item {
-            display: flex;
-            align-items: center;
-            padding: 8px 0;
-            border-bottom: 1px solid var(--light-gray);
-        }
-
-        .document-item:last-child {
-            border-bottom: none;
-        }
-
-        .document-icon {
-            margin-right: 10px;
-            color: var(--primary-color);
-        }
-
-        .document-link {
-            color: var(--secondary-color);
-            text-decoration: none;
-            transition: var(--transition);
-        }
-
-        .document-link:hover {
-            color: var(--accent-color);
-            text-decoration: underline;
-        }
-
-        .legend {
-            position: fixed;
-            bottom: 20px;
-            right: 10px;
-            background: var(--white);
-            padding: 10px;
-            border-radius: var(--border-radius);
-            box-shadow: var(--shadow-md);
-            z-index: 1000;
-            font-size: 12px;
-        }
-
-        .legend-title {
-            font-weight: 500;
-            margin-bottom: 5px;
-            color: var(--primary-color);
-        }
-
-        .legend-item {
-            display: flex;
-            align-items: center;
-            margin-bottom: 5px;
-        }
-
-        .legend-color {
-            width: 16px;
-            height: 16px;
-            margin-right: 8px;
-            border-radius: 3px;
-        }
-    </style>
+<link rel="stylesheet" href="{{ asset('assets/css/map_style/main.css') }}">
 
     <!-- Leaflet JS -->
     <script src="https://unpkg.com/leaflet@1.9.4/dist/leaflet.js"></script>
@@ -482,11 +28,37 @@
 <body>
     <!-- App Header -->
     <header class="app-header">
-        <div class="app-title"><i class="fas fa-map-marked-alt"></i> InvestUz - Investment Map</div>
+        <div class="app-logo">
+            <i class="fas fa-map-marked-alt fa-2x"></i>
+            <div class="app-title">ИнвестУз - Инвестиция харитаси</div>
+        </div>
+        <div class="lang-switcher">
+            <button class="lang-btn active">УЗ</button>
+            <button class="lang-btn">RU</button>
+            <button class="lang-btn">EN</button>
+        </div>
     </header>
+
+    <!-- Flag Decoration -->
+    <div class="flag-decoration">
+        <div class="flag-blue"></div>
+        <div class="flag-red"></div>
+        <div class="flag-green"></div>
+    </div>
 
     <!-- Map Container -->
     <div id="map"></div>
+
+    <!-- Search Box -->
+    <div class="search-box">
+        <div class="search-container">
+            <input type="text" class="search-input" placeholder="Излаш...">
+            <button class="search-btn"><i class="fas fa-search"></i></button>
+        </div>
+        <div class="search-results">
+            <!-- Search results will be added here dynamically -->
+        </div>
+    </div>
 
     <!-- Loading Indicator -->
     <div id="loading-indicator" class="loading">
@@ -497,38 +69,61 @@
     <div class="toolbar">
         <div class="control-panel">
             <div class="control-panel-header">
-                <span><i class="fas fa-layer-group"></i> District Filter</span>
+                <span><i class="fas fa-layer-group"></i> Туман фильтри</span>
             </div>
             <div class="control-panel-body">
-                <select id="district-selector" class="form-control">
-                    <option value="all">All Districts</option>
-                    <option value="bektemir">Bektemir</option>
-                    <option value="chilonzor">Chilonzor</option>
-                    <option value="mirobod">Mirobod</option>
-                    <option value="mirzo_ulugbek">Mirzo Ulugʻbek</option>
-                    <option value="sergeli">Sergeli</option>
-                    <option value="shayhontohur">Shayhontohur</option>
-                    <option value="uchtepa">Uchtepa</option>
-                    <option value="yangihayot">Yangihayot</option>
-                    <option value="yashnobod">Yashnobod</option>
-                    <option value="yunusabod">Yunusobod</option>
-                </select>
+                <div class="form-group">
+                    <select id="district-selector" class="form-control">
+                        <option value="all">Барча туманлар</option>
+                        <option value="bektemir">Бектемир</option>
+                        <option value="chilonzor">Чилонзор</option>
+                        <option value="mirobod">Миробод</option>
+                        <option value="mirzo_ulugbek">Мирзо Улуғбек</option>
+                        <option value="olmazor">Олмазор</option>
+                        <option value="sergeli">Сергели</option>
+                        <option value="shayhontohur">Шайхонтоҳур</option>
+                        <option value="uchtepa">Учтепа</option>
+                        <option value="yakkasaroy">Яккасарой</option>
+                        <option value="yashnobod">Яшнобод</option>
+                        <option value="yunusabod">Юнусобод</option>
+                        <option value="yangihayot">Янгиҳаёт</option>
+                    </select>
+                </div>
+
+                <div class="status-filter-buttons">
+                    <button class="status-btn active" data-status="all">Барчаси</button>
+                    <button class="status-btn" data-status="9">Инвест договор</button>
+                    <button class="status-btn" data-status="1">Ишлаб чиқилмоқда</button>
+                </div>
             </div>
         </div>
 
         <div class="control-panel">
             <div class="control-panel-header">
-                <span><i class="fas fa-filter"></i> Display Options</span>
+                <span><i class="fas fa-filter"></i> Кўрсатиш мосламалари</span>
             </div>
             <div class="control-panel-body">
-                <label style="display: flex; align-items: center; margin-bottom: 8px;">
-                    <input type="checkbox" id="show-markers" checked style="margin-right: 8px;">
-                    <span>Show Markers</span>
-                </label>
-                <label style="display: flex; align-items: center;">
-                    <input type="checkbox" id="show-polygons" checked style="margin-right: 8px;">
-                    <span>Show Polygons</span>
-                </label>
+                <div class="checkbox-container">
+                    <label class="custom-checkbox">
+                        <input type="checkbox" id="show-markers" checked>
+                        <span class="checkmark"></span>
+                    </label>
+                    <span class="custom-checkbox-label">Маркерларни кўрсатиш</span>
+                </div>
+                <div class="checkbox-container">
+                    <label class="custom-checkbox">
+                        <input type="checkbox" id="show-polygons" checked>
+                        <span class="checkmark"></span>
+                    </label>
+                    <span class="custom-checkbox-label">Полигонларни кўрсатиш</span>
+                </div>
+                <div class="checkbox-container">
+                    <label class="custom-checkbox">
+                        <input type="checkbox" id="show-districts" checked>
+                        <span class="checkmark"></span>
+                    </label>
+                    <span class="custom-checkbox-label">Туман чегараларини кўрсатиш</span>
+                </div>
             </div>
         </div>
     </div>
@@ -538,22 +133,33 @@
         <i class="fas fa-bars"></i>
     </div>
 
+    <!-- Map Controls -->
+    <div class="map-controls">
+        <button class="map-control-btn" id="zoom-in"><i class="fas fa-plus"></i></button>
+        <button class="map-control-btn" id="zoom-out"><i class="fas fa-minus"></i></button>
+        <button class="map-control-btn" id="reset-view"><i class="fas fa-home"></i></button>
+    </div>
+
     <!-- Legend -->
     <div class="legend">
-        <div class="legend-title">Legend</div>
+        <div class="legend-title">Шартли белгилар</div>
         <div class="legend-item">
-            <div class="legend-color" style="background-color: rgba(43, 87, 151, 0.5);"></div>
-            <span>Investment Areas</span>
+            <div class="legend-color" style="background-color: rgba(30, 54, 133, 0.5);"></div>
+            <span>Инвестиция майдонлари</span>
         </div>
         <div class="legend-item">
-            <div class="legend-color" style="background-color: rgba(16, 124, 16, 0.5);"></div>
-            <span>Approved Projects</span>
+            <div class="legend-color" style="background-color: rgba(14, 98, 69, 0.5);"></div>
+            <span>Тасдиқланган лойиҳалар</span>
+        </div>
+        <div class="legend-item">
+            <div class="legend-color" style="background-color: rgba(214, 40, 57, 0.5);"></div>
+            <span>Иншоот қурилиш жараёнида</span>
         </div>
     </div>
 
     <!-- Debug Panel (only shown when DEBUG is true) -->
     <div id="debug-panel" class="debug-panel" style="display: none;">
-        <div>Debug Information</div>
+        <div>Созлаш маълумотлари</div>
         <div id="debug-content"></div>
     </div>
 
@@ -562,7 +168,7 @@
         // Create global namespace
         window.MapApp = {
             DEBUG: false,
-            VERSION: '1.0.1',
+            VERSION: '1.2.0',
             CURRENT_DATE: new Date().toISOString(),
             USER: 'InvestUz'
         };
@@ -581,7 +187,7 @@
                         debugPanel.style.display = 'block';
                         const message = document.createElement('div');
                         message.textContent = `[${type}] ${args.map(arg =>
-                    typeof arg === 'object' ? JSON.stringify(arg) : arg).join(' ')}`;
+                            typeof arg === 'object' ? JSON.stringify(arg) : arg).join(' ')}`;
                         debugContent.appendChild(message);
 
                         // Keep only the last 5 messages
@@ -643,11 +249,15 @@
                         };
                     case "1":
                         return {
-                            text: "В разработке", class: "badge-warning"
+                            text: "Ишлаб чиқилмоқда", class: "badge-warning"
+                        };
+                    case "2":
+                        return {
+                            text: "Қурилиш жараёнида", class: "badge-info"
                         };
                     default:
                         return {
-                            text: "Статус: " + status, class: "badge-info"
+                            text: "Холат: " + status, class: "badge-info"
                         };
                 }
             },
@@ -667,9 +277,9 @@
                 const toast = document.createElement('div');
                 toast.className = 'error-toast';
                 toast.innerHTML = `
-            <i class="fas fa-exclamation-circle"></i>
-            <span>${message}</span>
-        `;
+                    <i class="fas fa-exclamation-circle"></i>
+                    <span>${message}</span>
+                `;
                 document.body.appendChild(toast);
 
                 setTimeout(() => {
@@ -677,11 +287,698 @@
                     toast.style.transform = 'translateX(100%)';
                     setTimeout(() => toast.remove(), 300);
                 }, duration);
+            },
+
+            // Parse KML data from text
+            parseKML(kmlText) {
+                try {
+                    const parser = new DOMParser();
+                    const xmlDoc = parser.parseFromString(kmlText, "application/xml");
+                    const coordsText = xmlDoc.querySelector('coordinates')?.textContent.trim() || '';
+
+                    return coordsText.split(' ').map(coordStr => {
+                        const [lng, lat] = coordStr.split(',').map(Number);
+                        return [lat, lng]; // Leaflet uses [lat, lng] format
+                    });
+                } catch (error) {
+                    Logger.error('Failed to show details:', error);
+                    Utils.showError('Инвестиция маълумотларини юклашда хатолик юз берди');
+                    APP.state.view.isAnimating = false;
+                }
+            };
+
+            // Add these helper functions for view management
+            APP.adjustPolygonView = function(polygon, padding) {
+                if (!polygon) return;
+
+                const bounds = polygon.getBounds();
+
+                // Clear any existing animations
+                APP.state.map.stop();
+
+                APP.state.map.once('moveend', () => {
+                    // Ensure proper centering after bounds are set
+                    const center = bounds.getCenter();
+                    const zoom = APP.state.map.getBoundsZoom(bounds);
+
+                    APP.state.map.setView(center, Math.min(zoom, 17), {
+                        animate: true,
+                        duration: APP.CONFIG.MAP_ANIMATION.PAN_DURATION,
+                        paddingTopLeft: [50, 50],
+                        paddingBottomRight: padding
+                    });
+                });
+
+                APP.state.map.fitBounds(bounds, {
+                    paddingTopLeft: [50, 50],
+                    paddingBottomRight: padding,
+                    maxZoom: 17,
+                    animate: true,
+                    duration: APP.CONFIG.MAP_ANIMATION.ZOOM_DURATION
+                });
+            };
+
+            APP.adjustMarkerView = function(marker, sidebarWidth) {
+                const point = marker.getLatLng();
+
+                // First zoom to marker
+                APP.state.map.setView(point, 17, {
+                    animate: true,
+                    duration: APP.CONFIG.MAP_ANIMATION.ZOOM_DURATION
+                });
+
+                // Then pan to account for sidebar if on desktop
+                if (window.innerWidth > APP.CONFIG.MOBILE_BREAKPOINT) {
+                    setTimeout(() => {
+                        APP.state.map.panBy([-sidebarWidth / 2, 0], {
+                            animate: true,
+                            duration: APP.CONFIG.MAP_ANIMATION.PAN_DURATION,
+                            easeLinearity: APP.CONFIG.MAP_ANIMATION.EASE_LINEARITY
+                        });
+                    }, APP.CONFIG.MAP_ANIMATION.ZOOM_DURATION * 1000);
+                }
+            };
+
+            // Update the close sidebar function to handle state properly
+            APP.closeSidebar = function() {
+                if (APP.state.currentSidebar) {
+                    APP.state.currentSidebar.classList.remove('open');
+
+                    setTimeout(() => {
+                        if (APP.state.currentSidebar) {
+                            // Clear any existing animations
+                            APP.state.map.stop();
+
+                            // Run cleanup functions if any
+                            if (APP.state.cleanup && APP.state.cleanup.length) {
+                                APP.state.cleanup.forEach(cleanupFn => {
+                                    try {
+                                        cleanupFn();
+                                    } catch (e) {
+                                        Logger.error('Cleanup function error:', e);
+                                    }
+                                });
+                                APP.state.cleanup = [];
+                            }
+
+                            APP.state.currentSidebar.remove();
+                            APP.state.currentSidebar = null;
+
+                            // Reset view state
+                            APP.state.view.currentItem = null;
+
+                            if (APP.state.view.lastCenter && APP.state.view.lastZoom) {
+                                APP.state.map.setView(
+                                    APP.state.view.lastCenter,
+                                    APP.state.view.lastZoom, {
+                                        animate: true,
+                                        duration: APP.CONFIG.MAP_ANIMATION.ZOOM_DURATION
+                                    }
+                                );
+                            }
+                        }
+                    }, APP.CONFIG.ANIMATION_DURATION);
+                }
+            };
+
+            APP.cleanupMapEvents = function() {
+                if (APP.state.map) {
+                    APP.state.map.stop();
+                    APP.state.map.off('moveend');
+                    APP.state.map.off('zoomend');
+                }
+            };
+
+            // Filter markers and polygons by district
+            APP.filterByDistrict = function(districtName) {
+                try {
+                    Logger.info('Filtering by district:', districtName);
+                    APP.state.currentDistrict = districtName;
+
+                    // Clear existing markers and add filtered ones
+                    APP.state.markerCluster.clearLayers();
+
+                    // Add markers that match the filter or all if 'all' is selected
+                    APP.state.markers.forEach(({
+                        marker,
+                        data
+                    }) => {
+                        const matchesDistrict =
+                            districtName === 'all' ||
+                            (data.district_name && data.district_name.toLowerCase().includes(
+                                districtName.toLowerCase()));
+
+                        const matchesStatus =
+                            APP.state.currentStatus === 'all' ||
+                            data.status === APP.state.currentStatus;
+
+                        if (matchesDistrict && matchesStatus && APP.state.filters.showMarkers) {
+                            APP.state.markerCluster.addLayer(marker);
+                        }
+                    });
+
+                    // Handle polygons visibility
+                    Object.values(APP.state.polygons).forEach(({
+                        polygon,
+                        data
+                    }) => {
+                        const matchesDistrict =
+                            districtName === 'all' ||
+                            (data.district_name && data.district_name.toLowerCase().includes(
+                                districtName.toLowerCase()));
+
+                        const matchesStatus =
+                            APP.state.currentStatus === 'all' ||
+                            data.status === APP.state.currentStatus;
+
+                        if (matchesDistrict && matchesStatus && APP.state.filters.showPolygons) {
+                            if (!APP.state.map.hasLayer(polygon)) {
+                                polygon.addTo(APP.state.map);
+                            }
+                        } else {
+                            if (APP.state.map.hasLayer(polygon)) {
+                                APP.state.map.removeLayer(polygon);
+                            }
+                        }
+                    });
+
+                    // Highlight the selected district
+                    if (districtName !== 'all') {
+                        // Zoom to the district
+                        const districtPolygon = APP.state.districtPolygons[districtName];
+                        if (districtPolygon && districtPolygon.polygon) {
+                            APP.state.map.fitBounds(districtPolygon.polygon.getBounds(), {
+                                padding: [50, 50],
+                                maxZoom: 14,
+                                animate: true
+                            });
+                        }
+                    } else {
+                        // Reset to default view
+                        APP.state.map.setView(APP.CONFIG.MAP.CENTER, APP.CONFIG.MAP.DEFAULT_ZOOM, {
+                            animate: true
+                        });
+                    }
+
+                    Logger.debug('Filter applied:', districtName);
+                } catch (error) {
+                    Logger.error('Failed to apply filter:', error);
+                    Utils.showError('Фильтрни қўллашда хатолик юз берди');
+                }
+            };
+
+            // Filter by status
+            APP.filterByStatus = function(status) {
+                try {
+                    Logger.info('Filtering by status:', status);
+                    APP.state.currentStatus = status;
+
+                    // Update status buttons
+                    document.querySelectorAll('.status-btn').forEach(btn => {
+                        if (btn.dataset.status === status) {
+                            btn.classList.add('active');
+                        } else {
+                            btn.classList.remove('active');
+                        }
+                    });
+
+                    // Re-apply district filter with new status filter
+                    APP.filterByDistrict(APP.state.currentDistrict);
+
+                    Logger.debug('Status filter applied:', status);
+                } catch (error) {
+                    Logger.error('Failed to apply status filter:', error);
+                    Utils.showError('Статус фильтрини қўллашда хатолик юз берди');
+                }
+            };
+
+            // Toggle markers visibility
+            APP.toggleMarkers = function(show) {
+                try {
+                    APP.state.filters.showMarkers = show;
+
+                    if (show) {
+                        // Re-apply district filter to show only relevant markers
+                        APP.filterByDistrict(APP.state.currentDistrict);
+                    } else {
+                        // Clear all markers
+                        APP.state.markerCluster.clearLayers();
+                    }
+
+                    Logger.debug('Markers visibility toggled:', show);
+                } catch (error) {
+                    Logger.error('Failed to toggle markers:', error);
+                }
+            };
+
+            // Toggle polygons visibility
+            APP.togglePolygons = function(show) {
+                try {
+                    APP.state.filters.showPolygons = show;
+
+                    Object.values(APP.state.polygons).forEach(({
+                        polygon,
+                        data
+                    }) => {
+                        const matchesDistrict =
+                            APP.state.currentDistrict === 'all' ||
+                            (data.district_name && data.district_name.toLowerCase().includes(APP.state
+                                .currentDistrict.toLowerCase()));
+
+                        const matchesStatus =
+                            APP.state.currentStatus === 'all' ||
+                            data.status === APP.state.currentStatus;
+
+                        if (show && matchesDistrict && matchesStatus) {
+                            if (!APP.state.map.hasLayer(polygon)) {
+                                polygon.addTo(APP.state.map);
+                            }
+                        } else {
+                            if (APP.state.map.hasLayer(polygon)) {
+                                APP.state.map.removeLayer(polygon);
+                            }
+                        }
+                    });
+
+                    Logger.debug('Polygons visibility toggled:', show);
+                } catch (error) {
+                    Logger.error('Failed to toggle polygons:', error);
+                }
+            };
+
+            // Toggle district boundaries visibility
+            APP.toggleDistricts = function(show) {
+                try {
+                    APP.state.filters.showDistricts = show;
+
+                    Object.values(APP.state.districtPolygons).forEach(({ polygon }) => {
+                        if (show) {
+                            if (!APP.state.map.hasLayer(polygon)) {
+                                polygon.addTo(APP.state.map);
+                            }
+                        } else {
+                            if (APP.state.map.hasLayer(polygon)) {
+                                APP.state.map.removeLayer(polygon);
+                            }
+                        }
+                    });
+
+                    Logger.debug('District boundaries visibility toggled:', show);
+                } catch (error) {
+                    Logger.error('Failed to toggle district boundaries:', error);
+                }
+            };
+
+            // Switch map layer
+            APP.switchMapLayer = function(layerName) {
+                try {
+                    if (APP.state.layers.instances[layerName]) {
+                        // Remove current layer
+                        APP.state.map.removeLayer(APP.state.layers.instances[APP.state.layers.current]);
+
+                        // Add new layer
+                        APP.state.layers.instances[layerName].addTo(APP.state.map);
+
+                        // Update current layer
+                        APP.state.layers.current = layerName;
+
+                        Logger.debug('Map layer switched to:', layerName);
+                    }
+                } catch (error) {
+                    Logger.error('Failed to switch map layer:', error);
+                }
+            };
+
+            // Load additional details for an investment lot
+            APP.loadAdditionalDetails = async function(lotId) {
+                try {
+                    Logger.info('Loading additional details for lot:', lotId);
+
+                    // In a real application, this would fetch data from an API
+                    // For this demo, we'll simulate a network request and return mock data
+                    return new Promise((resolve, reject) => {
+                        setTimeout(() => {
+                            // Check if lot exists in our data
+                            const markerData = APP.state.markers.find(m => m.data.id === lotId);
+                            const polygonData = APP.state.polygons[lotId];
+                            const lot = (markerData ? markerData.data : (polygonData ? polygonData.data : null));
+
+                            if (!lot) {
+                                reject(new Error('Lot not found'));
+                                return;
+                            }
+
+                            // Generate some random additional data based on lot properties
+                            const additionalData = {
+                                economicImpact: Math.floor(Math.random() * 1000) + 500,
+                                jobsCreated: Math.floor(Math.random() * 200) + 50,
+                                investmentAmount: (Math.random() * 10 + 2).toFixed(2),
+                                constructionDuration: Math.floor(Math.random() * 24) + 6,
+                                lastUpdated: new Date().toISOString().split('T')[0]
+                            };
+
+                            resolve(additionalData);
+                        }, 800); // Simulate network delay
+                    });
+                } catch (error) {
+                    Logger.error('Failed to load additional details:', error);
+                    return null;
+                }
+            };
+
+            // Generate mock data for testing
+            APP.generateMockData = function() {
+                Logger.info('Generating mock data for testing...');
+
+                // Define districts of Tashkent
+                const districts = [
+                    'Бектемир', 'Чилонзор', 'Миробод', 'Мирзо Улуғбек',
+                    'Олмазор', 'Сергели', 'Шайхонтоҳур', 'Учтепа',
+                    'Яккасарой', 'Яшнобод', 'Юнусобод', 'Янгиҳаёт'
+                ];
+
+                // Base coordinates for Tashkent
+                const baseLatCenter = 41.311;
+                const baseLngCenter = 69.279;
+
+                // Mock polygon data generator
+                const generateMockPolygon = (centerLat, centerLng, size = 0.003) => {
+                    const points = [];
+                    const sides = 5 + Math.floor(Math.random() * 4); // 5-8 sides
+
+                    for (let i = 0; i < sides; i++) {
+                        const angle = (i / sides) * 2 * Math.PI;
+                        const variation = 0.4 + Math.random() * 0.6; // Random variation in size
+                        const lat = centerLat + Math.sin(angle) * size * variation;
+                        const lng = centerLng + Math.cos(angle) * size * variation;
+
+                        // Create DMS format
+                        const latDeg = Math.floor(lat);
+                        const latMin = Math.floor((lat - latDeg) * 60);
+                        const latSec = ((lat - latDeg - latMin/60) * 3600).toFixed(2);
+                        const lngDeg = Math.floor(lng);
+                        const lngMin = Math.floor((lng - lngDeg) * 60);
+                        const lngSec = ((lng - lngDeg - lngMin/60) * 3600).toFixed(2);
+
+                        points.push({
+                            start_lat: `${latDeg}°${latMin}'${latSec}"С`,
+                            start_lon: `${lngDeg}°${lngMin}'${lngSec}"E`
+                        });
+                    }
+
+                    return points;
+                };
+
+                // Generate 40 random lots
+                APP.state.mockApiData.lots = [];
+                for (let i = 0; i < 40; i++) {
+                    const id = (100 + i).toString();
+                    const district = districts[Math.floor(Math.random() * districts.length)];
+
+                    // Random coordinates within Tashkent area
+                    const latOffset = (Math.random() - 0.5) * 0.1;
+                    const lngOffset = (Math.random() - 0.5) * 0.1;
+                    const lat = baseLatCenter + latOffset;
+                    const lng = baseLngCenter + lngOffset;
+
+                    // Random area
+                    const area = (Math.random() * 5 + 0.1).toFixed(2);
+
+                    // Random status
+                    const statuses = ["9", "1", "2"];
+                    const status = statuses[Math.floor(Math.random() * statuses.length)];
+
+                    const lot = {
+                        id: id,
+                        neighborhood_name: `Участок ${id} (${area} га)`,
+                        area_hectare: parseFloat(area),
+                        status: status,
+                        district_name: district,
+                        lat: lat,
+                        lng: lng,
+                        decision_number: Math.floor(Math.random() * 100).toString(),
+                        area_strategy: "инвест шартномаси тузиш",
+                        cadastre_certificate: `Сертификат ${Math.floor(Math.random() * 1000)}`,
+                        proposed_floors: Math.floor(Math.random() * 20 + 1).toString(),
+                        qmn_percentage: Math.floor(Math.random() * 20).toString(),
+                        umn_coefficient: Math.floor(Math.random() * 10).toString(),
+                        adjacent_area: Math.floor(Math.random() * 2000),
+                        residential_area: Math.floor(Math.random() * 1000),
+                        non_residential_area: Math.floor(Math.random() * 500),
+                        total_building_area: Math.floor(Math.random() * 1500),
+                        documents: []
+                    };
+
+                    // Add random mock polygon to 70% of lots
+                    if (Math.random() > 0.3) {
+                        lot.polygons = generateMockPolygon(lat, lng);
+                    }
+
+                    // Add to mock data
+                    APP.state.mockApiData.lots.push(lot);
+                }
+
+                Logger.info('Mock data generated:', APP.state.mockApiData.lots.length, 'total lots');
+            };
+
+            // Setup event listeners
+            APP.setupEventListeners = function() {
+                try {
+                    Logger.info('Setting up event listeners...');
+
+                    // District selector change event
+                    const districtSelector = document.getElementById('district-selector');
+                    if (districtSelector) {
+                        districtSelector.addEventListener('change', function() {
+                            const selectedDistrict = this.value;
+                            APP.filterByDistrict(selectedDistrict);
+                        });
+                    }
+
+                    // Status filter buttons
+                    document.querySelectorAll('.status-btn').forEach(btn => {
+                        btn.addEventListener('click', function() {
+                            const status = this.dataset.status;
+                            APP.filterByStatus(status);
+                        });
+                    });
+
+                    // Show markers checkbox
+                    const showMarkersCheckbox = document.getElementById('show-markers');
+                    if (showMarkersCheckbox) {
+                        showMarkersCheckbox.addEventListener('change', function() {
+                            APP.toggleMarkers(this.checked);
+                        });
+                    }
+
+                    // Show polygons checkbox
+                    const showPolygonsCheckbox = document.getElementById('show-polygons');
+                    if (showPolygonsCheckbox) {
+                        showPolygonsCheckbox.addEventListener('change', function() {
+                            APP.togglePolygons(this.checked);
+                        });
+                    }
+
+                    // Show districts checkbox
+                    const showDistrictsCheckbox = document.getElementById('show-districts');
+                    if (showDistrictsCheckbox) {
+                        showDistrictsCheckbox.addEventListener('change', function() {
+                            APP.toggleDistricts(this.checked);
+                        });
+                    }
+
+                    // Mobile menu toggle
+                    const mobileToggle = document.getElementById('mobile-toggle');
+                    if (mobileToggle) {
+                        mobileToggle.addEventListener('click', function() {
+                            const toolbar = document.querySelector('.toolbar');
+                            if (toolbar) {
+                                toolbar.classList.toggle('show-mobile');
+                            }
+                        });
+                    }
+
+                    // Map controls
+                    document.getElementById('zoom-in').addEventListener('click', function() {
+                        APP.state.map.zoomIn();
+                    });
+
+                    document.getElementById('zoom-out').addEventListener('click', function() {
+                        APP.state.map.zoomOut();
+                    });
+
+                    document.getElementById('reset-view').addEventListener('click', function() {
+                        APP.state.map.setView(APP.CONFIG.MAP.CENTER, APP.CONFIG.MAP.DEFAULT_ZOOM, {
+                            animate: true
+                        });
+                    });
+
+                    // Language switcher
+                    document.querySelectorAll('.lang-btn').forEach(btn => {
+                        btn.addEventListener('click', function() {
+                            // This is a stub for language switching
+                            // In a real app, this would change the language
+                            document.querySelectorAll('.lang-btn').forEach(b => b.classList.remove('active'));
+                            this.classList.add('active');
+                        });
+                    });
+
+                    // Search functionality
+                    const searchInput = document.querySelector('.search-input');
+                    const searchBtn = document.querySelector('.search-btn');
+                    const searchResults = document.querySelector('.search-results');
+
+                    if (searchInput && searchBtn && searchResults) {
+                        // Search button click
+                        searchBtn.addEventListener('click', function() {
+                            const query = searchInput.value.trim().toLowerCase();
+                            if (query.length > 2) {
+                                APP.performSearch(query);
+                            }
+                        });
+
+                        // Search on enter key
+                        searchInput.addEventListener('keypress', function(e) {
+                            if (e.key === 'Enter') {
+                                const query = this.value.trim().toLowerCase();
+                                if (query.length > 2) {
+                                    APP.performSearch(query);
+                                }
+                            }
+                        });
+
+                        // Hide search results when clicking outside
+                        document.addEventListener('click', function(e) {
+                            if (!e.target.closest('.search-box')) {
+                                searchResults.classList.remove('active');
+                            }
+                        });
+                    }
+
+                    // Map click event to close sidebar on mobile
+                    APP.state.map.on('click', function() {
+                        if (window.innerWidth <= APP.CONFIG.MOBILE_BREAKPOINT) {
+                            APP.closeSidebar();
+                        }
+                    });
+
+                    // Window resize event
+                    window.addEventListener('resize', function() {
+                        APP.state.map.invalidateSize();
+                    });
+
+                    Logger.info('Event listeners setup complete');
+                } catch (error) {
+                    Logger.error('Failed to setup event listeners:', error);
+                }
+            };
+
+            // Perform search
+            APP.performSearch = function(query) {
+                try {
+                    Logger.info('Performing search:', query);
+
+                    const searchResults = document.querySelector('.search-results');
+                    searchResults.innerHTML = '';
+
+                    // Find matching lots
+                    const results = [];
+
+                    // Search in markers
+                    APP.state.markers.forEach(({ data }) => {
+                        if (
+                            (data.neighborhood_name && data.neighborhood_name.toLowerCase().includes(query)) ||
+                            (data.district_name && data.district_name.toLowerCase().includes(query)) ||
+                            (data.cadastre_certificate && data.cadastre_certificate.toLowerCase().includes(query))
+                        ) {
+                            results.push(data);
+                        }
+                    });
+
+                    // Display results
+                    if (results.length > 0) {
+                        results.forEach(lot => {
+                            const resultItem = document.createElement('div');
+                            resultItem.className = 'search-result-item';
+                            resultItem.innerHTML = `
+                                <div class="search-result-title">${lot.neighborhood_name || 'Номсиз жой'}</div>
+                                <div class="search-result-address">${lot.district_name || ''}</div>
+                            `;
+
+                            resultItem.addEventListener('click', function() {
+                                APP.showDetails(lot.id);
+                                searchResults.classList.remove('active');
+                            });
+
+                            searchResults.appendChild(resultItem);
+                        });
+
+                        searchResults.classList.add('active');
+                    } else {
+                        // No results
+                        const noResults = document.createElement('div');
+                        noResults.className = 'search-result-item';
+                        noResults.innerHTML = `<div class="search-result-title">Натижалар топилмади</div>`;
+                        searchResults.appendChild(noResults);
+                        searchResults.classList.add('active');
+                    }
+
+                    Logger.debug('Search completed, results:', results.length);
+                } catch (error) {
+                    Logger.error('Search failed:', error);
+                }
+            };
+
+            // Initialize application
+            APP.init = async function() {
+                try {
+                    Utils.showLoading();
+
+                    // Enable debug panel if in debug mode
+                    if (APP.DEBUG) {
+                        document.getElementById('debug-panel').style.display = 'block';
+                    }
+
+                    // Initialize map
+                    if (!APP.initMap()) {
+                        throw new Error('Map initialization failed');
+                    }
+
+                    // Load district boundaries
+                    await APP.loadDistrictBoundaries();
+
+                    // Load investment data
+                    await APP.loadData();
+
+                    // Setup event listeners
+                    APP.setupEventListeners();
+
+                    // Close loading indicator
+                    Utils.hideLoading();
+
+                    Logger.info('Application initialized successfully');
+                } catch (error) {
+                    Logger.error('Application initialization failed:', error);
+                    Utils.hideLoading();
+                    Utils.showError('Иловани ишга туширишда хатолик юз берди. Саҳифани янгиланг.');
+                }
+            };
+
+            // Initialize on DOM ready
+            document.addEventListener('DOMContentLoaded', function() {
+                APP.init();
+            });
+        })(window.MapApp = window.MapApp || {});
+
+                } catch (error) {
+                    Logger.error('Failed to parse KML:', error);
+                    return null;
+                }
             }
         };
 
         // Initialize Application
-        (function(APP) {
+        (function (APP) {
             // Configuration
             APP.CONFIG = {
                 SIDEBAR_WIDTH: 400,
@@ -692,44 +989,68 @@
                     PAN_DURATION: 0.3,
                     EASE_LINEARITY: 0.5,
                     TOTAL_DURATION: 1000
-
                 },
                 MAP: {
                     CENTER: [41.311, 69.279],
-                    DEFAULT_ZOOM: 12,
+                    DEFAULT_ZOOM: 11,
                     MIN_ZOOM: 10,
                     MAX_ZOOM: 18,
                     TILE_URL: 'https://{s}.tile.openstreetmap.org/{z}/{x}/{y}.png',
-                    ATTRIBUTION: '© OpenStreetMap contributors | InvestUz'
+                    ATTRIBUTION: '© OpenStreetMap contributors | ИнвестУз'
                 },
                 POLYGON: {
                     STYLE: {
-                        color: '#2b5797',
+                        color: '#1E3685',
                         weight: 2,
                         opacity: 0.7,
-                        fillColor: '#2b5797',
+                        fillColor: '#1E3685',
                         fillOpacity: 0.2
                     },
                     HOVER_STYLE: {
                         weight: 3,
-                        color: '#0078d7',
+                        color: '#4A6FD4',
                         fillOpacity: 0.4
                     },
                     APPROVED_STYLE: {
-                        color: '#107c10',
-                        fillColor: '#107c10'
+                        color: '#0E6245',
+                        fillColor: '#0E6245'
+                    },
+                    CONSTRUCTION_STYLE: {
+                        color: '#D62839',
+                        fillColor: '#D62839'
+                    }
+                },
+                DISTRICT_POLYGON: {
+                    STYLE: {
+                        color: '#767676',
+                        weight: 1.5,
+                        opacity: 0.6,
+                        fillColor: '#1E3685',
+                        fillOpacity: 0.05
+                    },
+                    HOVER_STYLE: {
+                        weight: 2,
+                        color: '#4A6FD4',
+                        fillOpacity: 0.15
                     }
                 },
                 MARKER: {
-                    ICON: L.icon({
-                        iconUrl: 'https://cdn.jsdelivr.net/npm/leaflet@1.9.4/dist/images/marker-icon.png',
-                        iconRetinaUrl: 'https://cdn.jsdelivr.net/npm/leaflet@1.9.4/dist/images/marker-icon-2x.png',
-                        shadowUrl: 'https://cdn.jsdelivr.net/npm/leaflet@1.9.4/dist/images/marker-shadow.png',
-                        iconSize: [25, 41],
-                        iconAnchor: [12, 41],
-                        popupAnchor: [1, -34],
-                        shadowSize: [41, 41]
+                    ICON: L.divIcon({
+                        className: 'custom-marker',
+                        html: '<div class="pulse-marker"></div>',
+                        iconSize: [20, 20],
+                        iconAnchor: [10, 10]
                     })
+                },
+                CLUSTER: {
+                    ICON_CREATE_FUNCTION: function(cluster) {
+                        const count = cluster.getChildCount();
+                        return L.divIcon({
+                            html: `<div class="custom-cluster">${count}</div>`,
+                            className: 'custom-marker-cluster',
+                            iconSize: [40, 40]
+                        });
+                    }
                 },
                 API: {
                     BASE_URL: '/api',
@@ -741,21 +1062,20 @@
                     STREET: {
                         url: 'https://{s}.tile.openstreetmap.org/{z}/{x}/{y}.png',
                         attribution: '© OpenStreetMap contributors',
-                        name: 'Street'
+                        name: 'Оддий'
                     },
                     SATELLITE: {
                         url: 'https://server.arcgisonline.com/ArcGIS/rest/services/World_Imagery/MapServer/tile/{z}/{y}/{x}',
                         attribution: '© Esri',
-                        name: 'Satellite'
-                    },
-                    HYBRID: {
-                        url: 'https://{s}.google.com/vt/lyrs=s,h&x={x}&y={y}&z={z}',
-                        attribution: '© Google',
-                        subdomains: ['mt0', 'mt1', 'mt2', 'mt3'],
-                        name: 'Hybrid'
+                        name: 'Сунъий йўлдош'
                     }
                 },
-
+                DISTRICT_KML_FILES: [
+                    'bektemir.xml', 'chilonzor.xml', 'mirobod.xml', 'mirzo_ulugbek.xml', 'olmazor.xml',
+                    'sergeli.xml', 'shayhontohur.xml', 'uchtepa.xml', 'yakkasaroy.xml', 'yashnobod.xml',
+                    'yunusabod.xml', 'yangihayot.xml'
+                ],
+                KML_PATH: '/xml-map/'
             };
 
             // Application state
@@ -764,19 +1084,90 @@
                 markerCluster: null,
                 markers: [],
                 polygons: {},
+                districtPolygons: {},
                 currentDistrict: 'all',
+                currentStatus: 'all',
                 currentSidebar: null,
                 filters: {
                     showMarkers: true,
-                    showPolygons: true
+                    showPolygons: true,
+                    showDistricts: true
                 },
-                mockApiData: {},
+                mockApiData: {
+                    lots: []
+                },
                 view: {
                     currentItem: null,
                     isAnimating: false,
                     lastZoom: null,
                     lastCenter: null
                 },
+                search: {
+                    results: [],
+                    visible: false
+                },
+                layers: {
+                    current: 'STREET',
+                    instances: {}
+                }
+            };
+
+            // Language translations
+            APP.translations = {
+                uz: {
+                    // Uzbek translations
+                    appTitle: "ИнвестУз - Инвестиция харитаси",
+                    allDistricts: "Барча туманлар",
+                    displayOptions: "Кўрсатиш мосламалари",
+                    showMarkers: "Маркерларни кўрсатиш",
+                    showPolygons: "Полигонларни кўрсатиш",
+                    showDistricts: "Туман чегараларини кўрсатиш",
+                    search: "Излаш...",
+                    legend: "Шартли белгилар",
+                    investmentAreas: "Инвестиция майдонлари",
+                    approvedProjects: "Тасдиқланган лойиҳалар",
+                    constructionProjects: "Иншоот қурилиш жараёнида",
+                    moreInfo: "Батафсил",
+                    basicInfo: "Асосий маълумот",
+                    district: "Туман",
+                    area: "Майдон",
+                    status: "Холат",
+                    strategy: "Стратегия",
+                    decisionNumber: "Қарор рақами",
+                    technicalParams: "Техник параметрлар",
+                    cadastre: "Кадастр",
+                    floors: "Қаватлар сони",
+                    kmnCoefficient: "КМН коэффициенти",
+                    umnCoefficient: "УМН коэффициенти",
+                    areas: "Майдонлар",
+                    residentialArea: "Турар-жой майдони",
+                    nonResidentialArea: "Нотурар-жой майдони",
+                    totalArea: "Умумий майдон",
+                    documents: "Ҳужжатлар",
+                    notAvailable: "Н/М",
+                    investmentContract: "Инвест договор",
+                    inDevelopment: "Ишлаб чиқилмоқда",
+                    inConstruction: "Қурилиш жараёнида",
+                    all: "Барчаси",
+                    hectare: "га",
+                    squareMeters: "м²",
+                    loadingError: "Маълумотларни юклашда хатолик юз берди. Кейинроқ қайта уриниб кўринг.",
+                    mapInitError: "Харитани инициализация қилишда хатолик юз берди. Саҳифани янгиланг."
+                },
+                ru: {
+                    // Russian translations (can be filled later)
+                },
+                en: {
+                    // English translations (can be filled later)
+                }
+            };
+
+            // Current language
+            APP.currentLanguage = 'uz';
+
+            // Get translation for a key
+            APP.t = function(key) {
+                return APP.translations[APP.currentLanguage][key] || key;
             };
 
             // Initialize map
@@ -794,23 +1185,32 @@
                         zoomControl: false
                     });
 
-                    // Add zoom control
-                    L.control.zoom({
-                        position: 'bottomright'
-                    }).addTo(map);
-
                     // Add tile layer
-                    L.tileLayer(APP.CONFIG.MAP.TILE_URL, {
-                        attribution: APP.CONFIG.MAP.ATTRIBUTION
-                    }).addTo(map);
+                    const streetTiles = L.tileLayer(APP.CONFIG.LAYERS.STREET.url, {
+                        attribution: APP.CONFIG.LAYERS.STREET.attribution
+                    });
 
-                    // Initialize marker cluster
+                    const satelliteTiles = L.tileLayer(APP.CONFIG.LAYERS.SATELLITE.url, {
+                        attribution: APP.CONFIG.LAYERS.SATELLITE.attribution
+                    });
+
+                    // Store layer instances
+                    APP.state.layers.instances = {
+                        STREET: streetTiles,
+                        SATELLITE: satelliteTiles
+                    };
+
+                    // Add default layer
+                    APP.state.layers.instances[APP.state.layers.current].addTo(map);
+
+                    // Initialize marker cluster with custom icons
                     const markerCluster = L.markerClusterGroup({
                         chunkedLoading: true,
                         maxClusterRadius: 50,
                         spiderfyOnMaxZoom: true,
                         showCoverageOnHover: false,
-                        disableClusteringAtZoom: 16
+                        disableClusteringAtZoom: 16,
+                        iconCreateFunction: APP.CONFIG.CLUSTER.ICON_CREATE_FUNCTION
                     });
 
                     map.addLayer(markerCluster);
@@ -825,8 +1225,79 @@
                 } catch (error) {
                     Logger.error('Map initialization failed:', error);
                     Utils.hideLoading();
-                    Utils.showError('Failed to initialize map. Please reload the page.');
+                    Utils.showError(APP.t('mapInitError'));
                     return false;
+                }
+            };
+
+            // Load district boundaries from KML files
+            APP.loadDistrictBoundaries = async function() {
+                try {
+                    Logger.info('Loading district boundaries...');
+
+                    // Process each KML file
+                    for (let fileName of APP.CONFIG.DISTRICT_KML_FILES) {
+                        try {
+                            const response = await fetch(APP.CONFIG.KML_PATH + fileName);
+                            const kmlText = await response.text();
+
+                            // Parse KML to get coordinates
+                            const coords = Utils.parseKML(kmlText);
+
+                            if (coords && coords.length > 0) {
+                                // Create district polygon
+                                const districtName = fileName.replace('.xml', '');
+                                APP.addDistrictPolygon(districtName, coords);
+                            }
+                        } catch (error) {
+                            Logger.error(`Failed to load KML file: ${fileName}`, error);
+                        }
+                    }
+
+                    Logger.info('District boundaries loaded successfully');
+                } catch (error) {
+                    Logger.error('Failed to load district boundaries:', error);
+                    Utils.showError('Туман чегараларини юклашда хатолик юз берди');
+                }
+            };
+
+            // Add district polygon to map
+            APP.addDistrictPolygon = function(districtName, coordinates) {
+                try {
+                    // Create polygon with district style
+                    const polygon = L.polygon(coordinates, APP.CONFIG.DISTRICT_POLYGON.STYLE);
+
+                    // Add hover effects
+                    polygon.on('mouseover', function() {
+                        polygon.setStyle(APP.CONFIG.DISTRICT_POLYGON.HOVER_STYLE);
+                    });
+
+                    polygon.on('mouseout', function() {
+                        polygon.setStyle(APP.CONFIG.DISTRICT_POLYGON.STYLE);
+                    });
+
+                    // Add click event to filter by district
+                    polygon.on('click', function() {
+                        document.getElementById('district-selector').value = districtName;
+                        APP.filterByDistrict(districtName);
+                    });
+
+                    // Add to map if districts are shown
+                    if (APP.state.filters.showDistricts) {
+                        polygon.addTo(APP.state.map);
+                    }
+
+                    // Store reference
+                    APP.state.districtPolygons[districtName] = {
+                        polygon: polygon,
+                        name: districtName
+                    };
+
+                    Logger.debug('Added district polygon:', districtName);
+                    return polygon;
+                } catch (error) {
+                    Logger.error('Failed to add district polygon:', error);
+                    return null;
                 }
             };
 
@@ -869,11 +1340,11 @@
                 } catch (error) {
                     Logger.error('Failed to load data:', error);
                     Utils.hideLoading();
-                    Utils.showError('Failed to load investment data. Please try again later.');
+                    Utils.showError(APP.t('loadingError'));
 
-                    // Optionally, you can fall back to mock data in development mode
-                    if (APP.DEBUG) {
-                        Logger.info('Falling back to mock data in debug mode...');
+                    // Fall back to mock data
+                    if (APP.DEBUG || true) { // Always fall back to mock data for this demo
+                        Logger.info('Falling back to mock data...');
                         return APP.loadMockData();
                     }
                 }
@@ -881,6 +1352,13 @@
 
             APP.loadMockData = async function() {
                 try {
+                    Logger.info('Generating mock data...');
+
+                    // Generate mock data if not already present
+                    if (APP.state.mockApiData.lots.length === 0) {
+                        APP.generateMockData();
+                    }
+
                     const data = APP.state.mockApiData;
 
                     if (!data.lots || !Array.isArray(data.lots)) {
@@ -906,7 +1384,7 @@
                 } catch (error) {
                     Logger.error('Failed to load mock data:', error);
                     Utils.hideLoading();
-                    Utils.showError('Failed to load data');
+                    Utils.showError('Маълумотларни юклашда хатолик юз берди');
                 }
             };
 
@@ -949,10 +1427,16 @@
                     let style = {
                         ...APP.CONFIG.POLYGON.STYLE
                     };
+
                     if (lot.status === "9") { // Approved status
                         style = {
                             ...style,
                             ...APP.CONFIG.POLYGON.APPROVED_STYLE
+                        };
+                    } else if (lot.status === "2") { // Construction status
+                        style = {
+                            ...style,
+                            ...APP.CONFIG.POLYGON.CONSTRUCTION_STYLE
                         };
                     }
 
@@ -961,7 +1445,10 @@
 
                     // Add event listeners
                     polygon.on('mouseover', function() {
-                        polygon.setStyle(APP.CONFIG.POLYGON.HOVER_STYLE);
+                        polygon.setStyle({
+                            ...style,
+                            ...APP.CONFIG.POLYGON.HOVER_STYLE
+                        });
                     });
 
                     polygon.on('mouseout', function() {
@@ -1021,125 +1508,105 @@
                 const statusInfo = Utils.formatStatus(lot.status);
 
                 return `
-            <div class="popup-content">
-                <h3>${lot.neighborhood_name || 'Unnamed Location'}</h3>
-                <p>${lot.district_name || ''}</p>
-                <p>
-                    ${lot.area_hectare ? `<strong>Площадь:</strong> ${lot.area_hectare} га` : ''}
-                    ${statusInfo ? `<span class="badge ${statusInfo.class}">${statusInfo.text}</span>` : ''}
-                </p>
-                <div class="popup-footer">
-                    <button class="btn btn-primary btn-sm" onclick="MapApp.showDetails('${lot.id}')">
-                        <i class="fas fa-info-circle"></i> Подробнее
-                    </button>
-                </div>
-            </div>
-        `;
+                    <div class="popup-content">
+                        <h3>${lot.neighborhood_name || 'Номсиз жой'}</h3>
+                        <p>${lot.district_name || ''}</p>
+                        <p>
+                            ${lot.area_hectare ? `<strong>Майдон:</strong> ${lot.area_hectare} ${APP.t('hectare')}` : ''}
+                            ${statusInfo ? `<span class="badge ${statusInfo.class}">${statusInfo.text}</span>` : ''}
+                        </p>
+                        <div class="popup-footer">
+                            <button class="btn btn-primary btn-sm" onclick="MapApp.showDetails('${lot.id}')">
+                                <i class="fas fa-info-circle"></i> ${APP.t('moreInfo')}
+                            </button>
+                        </div>
+                    </div>
+                `;
             };
 
             APP.showDetails = function(lotId) {
-                try {
-                    Logger.info('Showing details for lot:', lotId);
+    try {
+        Logger.info('Showing details for lot:', lotId);
 
-                    // Prevent multiple simultaneous animations
-                    if (APP.state.view.isAnimating) {
-                        return;
-                    }
+        // Prevent multiple simultaneous animations
+        if (APP.state.view.isAnimating) {
+            return;
+        }
 
-                    // Find lot data
-                    const markerData = APP.state.markers.find(m => m.data.id === lotId);
-                    const polygonData = APP.state.polygons[lotId];
-                    const lot = (markerData ? markerData.data : (polygonData ? polygonData.data : null));
+        // Find lot data
+        const markerData = APP.state.markers.find(m => m.data.id === lotId);
+        const polygonData = APP.state.polygons[lotId];
+        const lot = (markerData ? markerData.data : (polygonData ? polygonData.data : null));
 
-                    if (!lot) {
-                        throw new Error(`Lot with ID ${lotId} not found`);
-                    }
+        if (!lot) {
+            throw new Error(`Lot with ID ${lotId} not found`);
+        }
 
-                    // Define statusInfo based on lot.status (example mapping)
-                    const statusMap = {
-                        'approved': {
-                            class: 'badge-success',
-                            text: 'Утверждено'
-                        },
-                        'pending': {
-                            class: 'badge-warning',
-                            text: 'В ожидании'
-                        },
-                        'rejected': {
-                            class: 'badge-danger',
-                            text: 'Отклонено'
-                        }
-                    };
-                    const statusInfo = statusMap[lot.status] || {
-                        class: 'badge-secondary',
-                        text: 'Неизвестно'
-                    };
+        // Get status info
+        const statusInfo = Utils.formatStatus(lot.status);
 
-                    // Store current view state before changing
-                    APP.state.view.lastZoom = APP.state.map.getZoom();
-                    APP.state.view.lastCenter = APP.state.map.getCenter();
+        // Store current view state before changing
+        APP.state.view.lastZoom = APP.state.map.getZoom();
+        APP.state.view.lastCenter = APP.state.map.getCenter();
 
-                    // Close existing sidebar if any
-                    APP.closeSidebar();
+        // Close existing sidebar if any
+        APP.closeSidebar();
 
-                    // Update current item
-                    APP.state.view.currentItem = lotId;
-                    APP.state.view.isAnimating = true;
+        // Update current item
+        APP.state.view.currentItem = lotId;
+        APP.state.view.isAnimating = true;
 
-                    // Calculate view parameters
-                    const sidebarWidth = window.innerWidth <= APP.CONFIG.MOBILE_BREAKPOINT ? 0 : APP.CONFIG
-                        .SIDEBAR_WIDTH;
-                    const padding = window.innerWidth <= APP.CONFIG.MOBILE_BREAKPOINT ? [50, 50] : [50, 50 +
-                        sidebarWidth
-                    ];
+        // Calculate view parameters
+        const sidebarWidth = window.innerWidth <= APP.CONFIG.MOBILE_BREAKPOINT ? 0 : APP.CONFIG.SIDEBAR_WIDTH;
+        const padding = window.innerWidth <= APP.CONFIG.MOBILE_BREAKPOINT ? [50, 50] : [50, 50 + sidebarWidth];
 
-                    // Create and setup sidebar
-                    const sidebar = document.createElement('div');
-                    sidebar.className = 'sidebar';
-                    sidebar.innerHTML = `
+        // Create and setup sidebar
+        const sidebar = document.createElement('div');
+        sidebar.className = 'sidebar';
+        sidebar.innerHTML = `
             <div class="sidebar-header">
-                <h2>${lot.neighborhood_name || 'Unnamed Location'}</h2>
+                <h2>${lot.neighborhood_name || 'Номсиз жой'}</h2>
                 <button onclick="MapApp.closeSidebar()">
                     <i class="fas fa-times"></i>
                 </button>
             </div>
             <div class="sidebar-content">
                 <div class="section-title">
-                    <i class="fas fa-info-circle"></i> Основная информация
+                    <i class="fas fa-info-circle"></i> ${APP.t('basicInfo')}
                 </div>
                 <table class="details-table">
-                    <tr><td>Район:</td><td>${lot.district_name || 'Н/Д'}</td></tr>
-                    <tr><td>Площадь:</td><td>${lot.area_hectare ? lot.area_hectare + ' га' : 'Н/Д'}</td></tr>
-                    <tr><td>Статус:</td><td><span class="badge ${statusInfo.class}">${statusInfo.text}</span></td></tr>
-                    <tr><td>Стратегия:</td><td>${lot.area_strategy || 'Н/Д'}</td></tr>
-                    <tr><td>Номер решения:</td><td>${lot.decision_number || 'Н/Д'}</td></tr>
+                    <tr><td>${APP.t('district')}:</td><td>${lot.district_name || APP.t('notAvailable')}</td></tr>
+                    <tr><td>${APP.t('area')}:</td><td>${lot.area_hectare ? lot.area_hectare + ' ' + APP.t('hectare') : APP.t('notAvailable')}</td></tr>
+                    <tr><td>${APP.t('status')}:</td><td><span class="badge ${statusInfo.class}">${statusInfo.text}</span></td></tr>
+                    <tr><td>${APP.t('strategy')}:</td><td>${lot.area_strategy || APP.t('notAvailable')}</td></tr>
+                    <tr><td>${APP.t('decisionNumber')}:</td><td>${lot.decision_number || APP.t('notAvailable')}</td></tr>
                 </table>
 
                 <div class="section-title">
-                    <i class="fas fa-building"></i> Технические параметры
+                    <i class="fas fa-building"></i> ${APP.t('technicalParams')}
                 </div>
                 <table class="details-table">
-                    <tr><td>Кадастр:</td><td>${lot.cadastre_certificate || 'Н/Д'}</td></tr>
-                    <tr><td>Этажность:</td><td>${lot.proposed_floors || 'Н/Д'}</td></tr>
-                    <tr><td>Коэффициент КМН:</td><td>${lot.qmn_percentage || 'Н/Д'}</td></tr>
-                    <tr><td>Коэффициент УМН:</td><td>${lot.umn_coefficient || 'Н/Д'}</td></tr>
+                    <tr><td>${APP.t('cadastre')}:</td><td>${lot.cadastre_certificate || APP.t('notAvailable')}</td></tr>
+                    <tr><td>${APP.t('floors')}:</td><td>${lot.proposed_floors || APP.t('notAvailable')}</td></tr>
+                    <tr><td>${APP.t('kmnCoefficient')}:</td><td>${lot.qmn_percentage || APP.t('notAvailable')}</td></tr>
+                    <tr><td>${APP.t('umnCoefficient')}:</td><td>${lot.umn_coefficient || APP.t('notAvailable')}</td></tr>
                 </table>
 
                 <div class="section-title">
-                    <i class="fas fa-expand-arrows-alt"></i> Площади
+                    <i class="fas fa-expand-arrows-alt"></i> ${APP.t('areas')}
                 </div>
                 <table class="details-table">
-                    <tr><td>Жилая площадь:</td><td>${lot.residential_area ? lot.residential_area + ' м²' : 'Н/Д'}</td></tr>
-                    <tr><td>Нежилая площадь:</td><td>${lot.non_residential_area ? lot.non_residential_area + ' м²' : 'Н/Д'}</td></tr>
-                    <tr><td>Общая площадь:</td><td>${lot.total_building_area ? lot.total_building_area + ' м²' : 'Н/Д'}</td></tr>
+                    <tr><td>${APP.t('residentialArea')}:</td><td>${lot.residential_area ? lot.residential_area + ' ' + APP.t('squareMeters') : APP.t('notAvailable')}</td></tr>
+                    <tr><td>${APP.t('nonResidentialArea')}:</td><td>${lot.non_residential_area ? lot.non_residential_area + ' ' + APP.t('squareMeters') : APP.t('notAvailable')}</td></tr>
+                    <tr><td>${APP.t('totalArea')}:</td><td>${lot.total_building_area ? lot.total_building_area + ' ' + APP.t('squareMeters') : APP.t('notAvailable')}</td></tr>
                 </table>
 
                 ${lot.documents && lot.documents.length > 0 ? `
-                                            <div class="section-title">
-                                                <i class="fas fa-file-alt"></i> Документы
-                                            </div>
-                                            <ul class="document-list">
-                                                ${lot.documents.map(doc => `
+                    <div class="section-title">
+                        <i class="fas fa-file-alt"></i> ${APP.t('documents')}
+                    </div>
+                    <ul class="document-list">
+                        ${lot.documents.map(doc => `
                             <li class="document-item">
                                 <span class="document-icon"><i class="fas fa-file-pdf"></i></span>
                                 <a href="${doc.url}" target="_blank" class="document-link">
@@ -1147,447 +1614,241 @@
                                 </a>
                             </li>
                         `).join('')}
-                                            </ul>` : ''}
+                    </ul>` : ''}
             </div>
         `;
 
-                    // Append sidebar to body
-                    document.body.appendChild(sidebar);
-                    APP.state.currentSidebar = sidebar;
+        // Append sidebar to body
+        document.body.appendChild(sidebar);
+        APP.state.currentSidebar = sidebar;
 
-                    // Handle view transitions
-                    requestAnimationFrame(() => {
-                        // First open sidebar
-                        sidebar.classList.add('open');
+        // Show a success notification
+        APP.showNotification('success', 'Маълумотлар муваффақиятли юкланди', 2000);
 
-                        // Wait for sidebar animation to start
-                        setTimeout(() => {
-                            // Clear any existing map animations
-                            APP.state.map.stop();
+        // Handle view transitions with improved animation sequence
+        requestAnimationFrame(() => {
+            // First open sidebar with a smooth transition
+            sidebar.classList.add('open');
 
-                            // Adjust view based on item type
-                            if (polygonData && polygonData.polygon) {
-                                APP.adjustPolygonView(polygonData.polygon, padding);
-                            } else if (markerData && markerData.marker) {
-                                APP.adjustMarkerView(markerData.marker, sidebarWidth);
-                            }
+            // Add print and share buttons to the sidebar
+            const sidebarHeader = sidebar.querySelector('.sidebar-header');
+            if (sidebarHeader) {
+                const actionButtons = document.createElement('div');
+                actionButtons.className = 'sidebar-actions';
+                actionButtons.style.display = 'flex';
+                actionButtons.style.gap = '10px';
+                actionButtons.style.marginTop = '10px';
 
-                            // Reset animation state after all transitions complete
-                            setTimeout(() => {
-                                APP.state.view.isAnimating = false;
-                            }, APP.CONFIG.MAP_ANIMATION.TOTAL_DURATION);
-                        }, APP.CONFIG.ANIMATION_DURATION / 3);
-                    });
-                } catch (error) {
-                    Logger.error('Failed to show details:', error);
-                    Utils.showError('Failed to load investment details');
-                    APP.state.view.isAnimating = false;
-                }
-            };
+                // Print button
+                const printBtn = document.createElement('button');
+                printBtn.className = 'btn btn-sm';
+                printBtn.innerHTML = '<i class="fas fa-print"></i> Чоп этиш';
+                printBtn.onclick = function(e) {
+                    e.stopPropagation();
+                    APP.printLotDetails(lot);
+                };
 
-            // Add these helper functions for view management
-            APP.adjustPolygonView = function(polygon, padding) {
-                if (!polygon) return;
+                // Share button
+                const shareBtn = document.createElement('button');
+                shareBtn.className = 'btn btn-sm';
+                shareBtn.innerHTML = '<i class="fas fa-share-alt"></i> Улашиш';
+                shareBtn.onclick = function(e) {
+                    e.stopPropagation();
+                    APP.shareLotDetails(lot);
+                };
 
-                const bounds = polygon.getBounds();
+                // Export button
+                const exportBtn = document.createElement('button');
+                exportBtn.className = 'btn btn-sm';
+                exportBtn.innerHTML = '<i class="fas fa-file-export"></i> PDF';
+                exportBtn.onclick = function(e) {
+                    e.stopPropagation();
+                    APP.exportLotDetails(lot);
+                };
 
-                // Clear any existing animations
+                actionButtons.appendChild(printBtn);
+                actionButtons.appendChild(shareBtn);
+                actionButtons.appendChild(exportBtn);
+
+                sidebarHeader.appendChild(actionButtons);
+            }
+
+            // Wait for sidebar animation to start before adjusting map view
+            setTimeout(() => {
+                // Clear any existing map animations to prevent conflicts
                 APP.state.map.stop();
 
-                APP.state.map.once('moveend', () => {
-                    // Ensure proper centering after bounds are set
-                    const center = bounds.getCenter();
-                    const zoom = APP.state.map.getBoundsZoom(bounds);
-
-                    APP.state.map.setView(center, Math.min(zoom, 17), {
-                        animate: true,
-                        duration: APP.CONFIG.MAP_ANIMATION.PAN_DURATION,
-                        paddingTopLeft: [50, 50],
-                        paddingBottomRight: padding
-                    });
-                });
-
-                APP.state.map.fitBounds(bounds, {
-                    paddingTopLeft: [50, 50],
-                    paddingBottomRight: padding,
-                    maxZoom: 17,
-                    animate: true,
-                    duration: APP.CONFIG.MAP_ANIMATION.ZOOM_DURATION
-                });
-            };
-
-            APP.adjustMarkerView = function(marker, sidebarWidth) {
-                if (!marker) return;
-
-                const point = marker.getLatLng();
-
-                // Clear any existing animations
-                APP.state.map.stop();
-
-                // Calculate offset based on sidebar
-                const offset = window.innerWidth > APP.CONFIG.MOBILE_BREAKPOINT ? [-sidebarWidth / 2, 0] : [0, 0];
-
-                // Set initial view
-                APP.state.map.once('moveend', () => {
-                    APP.state.map.panBy(offset, {
-                        animate: true,
-                        duration: APP.CONFIG.MAP_ANIMATION.PAN_DURATION,
-                        easeLinearity: APP.CONFIG.MAP_ANIMATION.EASE_LINEARITY
-                    });
-                });
-
-                APP.state.map.setView(point, 17, {
-                    animate: true,
-                    duration: APP.CONFIG.MAP_ANIMATION.ZOOM_DURATION
-                });
-            };
-
-            APP.adjustMarkerView = function(marker, sidebarWidth) {
-                const point = marker.getLatLng();
-
-                // First zoom to marker
-                APP.state.map.setView(point, 17, {
-                    animate: true,
-                    duration: APP.CONFIG.MAP_ANIMATION.ZOOM_DURATION
-                });
-
-                // Then pan to account for sidebar if on desktop
-                if (window.innerWidth > APP.CONFIG.MOBILE_BREAKPOINT) {
-                    setTimeout(() => {
-                        APP.state.map.panBy([-sidebarWidth / 2, 0], {
-                            animate: true,
-                            duration: APP.CONFIG.MAP_ANIMATION.PAN_DURATION,
-                            easeLinearity: APP.CONFIG.MAP_ANIMATION.EASE_LINEARITY
+                // Create highlight effect for the selected feature
+                if (polygonData && polygonData.polygon) {
+                    // Highlight the polygon with pulse effect
+                    const originalStyle = { ...polygonData.polygon.options };
+                    const pulseHighlight = () => {
+                        polygonData.polygon.setStyle({
+                            weight: 4,
+                            color: '#4A6FD4',
+                            dashArray: '5, 10',
+                            fillOpacity: 0.5
                         });
-                    }, APP.CONFIG.MAP_ANIMATION.ZOOM_DURATION * 1000);
-                }
-            };
 
-            // Add this helper function to create sidebar content
-            APP.createSidebarContent = function(lot) {
-                const statusInfo = Utils.formatStatus(lot.status);
+                        setTimeout(() => {
+                            polygonData.polygon.setStyle(originalStyle);
 
-                return `
-        <div class="section-title">
-            <i class="fas fa-info-circle"></i> Основная информация
-        </div>
-        <!-- Your existing sidebar content template -->
-    `;
-            };
-
-
-            // Update the close sidebar function to handle state properly
-            APP.closeSidebar = function() {
-                if (APP.state.currentSidebar) {
-                    APP.state.currentSidebar.classList.remove('open');
-
-                    setTimeout(() => {
-                        if (APP.state.currentSidebar) {
-                            // Clear any existing animations
-                            APP.state.map.stop();
-
-                            APP.state.currentSidebar.remove();
-                            APP.state.currentSidebar = null;
-
-                            // Reset view state
-                            APP.state.view.currentItem = null;
-
-                            if (APP.state.view.lastCenter && APP.state.view.lastZoom) {
-                                APP.state.map.setView(
-                                    APP.state.view.lastCenter,
-                                    APP.state.view.lastZoom, {
-                                        animate: true,
-                                        duration: APP.CONFIG.MAP_ANIMATION.ZOOM_DURATION
-                                    }
-                                );
-                            }
-                        }
-                    }, APP.CONFIG.ANIMATION_DURATION);
-                }
-            };
-
-            APP.cleanupMapEvents = function() {
-                if (APP.state.map) {
-                    APP.state.map.stop();
-                    APP.state.map.off('moveend');
-                    APP.state.map.off('zoomend');
-                }
-            };
-            // Filter markers and polygons by district
-            APP.filterByDistrict = function(districtName) {
-                try {
-                    Logger.info('Filtering by district:', districtName);
-                    APP.state.currentDistrict = districtName;
-
-                    // Clear existing markers and add filtered ones
-                    APP.state.markerCluster.clearLayers();
-
-                    // Add markers that match the filter or all if 'all' is selected
-                    APP.state.markers.forEach(({
-                        marker,
-                        data
-                    }) => {
-                        const shouldShow =
-                            districtName === 'all' ||
-                            (data.district_name && data.district_name.toLowerCase().includes(
-                                districtName.toLowerCase()));
-
-                        if (shouldShow && APP.state.filters.showMarkers) {
-                            APP.state.markerCluster.addLayer(marker);
-                        }
-                    });
-
-                    // Handle polygons visibility
-                    Object.values(APP.state.polygons).forEach(({
-                        polygon,
-                        data
-                    }) => {
-                        const shouldShow =
-                            districtName === 'all' ||
-                            (data.district_name && data.district_name.toLowerCase().includes(
-                                districtName.toLowerCase()));
-
-                        if (shouldShow && APP.state.filters.showPolygons) {
-                            if (!APP.state.map.hasLayer(polygon)) {
-                                polygon.addTo(APP.state.map);
-                            }
-                        } else {
-                            if (APP.state.map.hasLayer(polygon)) {
-                                APP.state.map.removeLayer(polygon);
-                            }
-                        }
-                    });
-
-                    Logger.debug('Filter applied:', districtName);
-                } catch (error) {
-                    Logger.error('Failed to apply filter:', error);
-                    Utils.showError('Failed to apply filter');
-                }
-            };
-
-            // Toggle markers visibility
-            APP.toggleMarkers = function(show) {
-                try {
-                    APP.state.filters.showMarkers = show;
-
-                    if (show) {
-                        // Re-apply district filter to show only relevant markers
-                        APP.filterByDistrict(APP.state.currentDistrict);
-                    } else {
-                        // Clear all markers
-                        APP.state.markerCluster.clearLayers();
-                    }
-
-                    Logger.debug('Markers visibility toggled:', show);
-                } catch (error) {
-                    Logger.error('Failed to toggle markers:', error);
-                }
-            };
-
-            // Toggle polygons visibility
-            APP.togglePolygons = function(show) {
-                try {
-                    APP.state.filters.showPolygons = show;
-
-                    Object.values(APP.state.polygons).forEach(({
-                        polygon,
-                        data
-                    }) => {
-                        const matchesDistrict =
-                            APP.state.currentDistrict === 'all' ||
-                            (data.district_name && data.district_name.toLowerCase().includes(APP.state
-                                .currentDistrict.toLowerCase()));
-
-                        if (show && matchesDistrict) {
-                            if (!APP.state.map.hasLayer(polygon)) {
-                                polygon.addTo(APP.state.map);
-                            }
-                        } else {
-                            if (APP.state.map.hasLayer(polygon)) {
-                                APP.state.map.removeLayer(polygon);
-                            }
-                        }
-                    });
-
-                    Logger.debug('Polygons visibility toggled:', show);
-                } catch (error) {
-                    Logger.error('Failed to toggle polygons:', error);
-                }
-            };
-
-            // Generate mock data for testing
-            APP.generateMockData = function() {
-                if (!APP.DEBUG) return;
-
-                Logger.info('Generating additional mock data for testing...');
-
-                // Define districts of Tashkent
-                const districts = [
-                    'Bektemir', 'Chilonzor', 'Mirobod', 'Mirzo Ulugʻbek',
-                    'Sergeli', 'Shayhontohur', 'Uchtepa', 'Yangihayot',
-                    'Yashnobod', 'Yunusobod'
-                ];
-
-                // Base coordinates for Tashkent
-                const baseLatCenter = 41.311;
-                const baseLngCenter = 69.279;
-
-                // Generate 20 additional random lots
-                for (let i = 0; i < 20; i++) {
-                    const id = (100 + i).toString();
-                    const district = districts[Math.floor(Math.random() * districts.length)];
-
-                    // Random coordinates within Tashkent area
-                    const latOffset = (Math.random() - 0.5) * 0.1;
-                    const lngOffset = (Math.random() - 0.5) * 0.1;
-                    const lat = baseLatCenter + latOffset;
-                    const lng = baseLngCenter + lngOffset;
-
-                    // Random area
-                    const area = (Math.random() * 5 + 0.1).toFixed(2);
-
-                    // Random status
-                    const status = Math.random() > 0.5 ? "9" : "1";
-
-                    const lot = {
-                        id: id,
-                        neighborhood_name: `Участок ${id} (${area} га)`,
-                        area_hectare: parseFloat(area),
-                        status: status,
-                        district_name: district,
-                        lat: lat,
-                        lng: lng,
-                        decision_number: Math.floor(Math.random() * 100).toString(),
-                        area_strategy: "заключение инвест договора",
-                        cadastre_certificate: `Сертификат ${Math.floor(Math.random() * 1000)}`,
-                        proposed_floors: Math.floor(Math.random() * 20 + 1).toString(),
-                        qmn_percentage: Math.floor(Math.random() * 20).toString(),
-                        umn_coefficient: Math.floor(Math.random() * 10).toString(),
-                        adjacent_area: Math.floor(Math.random() * 2000),
-                        residential_area: Math.floor(Math.random() * 1000),
-                        non_residential_area: Math.floor(Math.random() * 500),
-                        total_building_area: Math.floor(Math.random() * 1500),
-                        documents: []
+                            setTimeout(() => {
+                                if (APP.state.view.currentItem === lotId) {
+                                    pulseHighlight();
+                                }
+                            }, 1500);
+                        }, 700);
                     };
 
-                    // Add to mock data
-                    APP.state.mockApiData.lots.push(lot);
-                }
+                    pulseHighlight();
 
-                Logger.info('Mock data generated:', APP.state.mockApiData.lots.length, 'total lots');
-            };
+                    // Adjust view to show the polygon properly
+                    APP.adjustPolygonView(polygonData.polygon, padding);
+                } else if (markerData && markerData.marker) {
+                    // For markers, we want to highlight them and center the view
+                    const markerElement = markerData.marker.getElement();
+                    if (markerElement) {
+                        markerElement.style.zIndex = 1000; // Bring to front
 
-            // Setup event listeners
-            APP.setupEventListeners = function() {
-                try {
-                    Logger.info('Setting up event listeners...');
+                        // Add a temporary highlight effect
+                        const pulseElement = document.createElement('div');
+                        pulseElement.className = 'marker-highlight-pulse';
+                        pulseElement.style.position = 'absolute';
+                        pulseElement.style.width = '30px';
+                        pulseElement.style.height = '30px';
+                        pulseElement.style.borderRadius = '50%';
+                        pulseElement.style.backgroundColor = 'rgba(74, 111, 212, 0.3)';
+                        pulseElement.style.boxShadow = '0 0 0 rgba(74, 111, 212, 0.4)';
+                        pulseElement.style.animation = 'marker-pulse 1.5s infinite';
+                        pulseElement.style.transform = 'translate(-5px, -5px)';
+                        markerElement.appendChild(pulseElement);
 
-                    // District selector change event
-                    const districtSelector = document.getElementById('district-selector');
-                    if (districtSelector) {
-                        districtSelector.addEventListener('change', function() {
-                            const selectedDistrict = this.value;
-                            APP.filterByDistrict(selectedDistrict);
-                        });
-                    }
-
-                    // Show markers checkbox
-                    const showMarkersCheckbox = document.getElementById('show-markers');
-                    if (showMarkersCheckbox) {
-                        showMarkersCheckbox.addEventListener('change', function() {
-                            APP.toggleMarkers(this.checked);
-                        });
-                    }
-
-                    // Show polygons checkbox
-                    const showPolygonsCheckbox = document.getElementById('show-polygons');
-                    if (showPolygonsCheckbox) {
-                        showPolygonsCheckbox.addEventListener('change', function() {
-                            APP.togglePolygons(this.checked);
-                        });
-                    }
-
-                    // Mobile menu toggle
-                    const mobileToggle = document.getElementById('mobile-toggle');
-                    if (mobileToggle) {
-                        mobileToggle.addEventListener('click', function() {
-                            const toolbar = document.querySelector('.toolbar');
-                            if (toolbar) {
-                                toolbar.classList.toggle('show-mobile');
+                        // Clean up the pulse effect when sidebar is closed
+                        APP.state.cleanup = APP.state.cleanup || [];
+                        APP.state.cleanup.push(() => {
+                            if (markerElement && pulseElement.parentNode === markerElement) {
+                                markerElement.removeChild(pulseElement);
                             }
                         });
                     }
 
-                    // Map click event to close sidebar on mobile
-                    APP.state.map.on('click', function() {
-                        if (window.innerWidth <= 768) {
-                            APP.closeSidebar();
+                    // Adjust the map view to center on the marker
+                    APP.adjustMarkerView(markerData.marker, sidebarWidth);
+                }
+
+                // Add related investments section if available
+                const sidebarContent = sidebar.querySelector('.sidebar-content');
+                if (sidebarContent && APP.state.markers.length > 0) {
+                    // Find related investments in the same district
+                    const relatedInvestments = APP.state.markers
+                        .filter(m => m.data.id !== lot.id && m.data.district_name === lot.district_name)
+                        .slice(0, 3);
+
+                    if (relatedInvestments.length > 0) {
+                        const relatedSection = document.createElement('div');
+                        relatedSection.innerHTML = `
+                            <div class="section-title">
+                                <i class="fas fa-project-diagram"></i> Боғлиқ инвестициялар
+                            </div>
+                            <div class="related-investments">
+                                ${relatedInvestments.map(({data}) => `
+                                    <div class="data-card" onclick="MapApp.showDetails('${data.id}')">
+                                        <div class="data-card-header">
+                                            <div class="data-card-title">${data.neighborhood_name || 'Номсиз жой'}</div>
+                                            <span class="badge ${Utils.formatStatus(data.status).class} data-card-badge">
+                                                ${Utils.formatStatus(data.status).text}
+                                            </span>
+                                        </div>
+                                        <div class="data-card-address">${data.district_name || ''}</div>
+                                        <div class="data-card-stats">
+                                            <div class="data-card-stat">
+                                                <i class="fas fa-expand-arrows-alt"></i> ${data.area_hectare || 'Н/М'} га
+                                            </div>
+                                            ${data.proposed_floors ? `
+                                                <div class="data-card-stat">
+                                                    <i class="fas fa-building"></i> ${data.proposed_floors} қават
+                                                </div>
+                                            ` : ''}
+                                        </div>
+                                    </div>
+                                `).join('')}
+                            </div>
+                        `;
+
+                        sidebarContent.appendChild(relatedSection);
+                    }
+                }
+
+                // Check if we need to load additional data
+                if (lot && lot.id) {
+                    // This is where you could fetch additional details if needed
+                    APP.loadAdditionalDetails(lot.id).then(extraData => {
+                        if (extraData && APP.state.view.currentItem === lotId) {
+                            // Update sidebar with extra data if available
+                            const extraInfoSection = document.createElement('div');
+                            extraInfoSection.className = 'section-title';
+                            extraInfoSection.innerHTML = `
+                                <i class="fas fa-chart-bar"></i> Қўшимча маълумотлар
+                            `;
+
+                            const extraInfoContent = document.createElement('div');
+                            extraInfoContent.className = 'extra-info-content';
+                            extraInfoContent.innerHTML = `
+                                <table class="details-table">
+                                    <tr><td>Иқтисодий таъсир:</td><td>${extraData.economicImpact} млн. сўм</td></tr>
+                                    <tr><td>Яратилган иш ўринлари:</td><td>${extraData.jobsCreated}</td></tr>
+                                    <tr><td>Инвестиция миқдори:</td><td>${extraData.investmentAmount} млн. $</td></tr>
+                                    <tr><td>Қурилиш муддати:</td><td>${extraData.constructionDuration} ой</td></tr>
+                                    <tr><td>Сўнгги янгиланиш:</td><td>${extraData.lastUpdated}</td></tr>
+                                </table>
+                            `;
+
+                            // Append to sidebar if we still have the same item open
+                            if (APP.state.currentSidebar && APP.state.view.currentItem === lotId) {
+                                const sidebarContent = APP.state.currentSidebar.querySelector('.sidebar-content');
+                                if (sidebarContent) {
+                                    sidebarContent.appendChild(extraInfoSection);
+                                    sidebarContent.appendChild(extraInfoContent);
+                                }
+                            }
                         }
+                    }).catch(err => {
+                        Logger.error('Failed to load additional details:', err);
                     });
-
-                    // Window resize event
-                    window.addEventListener('resize', function() {
-                        APP.state.map.invalidateSize();
-                    });
-
-                    Logger.info('Event listeners setup complete');
-                } catch (error) {
-                    Logger.error('Failed to setup event listeners:', error);
                 }
-            };
 
-            // Initialize application
-            APP.init = async function() {
-                try {
-                    Utils.showLoading();
+                // Reset animation state after all transitions complete
+                setTimeout(() => {
+                    APP.state.view.isAnimating = false;
 
-                    // Enable debug panel if in debug mode
-                    if (APP.DEBUG) {
-                        document.getElementById('debug-panel').style.display = 'block';
-                    }
+                    // Notify any screen readers that the details are loaded (accessibility)
+                    const a11yAnnouncement = document.createElement('div');
+                    a11yAnnouncement.setAttribute('role', 'status');
+                    a11yAnnouncement.setAttribute('aria-live', 'polite');
+                    a11yAnnouncement.className = 'sr-only';
+                    a11yAnnouncement.textContent = `${lot.neighborhood_name || 'Инвестиция майдони'} маълумотлари юкланди`;
+                    document.body.appendChild(a11yAnnouncement);
 
-                    // Initialize map
-                    if (!APP.initMap()) {
-                        throw new Error('Map initialization failed');
-                    }
+                    // Clean up the announcement after it's been read
+                    setTimeout(() => {
+                        if (a11yAnnouncement.parentNode) {
+                            a11yAnnouncement.parentNode.removeChild(a11yAnnouncement);
+                        }
+                    }, 3000);
+                }, APP.CONFIG.MAP_ANIMATION.TOTAL_DURATION);
+            }, APP.CONFIG.ANIMATION_DURATION / 3);
+        });
+    } catch (error) {
+        Logger.error('Failed to show details:', error);
+        Utils.showError('Инвестиция маълумотларини юклашда хатолик юз берди');
+        APP.state.view.isAnimating = false;
+    }
+};
 
-                    // Generate mock data if in debug mode
-                    APP.generateMockData();
+        }
+    )
 
-                    // Load data
-                    await APP.loadData();
-
-                    // Setup event listeners
-                    APP.setupEventListeners();
-
-                    // Close loading indicator
-                    Utils.hideLoading();
-
-                    Logger.info('Application initialized successfully');
-                } catch (error) {
-                    Logger.error('Application initialization failed:', error);
-                    Utils.hideLoading();
-                    Utils.showError('Failed to initialize application. Please reload the page.');
-                }
-            };
-
-            // Initialize on DOM ready
-            document.addEventListener('DOMContentLoaded', function() {
-                APP.init();
-            });
-        })(window.MapApp = window.MapApp || {});
-    </script>
-
-
-    <script src="https://cdnjs.cloudflare.com/ajax/libs/leaflet/1.7.1/leaflet.js"></script>
-    <script src="https://unpkg.com/leaflet.markercluster@1.4.1/dist/leaflet.markercluster.js"></script>
-    <script src="https://cdnjs.cloudflare.com/ajax/libs/leaflet-control-geocoder/1.13.0/Control.Geocoder.js"></script>
-    <script src="https://cdnjs.cloudflare.com/ajax/libs/leaflet-control-geocoder/1.13.0/Control.Geocoder.js.map"></script>
-    <script src="https://cdnjs.cloudflare.com/ajax/libs/leaflet-ajax/2.1.0/leaflet.ajax.min.js"></script>
-    <script src="https://cdnjs.cloudflare.com/ajax/libs/leaflet-zoomhome/1.0.0/leaflet.zoomhome.min.js"></script>
-    <script src="https://cdnjs.cloudflare.com/ajax/libs/leaflet-zoomhome/1.0.0/leaflet.zoomhome.js.map"></script>
-    <script src="https://cdnjs.cloudflare.com/ajax/libs/leaflet-zoomhome/1.0.0/leaflet.zoomhome.min.js.map"></script>
-    <script src="https://cdnjs.cloudflare.com/ajax/libs/leaflet-zoomhome/1.0.0/leaflet.zoomhome.js"></script>
-    <script src="https://cdnjs.cloudflare.com/ajax/libs/leaflet-zoomhome/1.0.0/leaflet.zoomhome.min.js.map"></script>
-    <script src="https://cdnjs.cloudflare.com/ajax/libs/leaflet-zoomhome/1.0.0/leaflet.zoomhome.min.js"></script>
-    <script src="https://cdnjs.cloudflare.com/ajax/libs/leaflet-zoomhome/1.0.0/leaflet.zoomhome.min.js.map"></script>
+                </script>
+</body>
+</html>
