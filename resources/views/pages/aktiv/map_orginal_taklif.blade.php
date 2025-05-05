@@ -305,6 +305,8 @@ const Utils = {
             return null;
         }
     }
+
+
 };
 
 // Initialize Application
@@ -561,76 +563,116 @@ const Utils = {
     };
 
     // Load district boundaries from KML files
-    APP.loadDistrictBoundaries = async function() {
-        try {
-            Logger.info('Loading district boundaries...');
+  // Load district boundaries from KML files
+APP.loadDistrictBoundaries = async function() {
+    try {
+        Logger.info('Loading district boundaries...');
 
-            // Process each KML file
-            for (let fileName of APP.CONFIG.DISTRICT_KML_FILES) {
-                try {
-                    const response = await fetch(APP.CONFIG.KML_PATH + fileName);
-                    const kmlText = await response.text();
+        const loadedDistricts = [];
 
-                    // Parse KML to get coordinates
-                    const coords = Utils.parseKML(kmlText);
+        // Process each KML file
+        for (let fileName of APP.CONFIG.DISTRICT_KML_FILES) {
+            try {
+                const response = await fetch(APP.CONFIG.KML_PATH + fileName);
 
-                    if (coords && coords.length > 0) {
-                        // Create district polygon
-                        const districtName = fileName.replace('.xml', '');
-                        APP.addDistrictPolygon(districtName, coords);
-                    }
-                } catch (error) {
-                    Logger.error(`Failed to load KML file: ${fileName}`, error);
+                if (!response.ok) {
+                    Logger.warn(`KML file not found: ${fileName} (${response.status})`);
+                    continue;  // Skip this file and continue with the next
                 }
-            }
 
-            Logger.info('District boundaries loaded successfully');
-        } catch (error) {
-            Logger.error('Failed to load district boundaries:', error);
-            Utils.showError('Туман чегараларини юклашда хатолик юз берди');
+                const kmlText = await response.text();
+
+                // Parse KML to get coordinates
+                const coords = Utils.parseKML(kmlText);
+
+                if (!coords || coords.length < 3) {
+                    Logger.warn(`Invalid or insufficient coordinates in KML file: ${fileName}`);
+                    continue;
+                }
+
+                // Create district polygon
+                const districtName = fileName.replace('.xml', '');
+                const polygon = APP.addDistrictPolygon(districtName, coords);
+
+                if (polygon) {
+                    loadedDistricts.push(districtName);
+                }
+            } catch (error) {
+                Logger.error(`Failed to load KML file: ${fileName}`, error);
+                // Continue with next file
+            }
         }
-    };
 
-    // Add district polygon to map
-    APP.addDistrictPolygon = function(districtName, coordinates) {
-        try {
-            // Create polygon with district style
-            const polygon = L.polygon(coordinates, APP.CONFIG.DISTRICT_POLYGON.STYLE);
-
-            // Add hover effects
-            polygon.on('mouseover', function() {
-                polygon.setStyle(APP.CONFIG.DISTRICT_POLYGON.HOVER_STYLE);
-            });
-
-            polygon.on('mouseout', function() {
-                polygon.setStyle(APP.CONFIG.DISTRICT_POLYGON.STYLE);
-            });
-
-            // Add click event to filter by district
-            polygon.on('click', function() {
-                document.getElementById('district-selector').value = districtName;
-                APP.filterByDistrict(districtName);
-            });
-
-            // Add to map if districts are shown
-            if (APP.state.filters.showDistricts) {
-                polygon.addTo(APP.state.map);
-            }
-
-            // Store reference
-            APP.state.districtPolygons[districtName] = {
-                polygon: polygon,
-                name: districtName
-            };
-
-            Logger.debug('Added district polygon:', districtName);
-            return polygon;
-        } catch (error) {
-            Logger.error('Failed to add district polygon:', error);
+        if (loadedDistricts.length > 0) {
+            Logger.info(`District boundaries loaded successfully: ${loadedDistricts.join(', ')}`);
+        } else {
+            Logger.warn('No district boundaries were loaded successfully');
+        }
+    } catch (error) {
+        Logger.error('Failed to load district boundaries:', error);
+        Utils.showError('Туман чегараларини юклашда хатолик юз берди');
+    }
+};
+  // Add district polygon to map
+APP.addDistrictPolygon = function(districtName, coordinates) {
+    try {
+        // Validate coordinates
+        if (!coordinates || !Array.isArray(coordinates) || coordinates.length < 3) {
+            Logger.warn(`Invalid coordinates for district: ${districtName}`);
             return null;
         }
-    };
 
+        // Make sure all coordinates are valid arrays with 2 numbers
+        const validCoordinates = coordinates.filter(coord =>
+            Array.isArray(coord) &&
+            coord.length === 2 &&
+            typeof coord[0] === 'number' &&
+            typeof coord[1] === 'number' &&
+            !isNaN(coord[0]) &&
+            !isNaN(coord[1])
+        );
+
+        if (validCoordinates.length < 3) {
+            Logger.warn(`Not enough valid coordinates for district: ${districtName}`);
+            return null;
+        }
+
+        // Create polygon with district style and valid coordinates
+        const polygon = L.polygon(validCoordinates, APP.CONFIG.DISTRICT_POLYGON.STYLE);
+
+        // Add hover effects
+        polygon.on('mouseover', function() {
+            polygon.setStyle(APP.CONFIG.DISTRICT_POLYGON.HOVER_STYLE);
+        });
+
+        polygon.on('mouseout', function() {
+            polygon.setStyle(APP.CONFIG.DISTRICT_POLYGON.STYLE);
+        });
+
+        // Add click event to filter by district
+        polygon.on('click', function() {
+            document.getElementById('district-selector').value = districtName;
+            APP.filterByDistrict(districtName);
+        });
+
+        // Add to map if districts are shown
+        if (APP.state.filters.showDistricts) {
+            polygon.addTo(APP.state.map);
+        }
+
+        // Store reference
+        APP.state.districtPolygons[districtName] = {
+            polygon: polygon,
+            name: districtName
+        };
+
+        Logger.debug('Added district polygon:', districtName);
+        return polygon;
+    } catch (error) {
+        Logger.error(`Failed to add district polygon: ${error}`);
+        return null;
+    }
+};
     // Load lots data
     APP.loadData = async function() {
         try {
