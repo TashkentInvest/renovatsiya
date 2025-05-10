@@ -876,7 +876,7 @@
             const section = document.createElement('div');
 
             let html = `
-                <div class="section-title">Related Investments</div>
+                <div class="section-title">Боғлиқ инвестициялар</div>
                 <div class="related-investments">
             `;
 
