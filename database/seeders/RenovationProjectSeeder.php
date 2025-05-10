@@ -31,7 +31,7 @@ class RenovationProjectSeeder extends Seeder
         Schema::enableForeignKeyConstraints();
 
         // Set the path to the Excel file
-        $path = public_path('assets/data/renovation.xlsx');
+    $path = public_path('assets/data/renovation_upgrade.xlsx');
 
         // Set the path to the PDF directory
         $pdfDirectoryPath = public_path('assets/data/RENOVATSIYA ISXOD PDF/');
