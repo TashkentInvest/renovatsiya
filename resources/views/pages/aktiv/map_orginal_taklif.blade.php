@@ -4,30 +4,223 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Инвестиция харитаси - ИнвестУз</title>
+    <title>InvestUz Map</title>
 
     <!-- Leaflet CSS -->
     <link rel="stylesheet" href="https://unpkg.com/leaflet@1.9.4/dist/leaflet.css" />
     <link rel="stylesheet" href="https://unpkg.com/leaflet.markercluster@1.4.1/dist/MarkerCluster.css" />
     <link rel="stylesheet" href="https://unpkg.com/leaflet.markercluster@1.4.1/dist/MarkerCluster.Default.css" />
-    <script src="https://cdnjs.cloudflare.com/ajax/libs/jquery/3.6.0/jquery.min.js"></script>
+
     <!-- Font Awesome -->
     <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.0.0/css/all.min.css" />
-
-    <!-- Google Fonts - Roboto and Noto Sans -->
-    <link rel="stylesheet"
-        href="https://fonts.googleapis.com/css2?family=Roboto:wght@300;400;500;700&family=Noto+Sans:wght@400;500;600;700&display=swap">
-
-    <!-- Application Styles -->
     <link rel="stylesheet" href="{{ asset('assets/css/map_style/main.css') }}">
 
-    <!-- Leaflet JS -->
-    <script src="https://unpkg.com/leaflet@1.9.4/dist/leaflet.js"></script>
-    <script src="https://unpkg.com/leaflet.markercluster@1.4.1/dist/leaflet.markercluster.js"></script>
+    {{-- <style>
+        body,
+        html {
+            margin: 0;
+            padding: 0;
+            font-family: Arial, sans-serif;
+            height: 100%;
+            width: 100%;
+        }
+
+        #map {
+            height: 100vh;
+            width: 100%;
+        }
+
+        .sidebar {
+            position: fixed;
+            top: 0;
+            right: -400px;
+            width: 400px;
+            height: 100vh;
+            background: white;
+            box-shadow: -2px 0 5px rgba(0, 0, 0, 0.2);
+            overflow-y: auto;
+            transition: right 0.3s;
+            z-index: 1000;
+        }
+
+        .sidebar.open {
+            right: 0;
+        }
+
+        .sidebar-header {
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            padding: 15px;
+            border-bottom: 1px solid #eee;
+        }
+
+        .sidebar-header h2 {
+            margin: 0;
+            font-size: 20px;
+        }
+
+        .sidebar-close-btn {
+            background: none;
+            border: none;
+            font-size: 20px;
+            cursor: pointer;
+        }
+
+        .sidebar-content {
+            padding: 15px;
+        }
+
+        .section-title {
+            font-size: 18px;
+            font-weight: bold;
+            margin: 15px 0 10px;
+            padding-bottom: 5px;
+            border-bottom: 1px solid #eee;
+        }
+
+        .details-table {
+            width: 100%;
+            border-collapse: collapse;
+        }
+
+        .details-table td {
+            padding: 8px 0;
+            border-bottom: 1px solid #eee;
+        }
+
+        .details-table td:first-child {
+            width: 50%;
+            color: #666;
+        }
+
+        .badge {
+            display: inline-block;
+            padding: 3px 8px;
+            border-radius: 3px;
+            font-size: 12px;
+            background: #f0f0f0;
+        }
+
+        .badge-success {
+            background: #d4edda;
+            color: #155724;
+        }
+
+        .badge-warning {
+            background: #fff3cd;
+            color: #856404;
+        }
+
+        .badge-info {
+            background: #d1ecf1;
+            color: #0c5460;
+        }
+
+        .related-investments {
+            margin-top: 10px;
+        }
+
+        .data-card {
+            border: 1px solid #eee;
+            border-radius: 4px;
+            padding: 10px;
+            margin-bottom: 10px;
+            cursor: pointer;
+        }
+
+        .data-card:hover {
+            background: #f9f9f9;
+        }
+
+        .data-card-title {
+            font-weight: bold;
+            margin-bottom: 5px;
+        }
+
+        .loading {
+            position: fixed;
+            top: 0;
+            left: 0;
+            width: 100%;
+            height: 100%;
+            background: rgba(255, 255, 255, 0.8);
+            display: flex;
+            justify-content: center;
+            align-items: center;
+            z-index: 2000;
+        }
+
+        .spinner {
+            border: 5px solid #f3f3f3;
+            border-top: 5px solid #3498db;
+            border-radius: 50%;
+            width: 50px;
+            height: 50px;
+            animation: spin 1s linear infinite;
+        }
+
+        @keyframes spin {
+            0% {
+                transform: rotate(0deg);
+            }
+
+            100% {
+                transform: rotate(360deg);
+            }
+        }
+
+        .toast {
+            position: fixed;
+            top: 20px;
+            right: 20px;
+            padding: 10px 15px;
+            border-radius: 4px;
+            background: white;
+            box-shadow: 0 2px 10px rgba(0, 0, 0, 0.2);
+            z-index: 2000;
+        }
+
+        .document-link {
+            display: inline-block;
+            padding: 5px 10px;
+            margin-top: 5px;
+            background: #f0f0f0;
+            border-radius: 3px;
+            text-decoration: none;
+            color: #333;
+        }
+
+        .document-link:hover {
+            background: #e0e0e0;
+        }
+
+        .documents-list {
+            margin-bottom: 15px;
+        }
+
+        .document-link i {
+            margin-right: 5px;
+        }
+
+        .main-image {
+            width: 100%;
+            border-radius: 5px;
+            margin-bottom: 15px;
+            max-height: 200px;
+            object-fit: cover;
+        }
+
+        @media (max-width: 768px) {
+            .sidebar {
+                width: 100%;
+                right: -100%;
+            }
+        }
+    </style> --}}
 </head>
-@include('pages.secure.index')
+
 <body>
-    <!-- App Header -->
     <header class="app-header">
         <div class="app-logo">
             <i class="fas fa-map-marked-alt fa-2x"></i>
@@ -47,179 +240,64 @@
         <div class="flag-green"></div>
     </div>
 
-    <!-- Map Container -->
     <div id="map"></div>
-
-    <!-- Search Box -->
-    <div class="search-box">
-        <div class="search-container">
-            <input type="text" class="search-input" placeholder="Излаш...">
-            <button class="search-btn"><i class="fas fa-search"></i></button>
-        </div>
-        <div class="search-results">
-            <!-- Search results will be added here dynamically -->
-        </div>
-    </div>
-
-    <!-- Loading Indicator -->
-    <div id="loading-indicator" class="loading">
+    <div id="loading" class="loading">
         <div class="spinner"></div>
     </div>
 
-    <!-- Toolbar -->
-    <div class="toolbar">
-        <div class="control-panel">
-            <div class="control-panel-header">
-                <span><i class="fas fa-layer-group"></i> Туман фильтри</span>
-            </div>
-            <div class="control-panel-body">
-                <div class="form-group">
-                    <select id="district-selector" class="form-control">
-                        <option value="all">Барча туманлар</option>
-                        <option value="bektemir">Бектемир</option>
-                        <option value="chilonzor">Чилонзор</option>
-                        <option value="mirobod">Миробод</option>
-                        <option value="mirzo_ulugbek">Мирзо Улуғбек</option>
-                        <option value="olmazor">Олмазор</option>
-                        <option value="sergeli">Сергели</option>
-                        <option value="shayhontohur">Шайхонтоҳур</option>
-                        <option value="uchtepa">Учтепа</option>
-                        <option value="yakkasaroy">Яккасарой</option>
-                        <option value="yashnobod">Яшнобод</option>
-                        <option value="yunusabod">Юнусобод</option>
-                        <option value="yangihayot">Янгиҳаёт</option>
-                    </select>
-                </div>
+    <!-- Leaflet JS -->
+    <script src="https://unpkg.com/leaflet@1.9.4/dist/leaflet.js"></script>
+    <script src="https://unpkg.com/leaflet.markercluster@1.4.1/dist/leaflet.markercluster.js"></script>
 
-                <div class="status-filter-buttons">
-                    <button class="status-btn active" data-status="all">Барчаси</button>
-                    <button class="status-btn" data-status="9">Инвест договор</button>
-                    <button class="status-btn" data-status="1">Ишлаб чиқилмоқда</button>
-                </div>
-            </div>
-        </div>
+    <script>
+        // App namespace
+        const App = {
+            map: null,
+            markers: [],
+            polygons: {},
+            markerCluster: null,
+            currentSidebar: null,
+            isAnimating: false,
+            currentItem: null,
+            lastView: {
+                center: null,
+                zoom: null
+            },
+            cleanup: [],
+            apiBaseUrl: 'http://127.0.0.1:8000' // Your API base URL
+        };
 
-        <div class="control-panel">
-            <div class="control-panel-header">
-                <span><i class="fas fa-filter"></i> Кўрсатиш мосламалари</span>
-            </div>
-            <div class="control-panel-body">
-                <div class="checkbox-container">
-                    <label class="custom-checkbox">
-                        <input type="checkbox" id="show-markers" checked>
-                        <span class="checkmark"></span>
-                    </label>
-                    <span class="custom-checkbox-label">Маркерларни кўрсатиш</span>
-                </div>
-                <div class="checkbox-container">
-                    <label class="custom-checkbox">
-                        <input type="checkbox" id="show-polygons" checked>
-                        <span class="checkmark"></span>
-                    </label>
-                    <span class="custom-checkbox-label">Полигонларни кўрсатиш</span>
-                </div>
-                <div class="checkbox-container">
-                    <label class="custom-checkbox">
-                        <input type="checkbox" id="show-districts" checked>
-                        <span class="checkmark"></span>
-                    </label>
-                    <span class="custom-checkbox-label">Туман чегараларини кўрсатиш</span>
-                </div>
-            </div>
-        </div>
-    </div>
-
-    <!-- Mobile Toggle -->
-    <div id="mobile-toggle" class="mobile-toggle">
-        <i class="fas fa-bars"></i>
-    </div>
-
-    <!-- Map Controls -->
-    <div class="map-controls">
-        <button class="map-control-btn" id="zoom-in"><i class="fas fa-plus"></i></button>
-        <button class="map-control-btn" id="zoom-out"><i class="fas fa-minus"></i></button>
-        <button class="map-control-btn" id="reset-view"><i class="fas fa-home"></i></button>
-    </div>
-
-    <!-- Legend -->
-    <div class="legend">
-        <div class="legend-title">Шартли белгилар</div>
-        <div class="legend-item">
-            <div class="legend-color" style="background-color: rgba(30, 54, 133, 0.5);"></div>
-            <span>Инвестиция майдонлари</span>
-        </div>
-        <div class="legend-item">
-            <div class="legend-color" style="background-color: rgba(14, 98, 69, 0.5);"></div>
-            <span>Тасдиқланган лойиҳалар</span>
-        </div>
-        <div class="legend-item">
-            <div class="legend-color" style="background-color: rgba(214, 40, 57, 0.5);"></div>
-            <span>Иншоот қурилиш жараёнида</span>
-        </div>
-    </div>
-
-    <!-- Debug Panel (only shown when DEBUG is true) -->
-    <div id="debug-panel" class="debug-panel" style="display: none;">
-        <div>Созлаш маълумотлари</div>
-        <div id="debug-content"></div>
-    </div>
-
-<script>
-// Create global namespace
-window.MapApp = {
-    DEBUG: false,
-    VERSION: '1.2.0',
-    CURRENT_DATE: new Date().toISOString(),
-    USER: 'InvestUz'
-};
-
-// Debug Logger
-const Logger = {
-    log(type, ...args) {
-        const timestamp = new Date().toISOString();
-        console.log(`[${timestamp}] [${type}]`, ...args);
-
-        if (window.MapApp.DEBUG) {
-            const debugPanel = document.getElementById('debug-panel');
-            const debugContent = document.getElementById('debug-content');
-
-            if (debugPanel && debugContent) {
-                debugPanel.style.display = 'block';
-                const message = document.createElement('div');
-                message.textContent = `[${type}] ${args.map(arg =>
-                    typeof arg === 'object' ? JSON.stringify(arg) : arg).join(' ')}`;
-                debugContent.appendChild(message);
-
-                // Keep only the last 5 messages
-                while (debugContent.children.length > 5) {
-                    debugContent.removeChild(debugContent.firstChild);
-                }
-            }
+        // Show loading indicator
+        function showLoading() {
+            document.getElementById('loading').style.display = 'flex';
         }
-    },
-    debug(...args) {
-        this.log('DEBUG', ...args);
-    },
-    info(...args) {
-        this.log('INFO', ...args);
-    },
-    error(...args) {
-        this.log('ERROR', ...args);
-    }
-};
 
-// Utility Functions
-const Utils = {
-    // Convert DMS (degrees, minutes, seconds) to decimal degrees
-    dmsToDecimal(dmsStr) {
-        try {
-            // Example: "41°19'7.54"С"
+        // Hide loading indicator
+        function hideLoading() {
+            document.getElementById('loading').style.display = 'none';
+        }
+
+        // Show toast notification
+        function showToast(message, type = 'info') {
+            const toast = document.createElement('div');
+            toast.className = 'toast ' + type;
+            toast.textContent = message;
+            document.body.appendChild(toast);
+
+            setTimeout(() => {
+                toast.remove();
+            }, 3000);
+        }
+
+        // Convert DMS coordinates to decimal
+        function dmsToDecimal(dmsStr) {
+            if (!dmsStr) return null;
+
+            // Example format: "41°19'7.54"С"
             const regex = /(\d+)°(\d+)'(\d+\.\d+)"([СNЮSВEЗW])/;
             const match = dmsStr.match(regex);
 
-            if (!match) {
-                throw new Error(`Invalid DMS format: ${dmsStr}`);
-            }
+            if (!match) return null;
 
             const degrees = parseFloat(match[1]);
             const minutes = parseFloat(match[2]);
@@ -234,2176 +312,1047 @@ const Utils = {
             }
 
             return decimal;
-        } catch (error) {
-            Logger.error('Error converting DMS to decimal:', error);
-            return null;
         }
-    },
 
-    // Format status for display
-    formatStatus(status) {
-        switch (status) {
-            case "9":
+        // Format status
+        function formatStatus(status) {
+            if (!status) {
                 return {
-                    text: "Инвест договор", class: "badge-success"
+                    text: "Статус не указан",
+                    class: "badge-info"
                 };
-            case "1":
-                return {
-                    text: "Ишлаб чиқилмоқда", class: "badge-warning"
-                };
-            case "2":
-                return {
-                    text: "Қурилиш жараёнида", class: "badge-info"
-                };
-            default:
-                return {
-                    text: "Холат: " + status, class: "badge-info"
-                };
+            }
+
+            switch (status) {
+                case "9":
+                    return {
+                        text: "Инвест договор", class: "badge-success"
+                    };
+                case "1":
+                    return {
+                        text: "Ишлаб чиқилмоқда", class: "badge-warning"
+                    };
+                case "2":
+                    return {
+                        text: "Қурилиш жараёнида", class: "badge-info"
+                    };
+                default:
+                    return {
+                        text: "Статус: " + status, class: "badge-info"
+                    };
+            }
         }
-    },
 
-    // Show loading indicator
-    showLoading() {
-        document.getElementById('loading-indicator').classList.add('active');
-    },
-
-    // Hide loading indicator
-    hideLoading() {
-        document.getElementById('loading-indicator').classList.remove('active');
-    },
-
-    // Show error toast
-    showError(message, duration = 5000) {
-        const toast = document.createElement('div');
-        toast.className = 'error-toast';
-        toast.innerHTML = `
-            <i class="fas fa-exclamation-circle"></i>
-            <span>${message}</span>
-        `;
-        document.body.appendChild(toast);
-
-        setTimeout(() => {
-            toast.style.opacity = '0';
-            toast.style.transform = 'translateX(100%)';
-            setTimeout(() => toast.remove(), 300);
-        }, duration);
-    },
-
-    // Parse KML data from text
-    parseKML(kmlText) {
-        try {
-            const parser = new DOMParser();
-            const xmlDoc = parser.parseFromString(kmlText, "application/xml");
-            const coordsText = xmlDoc.querySelector('coordinates')?.textContent.trim() || '';
-
-            return coordsText.split(' ').map(coordStr => {
-                const [lng, lat] = coordStr.split(',').map(Number);
-                return [lat, lng]; // Leaflet uses [lat, lng] format
+        // Initialize map
+        function initMap() {
+            // Create map - centered on Tashkent
+            App.map = L.map('map', {
+                center: [41.311, 69.279],
+                zoom: 11,
+                minZoom: 10,
+                maxZoom: 18
             });
-        } catch (error) {
-            Logger.error('Failed to parse KML:', error);
-            return null;
+
+            // Add tile layer
+            L.tileLayer('https://{s}.tile.openstreetmap.org/{z}/{x}/{y}.png', {
+                attribution: '© OpenStreetMap contributors'
+            }).addTo(App.map);
+
+            // Create marker cluster
+            App.markerCluster = L.markerClusterGroup({
+                chunkedLoading: true,
+                maxClusterRadius: 50,
+                spiderfyOnMaxZoom: true,
+                showCoverageOnHover: false,
+                disableClusteringAtZoom: 16
+            });
+
+            App.map.addLayer(App.markerCluster);
         }
-    }
 
+        // Extract polygon coordinates
+        function extractPolygonCoordinates(polygonData) {
+            if (!polygonData) {
+                return null;
+            }
 
-};
+            let coordinates = [];
 
-// Initialize Application
-(function (APP) {
-    // Configuration
-    APP.CONFIG = {
-        SIDEBAR_WIDTH: 400,
-        MOBILE_BREAKPOINT: 768,
-        ANIMATION_DURATION: 300,
-        MAP_ANIMATION: {
-            ZOOM_DURATION: 0.5,
-            PAN_DURATION: 0.3,
-            EASE_LINEARITY: 0.5,
-            TOTAL_DURATION: 1000
-        },
-        MAP: {
-            CENTER: [41.311, 69.279],
-            DEFAULT_ZOOM: 11,
-            MIN_ZOOM: 10,
-            MAX_ZOOM: 18,
-            TILE_URL: 'https://{s}.tile.openstreetmap.org/{z}/{x}/{y}.png',
-            ATTRIBUTION: '© OpenStreetMap contributors | ИнвестУз'
-        },
-        POLYGON: {
-            STYLE: {
+            // Handle different polygon data structures
+            if (Array.isArray(polygonData)) {
+                if (polygonData.length < 3) {
+                    return null; // Need at least 3 points to form a polygon
+                }
+
+                // Check if array contains objects with lat/lng properties
+                if (typeof polygonData[0] === 'object') {
+                    // Format: [{start_lat, start_lon}, ...]
+                    if (polygonData[0].start_lat && polygonData[0].start_lon) {
+                        coordinates = polygonData.map(point => {
+                            const lat = dmsToDecimal(point.start_lat);
+                            const lng = dmsToDecimal(point.start_lon);
+
+                            if (lat === null || lng === null) {
+                                return null;
+                            }
+
+                            return [lat, lng];
+                        }).filter(coord => coord !== null);
+                    }
+                    // Format: [{lat, lng}, ...]
+                    else if (polygonData[0].lat && polygonData[0].lng) {
+                        coordinates = polygonData.map(point => {
+                            return [parseFloat(point.lat), parseFloat(point.lng)];
+                        });
+                    }
+                    // Format: [{latitude, longitude}, ...]
+                    else if (polygonData[0].latitude && polygonData[0].longitude) {
+                        coordinates = polygonData.map(point => {
+                            return [parseFloat(point.latitude), parseFloat(point.longitude)];
+                        });
+                    }
+                    // Format: [[lat, lng], ...]
+                    else if (Array.isArray(polygonData[0]) && polygonData[0].length === 2) {
+                        coordinates = polygonData.map(point => {
+                            return [parseFloat(point[0]), parseFloat(point[1])];
+                        });
+                    }
+                }
+                // Format: [lat1, lng1, lat2, lng2, ...]
+                else if (typeof polygonData[0] === 'number' && polygonData.length >= 6 && polygonData.length % 2 === 0) {
+                    for (let i = 0; i < polygonData.length; i += 2) {
+                        coordinates.push([parseFloat(polygonData[i]), parseFloat(polygonData[i + 1])]);
+                    }
+                }
+            }
+            // GeoJSON-like structure
+            else if (polygonData.type === 'Polygon' && Array.isArray(polygonData.coordinates)) {
+                if (polygonData.coordinates.length > 0 && Array.isArray(polygonData.coordinates[0])) {
+                    coordinates = polygonData.coordinates[0].map(coord => {
+                        // GeoJSON coordinates are [lng, lat], we need to flip them
+                        return [parseFloat(coord[1]), parseFloat(coord[0])];
+                    });
+                }
+            }
+
+            // Ensure we have at least 3 valid coordinates for a polygon
+            if (coordinates.length < 3) {
+                console.warn('Not enough valid coordinates found in polygon data');
+                return null;
+            }
+
+            return coordinates;
+        }
+
+        // Add marker to map
+        function addMarker(lot) {
+            if (!lot || !lot.lat || !lot.lng) {
+                return false;
+            }
+
+            // Create marker
+            const marker = L.marker([lot.lat, lot.lng]);
+
+            // Generate an ID if not present
+            if (!lot.id) {
+                lot.id = 'lot-' + Math.random().toString(36).substr(2, 9);
+            }
+
+            // Store lot ID directly on marker object
+            marker.lotId = lot.id;
+
+            // Format name based on available data
+            const name = lot.name || lot.neighborhood_name || 'Unnamed';
+            const district = lot.district || lot.district_name || '';
+            const area = lot.area || lot.area_hectare || '';
+            const statusText = lot.status ? formatStatus(lot.status).text : 'Статус не указан';
+
+            // Add popup
+            const popup = `
+    <div>
+        <h3>${name}</h3>
+        <p>${district}</p>
+        <p>Майдон: ${area} га</p>
+        <p>${statusText}</p>
+        <button class="details-btn" data-lot-id="${lot.id}">Тафсилотлар</button>
+    </div>
+`;
+
+            marker.bindPopup(popup);
+
+            // Add click handler
+            marker.on('click', function(e) {
+                // Use the lotId property to identify which lot was clicked
+                showDetails(this.lotId);
+                L.DomEvent.stopPropagation(e);
+            });
+
+            // Add to cluster
+            App.markerCluster.addLayer(marker);
+
+            // Store reference
+            App.markers.push({
+                marker: marker,
+                data: lot
+            });
+
+            return true;
+        }
+
+        // Add polygon to map
+        function addPolygon(lot) {
+            if (!lot || !lot.id || !lot.polygons) {
+                return false;
+            }
+
+            // Extract coordinates
+            const coords = extractPolygonCoordinates(lot.polygons);
+            if (!coords) {
+                return false;
+            }
+
+            // Determine style based on status
+            let style = {
                 color: '#1E3685',
                 weight: 2,
                 opacity: 0.7,
                 fillColor: '#1E3685',
                 fillOpacity: 0.2
-            },
-            HOVER_STYLE: {
-                weight: 3,
-                color: '#4A6FD4',
-                fillOpacity: 0.4
-            },
-            APPROVED_STYLE: {
-                color: '#0E6245',
-                fillColor: '#0E6245'
-            },
-            CONSTRUCTION_STYLE: {
-                color: '#D62839',
-                fillColor: '#D62839'
-            }
-        },
-        DISTRICT_POLYGON: {
-            STYLE: {
-                color: '#767676',
-                weight: 1.5,
-                opacity: 0.6,
-                fillColor: '#1E3685',
-                fillOpacity: 0.05
-            },
-            HOVER_STYLE: {
-                weight: 2,
-                color: '#4A6FD4',
-                fillOpacity: 0.15
-            }
-        },
-        MARKER: {
-            ICON: L.divIcon({
-                className: 'custom-marker',
-                html: '<div class="pulse-marker"></div>',
-                iconSize: [20, 20],
-                iconAnchor: [10, 10]
-            })
-        },
-        CLUSTER: {
-            ICON_CREATE_FUNCTION: function(cluster) {
-                const count = cluster.getChildCount();
-                return L.divIcon({
-                    html: `<div class="custom-cluster">${count}</div>`,
-                    className: 'custom-marker-cluster',
-                    iconSize: [40, 40]
-                });
-            }
-        },
-        API: {
-            BASE_URL: '/api',
-            ENDPOINTS: {
-                LOTS: '/aktivs'
-            }
-        },
-        LAYERS: {
-            STREET: {
-                url: 'https://{s}.tile.openstreetmap.org/{z}/{x}/{y}.png',
-                attribution: '© OpenStreetMap contributors',
-                name: 'Оддий'
-            },
-            SATELLITE: {
-                url: 'https://server.arcgisonline.com/ArcGIS/rest/services/World_Imagery/MapServer/tile/{z}/{y}/{x}',
-                attribution: '© Esri',
-                name: 'Сунъий йўлдош'
-            }
-        },
-        DISTRICT_KML_FILES: [
-            'bektemir.xml', 'chilonzor.xml', 'mirobod.xml', 'mirzo_ulugbek.xml', 'olmazor.xml',
-            'sergeli.xml', 'shayhontohur.xml', 'uchtepa.xml', 'yakkasaroy.xml', 'yashnobod.xml',
-            'yunusabod.xml', 'yangihayot.xml'
-        ],
-        KML_PATH: '/xml-map/'
-    };
-
-    // Application state
-    APP.state = {
-        map: null,
-        markerCluster: null,
-        markers: [],
-        polygons: {},
-        districtPolygons: {},
-        currentDistrict: 'all',
-        currentStatus: 'all',
-        currentSidebar: null,
-        filters: {
-            showMarkers: true,
-            showPolygons: true,
-            showDistricts: true
-        },
-        mockApiData: {
-            lots: []
-        },
-        view: {
-            currentItem: null,
-            isAnimating: false,
-            lastZoom: null,
-            lastCenter: null
-        },
-        search: {
-            results: [],
-            visible: false
-        },
-        layers: {
-            current: 'STREET',
-            instances: {}
-        }
-    };
-
-    // Language translations
-    APP.translations = {
-        uz: {
-            // Uzbek translations
-            appTitle: "ИнвестУз - Инвестиция харитаси",
-            allDistricts: "Барча туманлар",
-            displayOptions: "Кўрсатиш мосламалари",
-            showMarkers: "Маркерларни кўрсатиш",
-            showPolygons: "Полигонларни кўрсатиш",
-            showDistricts: "Туман чегараларини кўрсатиш",
-            search: "Излаш...",
-            legend: "Шартли белгилар",
-            investmentAreas: "Инвестиция майдонлари",
-            approvedProjects: "Тасдиқланган лойиҳалар",
-            constructionProjects: "Иншоот қурилиш жараёнида",
-            moreInfo: "Батафсил",
-            basicInfo: "Асосий маълумот",
-            district: "Туман",
-            area: "Майдон",
-            status: "Холат",
-            strategy: "Стратегия",
-            decisionNumber: "Қарор рақами",
-            technicalParams: "Техник параметрлар",
-            cadastre: "Кадастр",
-            floors: "Қаватлар сони",
-            kmnCoefficient: "КМН коэффициенти",
-            umnCoefficient: "УМН коэффициенти",
-            areas: "Майдонлар",
-            residentialArea: "Турар-жой майдони",
-            nonResidentialArea: "Нотурар-жой майдони",
-            totalArea: "Умумий майдон",
-            documents: "Ҳужжатлар",
-            notAvailable: "Н/М",
-            investmentContract: "Инвест договор",
-            inDevelopment: "Ишлаб чиқилмоқда",
-            inConstruction: "Қурилиш жараёнида",
-            all: "Барчаси",
-            hectare: "га",
-            squareMeters: "м²",
-            loadingError: "Маълумотларни юклашда хатолик юз берди. Кейинроқ қайта уриниб кўринг.",
-            mapInitError: "Харитани инициализация қилишда хатолик юз берди. Саҳифани янгиланг."
-        },
-        ru: {
-            // Russian translations (can be filled later)
-        },
-        en: {
-            // English translations (can be filled later)
-        }
-    };
-
-    // Current language
-    APP.currentLanguage = 'uz';
-
-    // Get translation for a key
-    APP.t = function(key) {
-        return APP.translations[APP.currentLanguage][key] || key;
-    };
-
-    // Initialize map
-    APP.initMap = function() {
-        try {
-            Logger.info('Initializing map...');
-            Utils.showLoading();
-
-            // Create map instance
-            const map = L.map('map', {
-                center: APP.CONFIG.MAP.CENTER,
-                zoom: APP.CONFIG.MAP.DEFAULT_ZOOM,
-                minZoom: APP.CONFIG.MAP.MIN_ZOOM,
-                maxZoom: APP.CONFIG.MAP.MAX_ZOOM,
-                zoomControl: false
-            });
-
-            // Add tile layer
-            const streetTiles = L.tileLayer(APP.CONFIG.LAYERS.STREET.url, {
-                attribution: APP.CONFIG.LAYERS.STREET.attribution
-            });
-
-            const satelliteTiles = L.tileLayer(APP.CONFIG.LAYERS.SATELLITE.url, {
-                attribution: APP.CONFIG.LAYERS.SATELLITE.attribution
-            });
-
-            // Store layer instances
-            APP.state.layers.instances = {
-                STREET: streetTiles,
-                SATELLITE: satelliteTiles
             };
 
-            // Add default layer
-            APP.state.layers.instances[APP.state.layers.current].addTo(map);
-
-            // Initialize marker cluster with custom icons
-            const markerCluster = L.markerClusterGroup({
-                chunkedLoading: true,
-                maxClusterRadius: 50,
-                spiderfyOnMaxZoom: true,
-                showCoverageOnHover: false,
-                disableClusteringAtZoom: 16,
-                iconCreateFunction: APP.CONFIG.CLUSTER.ICON_CREATE_FUNCTION
-            });
-
-            map.addLayer(markerCluster);
-
-            // Update state references
-            APP.state.map = map;
-            APP.state.markerCluster = markerCluster;
-
-            Logger.info('Map initialized successfully');
-            Utils.hideLoading();
-            return true;
-        } catch (error) {
-            Logger.error('Map initialization failed:', error);
-            Utils.hideLoading();
-            Utils.showError(APP.t('mapInitError'));
-            return false;
-        }
-    };
-
-    // Load district boundaries from KML files
-  // Load district boundaries from KML files
-APP.loadDistrictBoundaries = async function() {
-    try {
-        Logger.info('Loading district boundaries...');
-
-        const loadedDistricts = [];
-
-        // Process each KML file
-        for (let fileName of APP.CONFIG.DISTRICT_KML_FILES) {
-            try {
-                const response = await fetch(APP.CONFIG.KML_PATH + fileName);
-
-                if (!response.ok) {
-                    Logger.warn(`KML file not found: ${fileName} (${response.status})`);
-                    continue;  // Skip this file and continue with the next
-                }
-
-                const kmlText = await response.text();
-
-                // Parse KML to get coordinates
-                const coords = Utils.parseKML(kmlText);
-
-                if (!coords || coords.length < 3) {
-                    Logger.warn(`Invalid or insufficient coordinates in KML file: ${fileName}`);
-                    continue;
-                }
-
-                // Create district polygon
-                const districtName = fileName.replace('.xml', '');
-                const polygon = APP.addDistrictPolygon(districtName, coords);
-
-                if (polygon) {
-                    loadedDistricts.push(districtName);
-                }
-            } catch (error) {
-                Logger.error(`Failed to load KML file: ${fileName}`, error);
-                // Continue with next file
-            }
-        }
-
-        if (loadedDistricts.length > 0) {
-            Logger.info(`District boundaries loaded successfully: ${loadedDistricts.join(', ')}`);
-        } else {
-            Logger.warn('No district boundaries were loaded successfully');
-        }
-    } catch (error) {
-        Logger.error('Failed to load district boundaries:', error);
-        Utils.showError('Туман чегараларини юклашда хатолик юз берди');
-    }
-};
-  // Add district polygon to map
-APP.addDistrictPolygon = function(districtName, coordinates) {
-    try {
-        // Validate coordinates
-        if (!coordinates || !Array.isArray(coordinates) || coordinates.length < 3) {
-            Logger.warn(`Invalid coordinates for district: ${districtName}`);
-            return null;
-        }
-
-        // Make sure all coordinates are valid arrays with 2 numbers
-        const validCoordinates = coordinates.filter(coord =>
-            Array.isArray(coord) &&
-            coord.length === 2 &&
-            typeof coord[0] === 'number' &&
-            typeof coord[1] === 'number' &&
-            !isNaN(coord[0]) &&
-            !isNaN(coord[1])
-        );
-
-        if (validCoordinates.length < 3) {
-            Logger.warn(`Not enough valid coordinates for district: ${districtName}`);
-            return null;
-        }
-
-        // Create polygon with district style and valid coordinates
-        const polygon = L.polygon(validCoordinates, APP.CONFIG.DISTRICT_POLYGON.STYLE);
-
-        // Add hover effects
-        polygon.on('mouseover', function() {
-            polygon.setStyle(APP.CONFIG.DISTRICT_POLYGON.HOVER_STYLE);
-        });
-
-        polygon.on('mouseout', function() {
-            polygon.setStyle(APP.CONFIG.DISTRICT_POLYGON.STYLE);
-        });
-
-        // Add click event to filter by district
-        polygon.on('click', function() {
-            document.getElementById('district-selector').value = districtName;
-            APP.filterByDistrict(districtName);
-        });
-
-        // Add to map if districts are shown
-        if (APP.state.filters.showDistricts) {
-            polygon.addTo(APP.state.map);
-        }
-
-        // Store reference
-        APP.state.districtPolygons[districtName] = {
-            polygon: polygon,
-            name: districtName
-        };
-
-        Logger.debug('Added district polygon:', districtName);
-        return polygon;
-    } catch (error) {
-        Logger.error(`Failed to add district polygon: ${error}`);
-        return null;
-    }
-};
-    // Load lots data
-    APP.loadData = async function() {
-        try {
-            Logger.info('Loading lots data...');
-            Utils.showLoading();
-
-            // Fetch data from API
-            const response = await fetch(APP.CONFIG.API.BASE_URL + APP.CONFIG.API.ENDPOINTS.LOTS);
-            if (!response.ok) {
-                throw new Error(`HTTP error! status: ${response.status}`);
-            }
-            const data = await response.json();
-
-            if (!data.lots || !Array.isArray(data.lots)) {
-                throw new Error('Invalid data format - lots array missing');
-            }
-
-            // Process each lot
-            await Promise.all(data.lots.map(lot => {
-                try {
-                    // Add marker if coordinates exist
-                    if (lot.lat && lot.lng) {
-                        APP.addMarker(lot);
-                    }
-
-                    // Add polygon if polygon data exists
-                    if (lot.polygons && lot.polygons.length > 0) {
-                        APP.addPolygon(lot);
-                    }
-                } catch (error) {
-                    Logger.error('Failed to process lot:', lot.id, error);
-                }
-            }));
-
-            Logger.info('Data loaded successfully:', data.lots.length, 'lots');
-            Utils.hideLoading();
-        } catch (error) {
-            Logger.error('Failed to load data:', error);
-            Utils.hideLoading();
-            Utils.showError(APP.t('loadingError'));
-
-            // Fall back to mock data
-            if (APP.DEBUG || true) { // Always fall back to mock data for this demo
-                Logger.info('Falling back to mock data...');
-                return APP.loadMockData();
-            }
-        }
-    };
-
-    APP.loadMockData = async function() {
-        try {
-            Logger.info('Generating mock data...');
-
-            // Generate mock data if not already present
-            if (APP.state.mockApiData.lots.length === 0) {
-                APP.generateMockData();
-            }
-
-            const data = APP.state.mockApiData;
-
-            if (!data.lots || !Array.isArray(data.lots)) {
-                throw new Error('Invalid mock data format - lots array missing');
-            }
-
-            // Process mock data
-            await Promise.all(data.lots.map(lot => {
-                try {
-                    if (lot.lat && lot.lng) {
-                        APP.addMarker(lot);
-                    }
-                    if (lot.polygons && lot.polygons.length > 0) {
-                        APP.addPolygon(lot);
-                    }
-                } catch (error) {
-                    Logger.error('Failed to process mock lot:', lot.id, error);
-                }
-            }));
-
-            Logger.info('Mock data loaded successfully:', data.lots.length, 'lots');
-            Utils.hideLoading();
-        } catch (error) {
-            Logger.error('Failed to load mock data:', error);
-            Utils.hideLoading();
-            Utils.showError('Маълумотларни юклашда хатолик юз берди');
-        }
-    };
-
-    // Add marker to map
-    APP.addMarker = function(lot) {
-        try {
-            const marker = L.marker([lot.lat, lot.lng], {
-                icon: APP.CONFIG.MARKER.ICON
-            });
-
-            marker.bindPopup(APP.createPopupContent(lot));
-            APP.state.markerCluster.addLayer(marker);
-
-            // Store reference to marker and data
-            APP.state.markers.push({
-                marker,
-                data: lot
-            });
-
-            Logger.debug('Added marker for lot:', lot.id);
-            return marker;
-        } catch (error) {
-            Logger.error('Failed to add marker for lot:', lot.id, error);
-            return null;
-        }
-    };
-
-    // Add polygon to map
-    APP.addPolygon = function(lot) {
-        try {
-            // Extract coordinates from polygon data
-            const polygonCoords = APP.extractPolygonCoordinates(lot.polygons);
-
-            if (!polygonCoords || polygonCoords.length < 3) {
-                Logger.warn('Invalid polygon coordinates for lot:', lot.id);
-                return null;
-            }
-
-            // Determine polygon style based on lot status
-            let style = {
-                ...APP.CONFIG.POLYGON.STYLE
-            };
-
-            if (lot.status === "9") { // Approved status
-                style = {
-                    ...style,
-                    ...APP.CONFIG.POLYGON.APPROVED_STYLE
-                };
-            } else if (lot.status === "2") { // Construction status
-                style = {
-                    ...style,
-                    ...APP.CONFIG.POLYGON.CONSTRUCTION_STYLE
-                };
+            if (lot.status === "9") {
+                style.color = '#0E6245';
+                style.fillColor = '#0E6245';
+            } else if (lot.status === "2") {
+                style.color = '#D62839';
+                style.fillColor = '#D62839';
             }
 
             // Create polygon
-            const polygon = L.polygon(polygonCoords, style);
+            const polygon = L.polygon(coords, style);
 
-            // Add event listeners
+            // Store lot ID directly on polygon object
+            polygon.lotId = lot.id;
+
+            // Add hover effect
             polygon.on('mouseover', function() {
-                polygon.setStyle({
-                    ...style,
-                    ...APP.CONFIG.POLYGON.HOVER_STYLE
+                this.setStyle({
+                    weight: 3,
+                    fillOpacity: 0.4
                 });
             });
 
             polygon.on('mouseout', function() {
-                polygon.setStyle(style);
+                this.setStyle(style);
             });
 
-            polygon.on('click', function() {
-                APP.showDetails(lot.id);
+            // Add click handler
+            polygon.on('click', function(e) {
+                // Use the lotId property to identify which lot was clicked
+                showDetails(this.lotId);
+                L.DomEvent.stopPropagation(e);
             });
 
             // Add to map
-            polygon.addTo(APP.state.map);
+            polygon.addTo(App.map);
 
             // Store reference
-            APP.state.polygons[lot.id] = {
-                polygon,
+            App.polygons[lot.id] = {
+                polygon: polygon,
                 data: lot
             };
 
-            Logger.debug('Added polygon for lot:', lot.id);
-            return polygon;
-        } catch (error) {
-            Logger.error('Failed to add polygon for lot:', lot.id, error);
-            return null;
+            return true;
         }
-    };
 
-    // Extract polygon coordinates from DMS format
-    APP.extractPolygonCoordinates = function(polygonData) {
-        try {
-            if (!polygonData || !Array.isArray(polygonData) || polygonData.length < 3) {
-                return null;
+        // Show details
+        function showDetails(lotId) {
+            // Validate ID
+            if (!lotId) {
+                console.error('Invalid lot ID');
+                return;
             }
 
-            // Convert DMS coordinates to decimal
-            const coordinates = polygonData.map(point => {
-                const lat = Utils.dmsToDecimal(point.start_lat);
-                const lng = Utils.dmsToDecimal(point.start_lon);
-
-                if (lat === null || lng === null) {
-                    throw new Error(
-                        `Invalid coordinates: ${point.start_lat}, ${point.start_lon}`);
-                }
-
-                return [lat, lng];
-            });
-
-            return coordinates;
-        } catch (error) {
-            Logger.error('Failed to extract polygon coordinates:', error);
-            return null;
-        }
-    };
-
-    // Create popup content
-    APP.createPopupContent = function(lot) {
-        const statusInfo = Utils.formatStatus(lot.status);
-
-        return `
-            <div class="popup-content">
-                <h3>${lot.neighborhood_name || 'Номсиз жой'}</h3>
-                <p>${lot.district_name || ''}</p>
-                <p>
-                    ${lot.area_hectare ? `<strong>Майдон:</strong> ${lot.area_hectare} ${APP.t('hectare')}` : ''}
-                    ${statusInfo ? `<span class="badge ${statusInfo.class}">${statusInfo.text}</span>` : ''}
-                </p>
-                <div class="popup-footer">
-                    <button class="btn btn-primary btn-sm" onclick="MapApp.showDetails('${lot.id}')">
-                        <i class="fas fa-info-circle"></i> ${APP.t('moreInfo')}
-                    </button>
-                </div>
-            </div>
-        `;
-    };
-
-    // Show notification (success or error)
-    APP.showNotification = function(type, message, duration = 5000) {
-        try {
-            const toast = document.createElement('div');
-            toast.className = type === 'success' ? 'success-toast' : 'error-toast';
-            toast.innerHTML = `
-                <i class="fas fa-${type === 'success' ? 'check-circle' : 'exclamation-circle'}"></i>
-                <span>${message}</span>
-            `;
-            document.body.appendChild(toast);
-
-            setTimeout(() => {
-                toast.style.opacity = '0';
-                toast.style.transform = 'translateX(100%)';
-                setTimeout(() => toast.remove(), 300);
-            }, duration);
-        } catch (error) {
-            console.error('Failed to show notification:', error);
-        }
-    };
-
-    // Show details for a specific lot
-    APP.showDetails = function(lotId) {
-        try {
-            Logger.info('Showing details for lot:', lotId);
-
-            // Prevent multiple simultaneous animations
-            if (APP.state.view.isAnimating) {
+            // Prevent multiple animations
+            if (App.isAnimating) {
+                console.log('Animation in progress, ignoring request');
                 return;
             }
 
             // Find lot data
-            const markerData = APP.state.markers.find(m => m.data.id === lotId);
-            const polygonData = APP.state.polygons[lotId];
-            const lot = (markerData ? markerData.data : (polygonData ? polygonData.data : null));
+            let lot = null;
+            let markerEntry = null;
+            let polygonEntry = null;
 
+            // Search in markers
+            for (let i = 0; i < App.markers.length; i++) {
+                if (App.markers[i].data && App.markers[i].data.id === lotId) {
+                    markerEntry = App.markers[i];
+                    lot = markerEntry.data;
+                    break;
+                }
+            }
+
+            // If not found in markers, check polygons
+            if (!lot && App.polygons[lotId]) {
+                polygonEntry = App.polygons[lotId];
+                lot = polygonEntry.data;
+            }
+
+            // Validate lot data
             if (!lot) {
-                throw new Error(`Lot with ID ${lotId} not found`);
-            }
-
-            // Get status info
-            const statusInfo = Utils.formatStatus(lot.status);
-
-            // Store current view state before changing
-            APP.state.view.lastZoom = APP.state.map.getZoom();
-            APP.state.view.lastCenter = APP.state.map.getCenter();
-
-            // Close existing sidebar if any
-            APP.closeSidebar();
-
-            // Update current item
-            APP.state.view.currentItem = lotId;
-            APP.state.view.isAnimating = true;
-
-            // Calculate view parameters
-            const sidebarWidth = window.innerWidth <= APP.CONFIG.MOBILE_BREAKPOINT ? 0 : APP.CONFIG.SIDEBAR_WIDTH;
-            const padding = window.innerWidth <= APP.CONFIG.MOBILE_BREAKPOINT ? [50, 50] : [50, 50 + sidebarWidth];
-
-            // Create and setup sidebar
-            const sidebar = document.createElement('div');
-            sidebar.className = 'sidebar';
-            sidebar.innerHTML = `
-                <div class="sidebar-header">
-                    <button onclick="MapApp.closeSidebar()">
-                            <i class="fas fa-times"></i>
-                    </button>
-                    <h2>${lot.neighborhood_name || 'Номсиз жой'} </h2>
-
-                </div>
-                <div class="sidebar-content">
-                    <div class="section-title">
-                        <i class="fas fa-info-circle"></i> ${APP.t('basicInfo')}
-                    </div>
-                    <table class="details-table">
-                        <tr><td>${APP.t('district')}:</td><td>${lot.district_name || APP.t('notAvailable')}</td></tr>
-                        <tr><td>${APP.t('area')}:</td><td>${lot.area_hectare ? lot.area_hectare + ' ' + APP.t('hectare') : APP.t('notAvailable')}</td></tr>
-                        <tr><td>${APP.t('status')}:</td><td><span class="badge ${statusInfo.class}">${statusInfo.text}</span></td></tr>
-                        <tr><td>${APP.t('strategy')}:</td><td>${lot.area_strategy || APP.t('notAvailable')}</td></tr>
-                        <tr><td>${APP.t('decisionNumber')}:</td><td>${lot.decision_number || APP.t('notAvailable')}</td></tr>
-                    </table>
-
-                    <div class="section-title">
-                        <i class="fas fa-building"></i> ${APP.t('technicalParams')}
-                    </div>
-                    <table class="details-table">
-                        <tr><td>${APP.t('cadastre')}:</td><td>${lot.cadastre_certificate || APP.t('notAvailable')}</td></tr>
-                        <tr><td>${APP.t('floors')}:</td><td>${lot.proposed_floors || APP.t('notAvailable')}</td></tr>
-                        <tr><td>${APP.t('kmnCoefficient')}:</td><td>${lot.qmn_percentage || APP.t('notAvailable')}</td></tr>
-                        <tr><td>${APP.t('umnCoefficient')}:</td><td>${lot.umn_coefficient || APP.t('notAvailable')}</td></tr>
-                    </table>
-
-                    <div class="section-title">
-                        <i class="fas fa-expand-arrows-alt"></i> ${APP.t('areas')}
-                    </div>
-                    <table class="details-table">
-                        <tr><td>${APP.t('residentialArea')}:</td><td>${lot.residential_area ? lot.residential_area + ' ' + APP.t('squareMeters') : APP.t('notAvailable')}</td></tr>
-                        <tr><td>${APP.t('nonResidentialArea')}:</td><td>${lot.non_residential_area ? lot.non_residential_area + ' ' + APP.t('squareMeters') : APP.t('notAvailable')}</td></tr>
-                        <tr><td>${APP.t('totalArea')}:</td><td>${lot.total_building_area ? lot.total_building_area + ' ' + APP.t('squareMeters') : APP.t('notAvailable')}</td></tr>
-                    </table>
-
-                    ${lot.documents && lot.documents.length > 0 ? `
-                        <div class="section-title">
-                            <i class="fas fa-file-alt"></i> ${APP.t('documents')}
-                        </div>
-                        <ul class="document-list">
-                            ${lot.documents.map(doc => `
-                                <li class="document-item">
-                                    <span class="document-icon"><i class="fas fa-file-pdf"></i></span>
-                                    <a href="${doc.url_keremas ?? 'test'}" target="_blank" class="document-link">
-                                        ${doc.filename_keremas ?? 'Ҳужжат'}
-                                    </a>
-                                </li>
-                            `).join('')}
-                        </ul>` : ''}
-                </div>
-            `;
-
-            // Append sidebar to body
-            document.body.appendChild(sidebar);
-            APP.state.currentSidebar = sidebar;
-
-            // Show a success notification
-            APP.showNotification('success', 'Маълумотлар муваффақиятли юкланди', 2000);
-
-            // Handle view transitions with improved animation sequence
-            requestAnimationFrame(() => {
-                // First open sidebar with a smooth transition
-                sidebar.classList.add('open');
-
-                // Add print and share buttons to the sidebar
-                const sidebarHeader = sidebar.querySelector('.sidebar-header');
-                if (sidebarHeader) {
-                    const actionButtons = document.createElement('div');
-                    actionButtons.className = 'sidebar-actions';
-                    actionButtons.style.display = 'flex';
-                    actionButtons.style.gap = '10px';
-                    actionButtons.style.marginTop = '10px';
-
-                    // Print button
-                    const printBtn = document.createElement('button');
-                  printBtn.className = 'btn btn-sm';
-                    printBtn.innerHTML = '<i class="fas fa-print"></i> Чоп этиш';
-                    printBtn.onclick = function(e) {
-                        e.stopPropagation();
-                        APP.printLotDetails(lot);
-                    };
-
-                    // Share button
-                    const shareBtn = document.createElement('button');
-                    shareBtn.className = 'btn btn-sm';
-                    shareBtn.innerHTML = '<i class="fas fa-share-alt"></i> Улашиш';
-                    shareBtn.onclick = function(e) {
-                        e.stopPropagation();
-                        APP.shareLotDetails(lot);
-                    };
-
-                    // Export button
-                    const exportBtn = document.createElement('button');
-                    exportBtn.className = 'btn btn-sm';
-                    exportBtn.innerHTML = '<i class="fas fa-file-export"></i> PDF';
-                    exportBtn.onclick = function(e) {
-                        e.stopPropagation();
-                        APP.exportLotDetails(lot);
-                    };
-
-                    actionButtons.appendChild(printBtn);
-                    actionButtons.appendChild(shareBtn);
-                    actionButtons.appendChild(exportBtn);
-
-                    sidebarHeader.appendChild(actionButtons);
-                }
-
-                // Wait for sidebar animation to start before adjusting map view
-                setTimeout(() => {
-                    // Clear any existing map animations to prevent conflicts
-                    APP.state.map.stop();
-
-                    // Create highlight effect for the selected feature
-                    if (polygonData && polygonData.polygon) {
-                        // Highlight the polygon with pulse effect
-                        const originalStyle = { ...polygonData.polygon.options };
-                        const pulseHighlight = () => {
-                            polygonData.polygon.setStyle({
-                                weight: 4,
-                                color: '#4A6FD4',
-                                dashArray: '5, 10',
-                                fillOpacity: 0.5
-                            });
-
-                            setTimeout(() => {
-                                polygonData.polygon.setStyle(originalStyle);
-
-                                setTimeout(() => {
-                                    if (APP.state.view.currentItem === lotId) {
-                                        pulseHighlight();
-                                    }
-                                }, 1500);
-                            }, 700);
-                        };
-
-                        pulseHighlight();
-
-                        // Adjust view to show the polygon properly
-                        APP.adjustPolygonView(polygonData.polygon, padding);
-                    } else if (markerData && markerData.marker) {
-                        // For markers, we want to highlight them and center the view
-                        const markerElement = markerData.marker.getElement();
-                        if (markerElement) {
-                            markerElement.style.zIndex = 1000; // Bring to front
-
-                            // Add a temporary highlight effect
-                            const pulseElement = document.createElement('div');
-                            pulseElement.className = 'marker-highlight-pulse';
-                            pulseElement.style.position = 'absolute';
-                            pulseElement.style.width = '30px';
-                            pulseElement.style.height = '30px';
-                            pulseElement.style.borderRadius = '50%';
-                            pulseElement.style.backgroundColor = 'rgba(74, 111, 212, 0.3)';
-                            pulseElement.style.boxShadow = '0 0 0 rgba(74, 111, 212, 0.4)';
-                            pulseElement.style.animation = 'marker-pulse 1.5s infinite';
-                            pulseElement.style.transform = 'translate(-5px, -5px)';
-                            markerElement.appendChild(pulseElement);
-
-                            // Clean up the pulse effect when sidebar is closed
-                            APP.state.cleanup = APP.state.cleanup || [];
-                            APP.state.cleanup.push(() => {
-                                if (markerElement && pulseElement.parentNode === markerElement) {
-                                    markerElement.removeChild(pulseElement);
-                                }
-                            });
-                        }
-
-                        // Adjust the map view to center on the marker
-                        APP.adjustMarkerView(markerData.marker, sidebarWidth);
-                    }
-
-                    // Add related investments section if available
-                    const sidebarContent = sidebar.querySelector('.sidebar-content');
-                    if (sidebarContent && APP.state.markers.length > 0) {
-                        // Find related investments in the same district
-                        const relatedInvestments = APP.state.markers
-                            .filter(m => m.data.id !== lot.id && m.data.district_name === lot.district_name)
-                            .slice(0, 3);
-
-                        if (relatedInvestments.length > 0) {
-                            const relatedSection = document.createElement('div');
-                            relatedSection.innerHTML = `
-                                <div class="section-title">
-                                    <i class="fas fa-project-diagram"></i> Боғлиқ инвестициялар
-                                </div>
-                                <div class="related-investments">
-                                    ${relatedInvestments.map(({data}) => `
-                                        <div class="data-card" onclick="MapApp.showDetails('${data.id}')">
-                                            <div class="data-card-header">
-                                                <div class="data-card-title">${data.neighborhood_name || 'Номсиз жой'}</div>
-                                                <span class="badge ${Utils.formatStatus(data.status).class} data-card-badge">
-                                                    ${Utils.formatStatus(data.status).text}
-                                                </span>
-                                            </div>
-                                            <div class="data-card-address">${data.district_name || ''}</div>
-                                            <div class="data-card-stats">
-                                                <div class="data-card-stat">
-                                                    <i class="fas fa-expand-arrows-alt"></i> ${data.area_hectare || 'Н/М'} га
-                                                </div>
-                                                ${data.proposed_floors ? `
-                                                    <div class="data-card-stat">
-                                                        <i class="fas fa-building"></i> ${data.proposed_floors} қават
-                                                    </div>
-                                                ` : ''}
-                                            </div>
-                                        </div>
-                                    `).join('')}
-                                </div>
-                            `;
-
-                            sidebarContent.appendChild(relatedSection);
-                        }
-                    }
-
-                    // Check if we need to load additional data
-                    if (lot && lot.id) {
-                        // This is where you could fetch additional details if needed
-                        APP.loadAdditionalDetails(lot.id).then(extraData => {
-                            if (extraData && APP.state.view.currentItem === lotId) {
-                                // Update sidebar with extra data if available
-                                const extraInfoSection = document.createElement('div');
-                                extraInfoSection.className = 'section-title';
-                                extraInfoSection.innerHTML = `
-                                    <i class="fas fa-chart-bar"></i> Қўшимча маълумотлар
-                                `;
-
-                                const extraInfoContent = document.createElement('div');
-                                extraInfoContent.className = 'extra-info-content';
-                                extraInfoContent.innerHTML = `
-                                    <table class="details-table">
-                                        <tr><td>Иқтисодий таъсир:</td><td>${extraData.economicImpact} млн. сўм</td></tr>
-                                        <tr><td>Яратилган иш ўринлари:</td><td>${extraData.jobsCreated}</td></tr>
-                                        <tr><td>Инвестиция миқдори:</td><td>${extraData.investmentAmount} млн. $</td></tr>
-                                        <tr><td>Қурилиш муддати:</td><td>${extraData.constructionDuration} ой</td></tr>
-                                        <tr><td>Сўнгги янгиланиш:</td><td>${extraData.lastUpdated}</td></tr>
-                                    </table>
-                                `;
-
-                                // Append to sidebar if we still have the same item open
-                                if (APP.state.currentSidebar && APP.state.view.currentItem === lotId) {
-                                    const sidebarContent = APP.state.currentSidebar.querySelector('.sidebar-content');
-                                    if (sidebarContent) {
-                                        sidebarContent.appendChild(extraInfoSection);
-                                        sidebarContent.appendChild(extraInfoContent);
-                                    }
-                                }
-                            }
-                        }).catch(err => {
-                            Logger.error('Failed to load additional details:', err);
-                        });
-                    }
-
-                    // Reset animation state after all transitions complete
-                    setTimeout(() => {
-                        APP.state.view.isAnimating = false;
-
-                        // Notify any screen readers that the details are loaded (accessibility)
-                        const a11yAnnouncement = document.createElement('div');
-                        a11yAnnouncement.setAttribute('role', 'status');
-                        a11yAnnouncement.setAttribute('aria-live', 'polite');
-                        a11yAnnouncement.className = 'sr-only';
-                        a11yAnnouncement.textContent = `${lot.neighborhood_name || 'Инвестиция майдони'} маълумотлари юкланди`;
-                        document.body.appendChild(a11yAnnouncement);
-
-                        // Clean up the announcement after it's been read
-                        setTimeout(() => {
-                            if (a11yAnnouncement.parentNode) {
-                                a11yAnnouncement.parentNode.removeChild(a11yAnnouncement);
-                            }
-                        }, 3000);
-                    }, APP.CONFIG.MAP_ANIMATION.TOTAL_DURATION);
-                }, APP.CONFIG.ANIMATION_DURATION / 3);
-            });
-        } catch (error) {
-            Logger.error('Failed to show details:', error);
-            Utils.showError('Инвестиция маълумотларини юклашда хатолик юз берди');
-            APP.state.view.isAnimating = false;
-        }
-    };
-
-    // Add these helper functions for view management
-    APP.adjustPolygonView = function(polygon, padding) {
-        if (!polygon) return;
-
-        const bounds = polygon.getBounds();
-
-        // Clear any existing animations
-        APP.state.map.stop();
-
-        APP.state.map.once('moveend', () => {
-            // Ensure proper centering after bounds are set
-            const center = bounds.getCenter();
-            const zoom = APP.state.map.getBoundsZoom(bounds);
-
-            APP.state.map.setView(center, Math.min(zoom, 17), {
-                animate: true,
-                duration: APP.CONFIG.MAP_ANIMATION.PAN_DURATION,
-                paddingTopLeft: [50, 50],
-                paddingBottomRight: padding
-            });
-        });
-
-        APP.state.map.fitBounds(bounds, {
-            paddingTopLeft: [50, 50],
-            paddingBottomRight: padding,
-            maxZoom: 17,
-            animate: true,
-            duration: APP.CONFIG.MAP_ANIMATION.ZOOM_DURATION
-        });
-    };
-
-    APP.adjustMarkerView = function(marker, sidebarWidth) {
-        const point = marker.getLatLng();
-
-        // First zoom to marker
-        APP.state.map.setView(point, 17, {
-            animate: true,
-            duration: APP.CONFIG.MAP_ANIMATION.ZOOM_DURATION
-        });
-
-        // Then pan to account for sidebar if on desktop
-        if (window.innerWidth > APP.CONFIG.MOBILE_BREAKPOINT) {
-            setTimeout(() => {
-                APP.state.map.panBy([-sidebarWidth / 2, 0], {
-                    animate: true,
-                    duration: APP.CONFIG.MAP_ANIMATION.PAN_DURATION,
-                    easeLinearity: APP.CONFIG.MAP_ANIMATION.EASE_LINEARITY
-                });
-            }, APP.CONFIG.MAP_ANIMATION.ZOOM_DURATION * 1000);
-        }
-    };
-
-    // Update the close sidebar function to handle state properly
-    APP.closeSidebar = function() {
-        if (APP.state.currentSidebar) {
-            APP.state.currentSidebar.classList.remove('open');
-
-            setTimeout(() => {
-                if (APP.state.currentSidebar) {
-                    // Clear any existing animations
-                    APP.state.map.stop();
-
-                    // Run cleanup functions if any
-                    if (APP.state.cleanup && APP.state.cleanup.length) {
-                        APP.state.cleanup.forEach(cleanupFn => {
-                            try {
-                                cleanupFn();
-                            } catch (e) {
-                                Logger.error('Cleanup function error:', e);
-                            }
-                        });
-                        APP.state.cleanup = [];
-                    }
-
-                    APP.state.currentSidebar.remove();
-                    APP.state.currentSidebar = null;
-
-                    // Reset view state
-                    APP.state.view.currentItem = null;
-
-                    if (APP.state.view.lastCenter && APP.state.view.lastZoom) {
-                        APP.state.map.setView(
-                            APP.state.view.lastCenter,
-                            APP.state.view.lastZoom, {
-                                animate: true,
-                                duration: APP.CONFIG.MAP_ANIMATION.ZOOM_DURATION
-                            }
-                        );
-                    }
-                }
-            }, APP.CONFIG.ANIMATION_DURATION);
-        }
-    };
-
-    APP.cleanupMapEvents = function() {
-        if (APP.state.map) {
-            APP.state.map.stop();
-            APP.state.map.off('moveend');
-            APP.state.map.off('zoomend');
-        }
-    };
-
-    // Filter markers and polygons by district
-    APP.filterByDistrict = function(districtName) {
-        try {
-            Logger.info('Filtering by district:', districtName);
-            APP.state.currentDistrict = districtName;
-
-            // Clear existing markers and add filtered ones
-            APP.state.markerCluster.clearLayers();
-
-            // Add markers that match the filter or all if 'all' is selected
-            APP.state.markers.forEach(({
-                marker,
-                data
-            }) => {
-                const matchesDistrict =
-                    districtName === 'all' ||
-                    (data.district_name && data.district_name.toLowerCase().includes(
-                        districtName.toLowerCase()));
-
-                const matchesStatus =
-                    APP.state.currentStatus === 'all' ||
-                    data.status === APP.state.currentStatus;
-
-                if (matchesDistrict && matchesStatus && APP.state.filters.showMarkers) {
-                    APP.state.markerCluster.addLayer(marker);
-                }
-            });
-
-            // Handle polygons visibility
-            Object.values(APP.state.polygons).forEach(({
-                polygon,
-                data
-            }) => {
-                const matchesDistrict =
-                    districtName === 'all' ||
-                    (data.district_name && data.district_name.toLowerCase().includes(
-                        districtName.toLowerCase()));
-
-                const matchesStatus =
-                    APP.state.currentStatus === 'all' ||
-                    data.status === APP.state.currentStatus;
-
-                if (matchesDistrict && matchesStatus && APP.state.filters.showPolygons) {
-                    if (!APP.state.map.hasLayer(polygon)) {
-                        polygon.addTo(APP.state.map);
-                    }
-                } else {
-                    if (APP.state.map.hasLayer(polygon)) {
-                        APP.state.map.removeLayer(polygon);
-                    }
-                }
-            });
-
-            // Highlight the selected district
-            if (districtName !== 'all') {
-                // Zoom to the district
-                const districtPolygon = APP.state.districtPolygons[districtName];
-                if (districtPolygon && districtPolygon.polygon) {
-                    APP.state.map.fitBounds(districtPolygon.polygon.getBounds(), {
-                        padding: [50, 50],
-                        maxZoom: 14,
-                        animate: true
-                    });
-                }
-            } else {
-                // Reset to default view
-                APP.state.map.setView(APP.CONFIG.MAP.CENTER, APP.CONFIG.MAP.DEFAULT_ZOOM, {
-                    animate: true
-                });
-            }
-
-            Logger.debug('Filter applied:', districtName);
-        } catch (error) {
-            Logger.error('Failed to apply filter:', error);
-            Utils.showError('Фильтрни қўллашда хатолик юз берди');
-        }
-    };
-
-    // Filter by status
-    APP.filterByStatus = function(status) {
-        try {
-            Logger.info('Filtering by status:', status);
-            APP.state.currentStatus = status;
-
-            // Update status buttons
-            document.querySelectorAll('.status-btn').forEach(btn => {
-                if (btn.dataset.status === status) {
-                    btn.classList.add('active');
-                } else {
-                    btn.classList.remove('active');
-                }
-            });
-
-            // Re-apply district filter with new status filter
-            APP.filterByDistrict(APP.state.currentDistrict);
-
-            Logger.debug('Status filter applied:', status);
-        } catch (error) {
-            Logger.error('Failed to apply status filter:', error);
-            Utils.showError('Статус фильтрини қўллашда хатолик юз берди');
-        }
-    };
-
-    // Toggle markers visibility
-    APP.toggleMarkers = function(show) {
-        try {
-            APP.state.filters.showMarkers = show;
-
-            if (show) {
-                // Re-apply district filter to show only relevant markers
-                APP.filterByDistrict(APP.state.currentDistrict);
-            } else {
-                // Clear all markers
-                APP.state.markerCluster.clearLayers();
-            }
-
-            Logger.debug('Markers visibility toggled:', show);
-        } catch (error) {
-            Logger.error('Failed to toggle markers:', error);
-        }
-    };
-
-    // Toggle polygons visibility
-    APP.togglePolygons = function(show) {
-        try {
-            APP.state.filters.showPolygons = show;
-
-            Object.values(APP.state.polygons).forEach(({
-                polygon,
-                data
-            }) => {
-                const matchesDistrict =
-                    APP.state.currentDistrict === 'all' ||
-                    (data.district_name && data.district_name.toLowerCase().includes(APP.state
-                        .currentDistrict.toLowerCase()));
-
-                const matchesStatus =
-                    APP.state.currentStatus === 'all' ||
-                    data.status === APP.state.currentStatus;
-
-                if (show && matchesDistrict && matchesStatus) {
-                    if (!APP.state.map.hasLayer(polygon)) {
-                        polygon.addTo(APP.state.map);
-                    }
-                } else {
-                    if (APP.state.map.hasLayer(polygon)) {
-                        APP.state.map.removeLayer(polygon);
-                    }
-                }
-            });
-
-            Logger.debug('Polygons visibility toggled:', show);
-        } catch (error) {
-            Logger.error('Failed to toggle polygons:', error);
-        }
-    };
-
-    // Toggle district boundaries visibility
-    APP.toggleDistricts = function(show) {
-        try {
-            APP.state.filters.showDistricts = show;
-
-            Object.values(APP.state.districtPolygons).forEach(({ polygon }) => {
-                if (show) {
-                    if (!APP.state.map.hasLayer(polygon)) {
-                        polygon.addTo(APP.state.map);
-                    }
-                } else {
-                    if (APP.state.map.hasLayer(polygon)) {
-                        APP.state.map.removeLayer(polygon);
-                    }
-                }
-            });
-
-            Logger.debug('District boundaries visibility toggled:', show);
-        } catch (error) {
-            Logger.error('Failed to toggle district boundaries:', error);
-        }
-    };
-
-    // Switch map layer
-    APP.switchMapLayer = function(layerName) {
-        try {
-            if (APP.state.layers.instances[layerName]) {
-                // Remove current layer
-                APP.state.map.removeLayer(APP.state.layers.instances[APP.state.layers.current]);
-
-                // Add new layer
-                APP.state.layers.instances[layerName].addTo(APP.state.map);
-
-                // Update current layer
-                APP.state.layers.current = layerName;
-
-                Logger.debug('Map layer switched to:', layerName);
-            }
-        } catch (error) {
-            Logger.error('Failed to switch map layer:', error);
-        }
-    };
-
-    // Load additional details for an investment lot
-    APP.loadAdditionalDetails = async function(lotId) {
-        try {
-            Logger.info('Loading additional details for lot:', lotId);
-
-            // In a real application, this would fetch data from an API
-            // For this demo, we'll simulate a network request and return mock data
-            return new Promise((resolve, reject) => {
-                setTimeout(() => {
-                    // Check if lot exists in our data
-                    const markerData = APP.state.markers.find(m => m.data.id === lotId);
-                    const polygonData = APP.state.polygons[lotId];
-                    const lot = (markerData ? markerData.data : (polygonData ? polygonData.data : null));
-
-                    if (!lot) {
-                        reject(new Error('Lot not found'));
-                        return;
-                    }
-
-                    // Generate some random additional data based on lot properties
-                    const additionalData = {
-                        economicImpact: Math.floor(Math.random() * 1000) + 500,
-                        jobsCreated: Math.floor(Math.random() * 200) + 50,
-                        investmentAmount: (Math.random() * 10 + 2).toFixed(2),
-                        constructionDuration: Math.floor(Math.random() * 24) + 6,
-                        lastUpdated: new Date().toISOString().split('T')[0]
-                    };
-
-                    resolve(additionalData);
-                }, 800); // Simulate network delay
-            });
-        } catch (error) {
-            Logger.error('Failed to load additional details:', error);
-            return null;
-        }
-    };
-
-    // Print lot details
-    APP.printLotDetails = function(lot) {
-        try {
-            Logger.info('Printing lot details:', lot.id);
-
-            // Create a new window for printing
-            const printWindow = window.open('', '_blank');
-            if (!printWindow) {
-                Utils.showError('Чоп этиш ойнасини очишда хатолик юз берди. Браузер қалқиб чиқувчи ойналарга рухсат берганини текширинг.');
+                console.error(`Lot with ID ${lotId} not found`);
                 return;
             }
 
+            console.log(`Found lot:`, lot);
+
+            // Store view state
+            App.lastView.zoom = App.map.getZoom();
+            App.lastView.center = App.map.getCenter();
+
+            // Close existing sidebar
+            closeSidebar(true);
+
+            // Set current item and animation state
+            App.currentItem = lotId;
+            App.isAnimating = true;
+
             // Get status info
-            const statusInfo = Utils.formatStatus(lot.status);
-
-            // Create print content
-            printWindow.document.write(`
-                <!DOCTYPE html>
-                <html lang="uz">
-                <head>
-                    <meta charset="UTF-8">
-                    <title>Инвестиция маълумотлари - ${lot.id}</title>
-                    <style>
-                        body {
-                            font-family: Arial, sans-serif;
-                            line-height: 1.5;
-                            padding: 20px;
-                            max-width: 800px;
-                            margin: 0 auto;
-                        }
-                        .header {
-                            text-align: center;
-                            margin-bottom: 20px;
-                            padding-bottom: 20px;
-                            border-bottom: 2px solid #1E3685;
-                        }
-                        .logo {
-                            font-size: 22px;
-                            font-weight: bold;
-                            color: #1E3685;
-                        }
-                        .title {
-                            font-size: 24px;
-                            margin: 20px 0;
-                            color: #1E3685;
-                        }
-                        .section {
-                            margin-bottom: 20px;
-                        }
-                        .section-title {
-                            font-size: 18px;
-                            font-weight: bold;
-                            margin-bottom: 10px;
-                            color: #1E3685;
-                            border-bottom: 1px solid #ddd;
-                            padding-bottom: 5px;
-                        }
-                        table {
-                            width: 100%;
-                            border-collapse: collapse;
-                            margin-bottom: 20px;
-                        }
-                        th, td {
-                            text-align: left;
-                            padding: 8px;
-                            border-bottom: 1px solid #ddd;
-                        }
-                        th {
-                            background-color: #f2f2f2;
-                            font-weight: bold;
-                            width: 40%;
-                        }
-                        .status {
-                            display: inline-block;
-                            padding: 5px 10px;
-                            border-radius: 4px;
-                            font-weight: bold;
-                        }
-                        .status-success {
-                            background-color: rgba(14, 98, 69, 0.1);
-                            color: #0E6245;
-                        }
-                        .status-warning {
-                            background-color: rgba(206, 126, 0, 0.1);
-                            color: #CE7E00;
-                        }
-                        .status-info {
-                            background-color: rgba(30, 54, 133, 0.1);
-                            color: #1E3685;
-                        }
-                        .footer {
-                            margin-top: 40px;
-                            text-align: center;
-                            font-size: 12px;
-                            color: #666;
-                        }
-                        @media print {
-                            .no-print {
-                                display: none;
-                            }
-                        }
-                    </style>
-                </head>
-                <body>
-                    <div class="header">
-                        <div class="logo">ИнвестУз - Инвестиция харитаси</div>
-                    </div>
-
-                    <div class="title">${lot.neighborhood_name || 'Номсиз жой'}</div>
-
-                    <div class="section">
-                        <div class="section-title">Асосий маълумот</div>
-                        <table>
-                            <tr>
-                                <th>Туман:</th>
-                                <td>${lot.district_name || 'Н/М'}</td>
-                            </tr>
-                            <tr>
-                                <th>Майдон:</th>
-                                <td>${lot.area_hectare ? lot.area_hectare + ' га' : 'Н/М'}</td>
-                            </tr>
-                            <tr>
-                                <th>Холат:</th>
-                                <td><span class="status status-${statusInfo.class.replace('badge-', '')}">${statusInfo.text}</span></td>
-                            </tr>
-                            <tr>
-                                <th>Стратегия:</th>
-                                <td>${lot.area_strategy || 'Н/М'}</td>
-                            </tr>
-                            <tr>
-                                <th>Қарор рақами:</th>
-                                <td>${lot.decision_number || 'Н/М'}</td>
-                            </tr>
-                        </table>
-                    </div>
-
-                    <div class="section">
-                        <div class="section-title">Техник параметрлар</div>
-                        <table>
-                            <tr>
-                                <th>Кадастр:</th>
-                                <td>${lot.cadastre_certificate || 'Н/М'}</td>
-                            </tr>
-                            <tr>
-                                <th>Қаватлар сони:</th>
-                                <td>${lot.proposed_floors || 'Н/М'}</td>
-                            </tr>
-                            <tr>
-                                <th>КМН коэффициенти:</th>
-                                <td>${lot.qmn_percentage || 'Н/М'}</td>
-                            </tr>
-                            <tr>
-                                <th>УМН коэффициенти:</th>
-                                <td>${lot.umn_coefficient || 'Н/М'}</td>
-                            </tr>
-                        </table>
-                    </div>
-
-                    <div class="section">
-                        <div class="section-title">Майдонлар</div>
-                        <table>
-                            <tr>
-                                <th>Турар-жой майдони:</th>
-                                <td>${lot.residential_area ? lot.residential_area + ' м²' : 'Н/М'}</td>
-                            </tr>
-                            <tr>
-                                <th>Нотурар-жой майдони:</th>
-                                <td>${lot.non_residential_area ? lot.non_residential_area + ' м²' : 'Н/М'}</td>
-                            </tr>
-                            <tr>
-                                <th>Умумий майдон:</th>
-                                <td>${lot.total_building_area ? lot.total_building_area + ' м²' : 'Н/М'}</td>
-                            </tr>
-                        </table>
-                    </div>
-
-                    <div class="footer">
-                        <p>Ушбу ҳужжат ИнвестУз - Инвестиция харитаси томонидан тайёрланган.<br>
-                        Сана: ${new Date().toLocaleDateString('uz-UZ')}</p>
-                    </div>
-
-                    <div class="no-print" style="text-align: center; margin-top: 30px;">
-                        <button onclick="window.print()" style="padding: 10px 20px; background: #1E3685; color: white; border: none; border-radius: 4px; cursor: pointer;">
-                            Чоп этиш
-                        </button>
-                        <button onclick="window.close()" style="padding: 10px 20px; background: #767676; color: white; border: none; border-radius: 4px; cursor: pointer; margin-left: 10px;">
-                            Ёпиш
-                        </button>
-                    </div>
-                </body>
-                </html>
-            `);
-
-            printWindow.document.close();
-
-            // Automatically open print dialog after content is loaded
-            printWindow.onload = function() {
-                setTimeout(function() {
-                    printWindow.focus();
-                    printWindow.print();
-                }, 500);
+            const status = lot.status ? formatStatus(lot.status) : {
+                text: "Статус не указан",
+                class: "badge-info"
             };
-        } catch (error) {
-            Logger.error('Print failed:', error);
-            Utils.showError('Чоп этиш амалиётида хатолик юз берди');
-        }
-    };
 
-    APP.shareLotDetails = function(lot) {
-                try {
-                    Logger.info('Sharing lot details:', lot.id);
+            // Format fields based on the API response structure
+            const name = lot.name || lot.neighborhood_name || 'Unnamed';
+            const district = lot.district || lot.district_name || 'N/A';
+            const area = lot.area || lot.area_hectare || 'N/A';
+            const strategy = lot.strategy || lot.area_strategy || 'N/A';
+            const decision = lot.decision || lot.decision_number || 'N/A';
+            const cadastre = lot.cadastre || lot.cadastre_certificate || 'N/A';
+            const floors = lot.floors || lot.designated_floors || lot.proposed_floors || 'N/A';
+            const kmn = lot.kmn || lot.qmn_percentage || 'N/A';
+            const umn = lot.umn || lot.umn_coefficient || 'N/A';
+            const residential = lot.residential_area || lot.residential || 'N/A';
+            const nonResidential = lot.non_residential_area || lot.nonResidential || 'N/A';
+            const totalArea = lot.total_building_area || lot.total || 'N/A';
+            const investor = lot.investor || 'N/A';
+            const population = lot.population || 'N/A';
+            const household = lot.household_count || 'N/A';
+            const additionalInfo = lot.additional_information || 'N/A';
 
-                    // Create a shareable URL with lot ID
-                    const shareUrl = new URL(window.location.href);
-                    shareUrl.searchParams.set('lot', lot.id);
+            // Create sidebar
+            const sidebar = document.createElement('div');
+            sidebar.className = 'sidebar';
+            sidebar.id = `sidebar-${Date.now()}`;
 
-                    // Check if Web Share API is available
-                    if (navigator.share) {
-                        navigator.share({
-                            title: `ИнвестУз - ${lot.neighborhood_name || 'Инвестиция майдони'}`,
-                            text: `${lot.neighborhood_name || 'Инвестиция майдони'} - ${lot.district_name || ''}, ${lot.area_hectare || ''} га`,
-                            url: shareUrl.toString()
-                        }).then(() => {
-                            Logger.info('Successfully shared');
-                        }).catch((error) => {
-                            Logger.error('Share failed:', error);
-                            APP.fallbackShare(shareUrl.toString());
-                        });
-                    } else {
-                        // Fallback for browsers that don't support the Web Share API
-                        APP.fallbackShare(shareUrl.toString());
+            // Generate sidebar HTML with our structure - Uzbek Cyrillic
+            let sidebarHtml = `
+                <div class="sidebar-header">
+                    <h2>${name}</h2>
+                    <button class="sidebar-close-btn">×</button>
+                </div>
+                <div class="sidebar-content">`;
+
+
+
+            sidebarHtml += `
+                    <div class="section-title">Асосий маълумотлар</div>
+                    <table class="details-table">
+                        <tr><td>Туман:</td><td>${district}</td></tr>
+                        <tr><td>Майдон:</td><td>${area} га</td></tr>
+                        <tr><td>Ҳолати:</td><td><span class="badge ${status.class}">${status.text}</span></td></tr>
+                        <tr><td>Стратегия:</td><td>${strategy}</td></tr>
+                        <tr><td>Қарор:</td><td>${decision}</td></tr>
+                    </table>
+
+                    <div class="section-title">Техник параметрлар</div>
+                    <table class="details-table">
+                        <tr><td>Кадастр:</td><td>${cadastre}</td></tr>
+                        <tr><td>Қаватлар:</td><td>${floors}</td></tr>
+                        <tr><td>КМН:</td><td>${kmn}</td></tr>
+                        <tr><td>УМН:</td><td>${umn}</td></tr>
+                    </table>
+
+                    <div class="section-title">Майдонлар</div>
+                    <table class="details-table">
+                        <tr><td>Турар жой:</td><td>${residential} м²</td></tr>
+                        <tr><td>Нотурар жой:</td><td>${nonResidential} м²</td></tr>
+                        <tr><td>Умумий:</td><td>${totalArea} м²</td></tr>
+                    </table>`;
+
+            // Add investor information if available
+            if (investor !== 'N/A' && investor !== '0') {
+                sidebarHtml += `
+                    <div class="section-title">Инвестор</div>
+                    <table class="details-table">
+                        <tr><td>Исм:</td><td>${investor}</td></tr>
+                    </table>
+                `;
+            }
+
+            // Add demographic information if available
+            if (population !== 'N/A' || household !== 'N/A') {
+                sidebarHtml += `
+                    <div class="section-title">Демографик маълумотлар</div>
+                    <table class="details-table">
+                        ${population !== 'N/A' ? `<tr><td>Аҳоли сони:</td><td>${population}</td></tr>` : ''}
+                        ${household !== 'N/A' ? `<tr><td>Хонадонлар сони:</td><td>${household}</td></tr>` : ''}
+                    </table>
+                `;
+            }
+
+            // Add documents section if available
+            if (lot.documents && lot.documents.length > 0) {
+                sidebarHtml += `
+                    <div class="section-title">Ҳужжатлар</div>
+                    <div class="documents-list">
+                `;
+
+                lot.documents.forEach(doc => {
+                    sidebarHtml += `
+                        <div class="data-card">
+                            <div class="data-card-title">${doc.filename || 'Ҳужжат'}</div>
+                            <div>Тури: ${doc.doc_type || 'Кўрсатилмаган'}</div>
+                            ${doc.url ? `<a href="${doc.url}" target="_blank" class="document-link">Ҳужжатни кўриш</a>` : ''}
+                        </div>
+                    `;
+                });
+
+                sidebarHtml += `</div>`;
+            }
+
+            // Add additional information if available
+            if (additionalInfo !== 'N/A') {
+                sidebarHtml += `
+                    <div class="section-title">Қўшимча маълумотлар</div>
+                    <div class="additional-info">${additionalInfo}</div>
+                `;
+            }
+
+            // Close the content div
+            sidebarHtml += `</div>`;
+            // Set the sidebar HTML
+            sidebar.innerHTML = sidebarHtml;
+
+            // Add to body
+            document.body.appendChild(sidebar);
+            App.currentSidebar = sidebar;
+
+            // Add close button event
+            const closeBtn = sidebar.querySelector('.sidebar-close-btn');
+            if (closeBtn) {
+                closeBtn.addEventListener('click', function() {
+                    closeSidebar();
+                });
+            }
+
+            showToast('Details loaded successfully');
+
+            // Animation sequence
+            requestAnimationFrame(() => {
+                // Open sidebar
+                sidebar.classList.add('open');
+
+                // Wait for sidebar animation
+                setTimeout(() => {
+                    // Stop any existing map animations
+                    App.map.stop();
+
+                    // Highlight the feature
+                    if (polygonEntry && polygonEntry.polygon) {
+                        highlightPolygon(polygonEntry.polygon, lot.id);
+                        adjustPolygonView(polygonEntry.polygon);
+                    } else if (markerEntry && markerEntry.marker) {
+                        highlightMarker(markerEntry.marker, lot.id);
+                        adjustMarkerView(markerEntry.marker);
                     }
-                } catch (error) {
-                    Logger.error('Share failed:', error);
-                    Utils.showError('Улашиш амалиётида хатолик юз берди');
-                }
-            };
 
-            APP.fallbackShare = function(url) {
-                try {
-                    // Create a temporary input element
-                    const tempInput = document.createElement('input');
-                    tempInput.style.position = 'absolute';
-                    tempInput.style.left = '-1000px';
-                    tempInput.value = url;
-                    document.body.appendChild(tempInput);
+                    // Add related investments
+                    addRelatedInvestments(sidebar, lot);
 
-                    // Select and copy the URL
-                    tempInput.select();
-                    document.execCommand('copy');
-                    document.body.removeChild(tempInput);
-
-                    // Show success notification
-                    APP.showNotification('success', 'URL нусхаланди - уни улашишингиз мумкин', 3000);
-                } catch (error) {
-                    Logger.error('Fallback share failed:', error);
-                    Utils.showError('URL нусхалашда хатолик юз берди');
-                }
-            };
-
-            APP.exportLotDetails = function(lot) {
-                try {
-                    Logger.info('Exporting lot details to PDF:', lot.id);
-
-                    // This would normally use a PDF library like jsPDF
-                    // For this demo, we'll just show a notification
-                    APP.showNotification('success', 'PDF экспорт қилиш амалиёти бошланди...', 2000);
-
-                    // Simulate download after a delay
+                    // Reset animation state
                     setTimeout(() => {
-                        APP.showNotification('success', 'PDF файл тайёрланди ва юклаб олинди', 3000);
-                    }, 2000);
-                } catch (error) {
-                    Logger.error('Export failed:', error);
-                    Utils.showError('PDF экспорт қилишда хатолик юз берди');
-                }
-            };
-
-            // Generate mock data for testing
-            APP.generateMockData = function() {
-                Logger.info('Generating mock data for testing...');
-
-                // Define districts of Tashkent
-                const districts = [
-                    'Бектемир', 'Чилонзор', 'Миробод', 'Мирзо Улуғбек',
-                    'Олмазор', 'Сергели', 'Шайхонтоҳур', 'Учтепа',
-                    'Яккасарой', 'Яшнобод', 'Юнусобод', 'Янгиҳаёт'
-                ];
-
-                // Base coordinates for Tashkent
-                const baseLatCenter = 41.311;
-                const baseLngCenter = 69.279;
-
-                // Mock polygon data generator
-                const generateMockPolygon = (centerLat, centerLng, size = 0.003) => {
-                    const points = [];
-                    const sides = 5 + Math.floor(Math.random() * 4); // 5-8 sides
-
-                    for (let i = 0; i < sides; i++) {
-                        const angle = (i / sides) * 2 * Math.PI;
-                        const variation = 0.4 + Math.random() * 0.6; // Random variation in size
-                        const lat = centerLat + Math.sin(angle) * size * variation;
-                        const lng = centerLng + Math.cos(angle) * size * variation;
-
-                        // Create DMS format
-                        const latDeg = Math.floor(lat);
-                        const latMin = Math.floor((lat - latDeg) * 60);
-                        const latSec = ((lat - latDeg - latMin/60) * 3600).toFixed(2);
-                        const lngDeg = Math.floor(lng);
-                        const lngMin = Math.floor((lng - lngDeg) * 60);
-                        const lngSec = ((lng - lngDeg - lngMin/60) * 3600).toFixed(2);
-
-                        points.push({
-                            start_lat: `${latDeg}°${latMin}'${latSec}"С`,
-                            start_lon: `${lngDeg}°${lngMin}'${lngSec}"E`
-                        });
-                    }
-
-                    return points;
-                };
-
-                // Generate 40 random lots
-                APP.state.mockApiData.lots = [];
-                for (let i = 0; i < 40; i++) {
-                    const id = (100 + i).toString();
-                    const district = districts[Math.floor(Math.random() * districts.length)];
-
-                    // Random coordinates within Tashkent area
-                    const latOffset = (Math.random() - 0.5) * 0.1;
-                    const lngOffset = (Math.random() - 0.5) * 0.1;
-                    const lat = baseLatCenter + latOffset;
-                    const lng = baseLngCenter + lngOffset;
-
-                    // Random area
-                    const area = (Math.random() * 5 + 0.1).toFixed(2);
-
-                    // Random status
-                    const statuses = ["9", "1", "2"];
-                    const status = statuses[Math.floor(Math.random() * statuses.length)];
-
-                    const lot = {
-                        id: id,
-                        neighborhood_name: `Участок ${id} (${area} га)`,
-                        area_hectare: parseFloat(area),
-                        status: status,
-                        district_name: district,
-                        lat: lat,
-                        lng: lng,
-                        decision_number: Math.floor(Math.random() * 100).toString(),
-                        area_strategy: "инвест шартномаси тузиш",
-                        cadastre_certificate: `Сертификат ${Math.floor(Math.random() * 1000)}`,
-                        proposed_floors: Math.floor(Math.random() * 20 + 1).toString(),
-                        qmn_percentage: Math.floor(Math.random() * 20).toString(),
-                        umn_coefficient: Math.floor(Math.random() * 10).toString(),
-                        adjacent_area: Math.floor(Math.random() * 2000),
-                        residential_area: Math.floor(Math.random() * 1000),
-                        non_residential_area: Math.floor(Math.random() * 500),
-                        total_building_area: Math.floor(Math.random() * 1500),
-                        documents: []
-                    };
-
-                    // Add random mock polygon to 70% of lots
-                    if (Math.random() > 0.3) {
-                        lot.polygons = generateMockPolygon(lat, lng);
-                    }
-
-                    // Add to mock data
-                    APP.state.mockApiData.lots.push(lot);
-                }
-
-                Logger.info('Mock data generated:', APP.state.mockApiData.lots.length, 'total lots');
-            };
-
-            // Perform search
-            APP.performSearch = function(query) {
-                try {
-                    Logger.info('Performing search:', query);
-
-                    const searchResults = document.querySelector('.search-results');
-                    searchResults.innerHTML = '';
-
-                    // Find matching lots
-                    const results = [];
-
-                    // Search in markers
-                    APP.state.markers.forEach(({ data }) => {
-                        if (
-                            (data.neighborhood_name && data.neighborhood_name.toLowerCase().includes(query)) ||
-                            (data.district_name && data.district_name.toLowerCase().includes(query)) ||
-                            (data.cadastre_certificate && data.cadastre_certificate.toLowerCase().includes(query))
-                        ) {
-                            results.push(data);
-                        }
-                    });
-
-                    // Display results
-                    if (results.length > 0) {
-                        results.forEach(lot => {
-                            const resultItem = document.createElement('div');
-                            resultItem.className = 'search-result-item';
-                            resultItem.innerHTML = `
-                                <div class="search-result-title">${lot.neighborhood_name || 'Номсиз жой'}</div>
-                                <div class="search-result-address">${lot.district_name || ''}</div>
-                            `;
-
-                            resultItem.addEventListener('click', function() {
-                                APP.showDetails(lot.id);
-                                searchResults.classList.remove('active');
-                            });
-
-                            searchResults.appendChild(resultItem);
-                        });
-
-                        searchResults.classList.add('active');
-                    } else {
-                        // No results
-                        const noResults = document.createElement('div');
-                        noResults.className = 'search-result-item';
-                        noResults.innerHTML = `<div class="search-result-title">Натижалар топилмади</div>`;
-                        searchResults.appendChild(noResults);
-                        searchResults.classList.add('active');
-                    }
-
-                    Logger.debug('Search completed, results:', results.length);
-                } catch (error) {
-                    Logger.error('Search failed:', error);
-                }
-            };
-
-            // Setup event listeners
-            APP.shareLotDetails = function(lot) {
-                try {
-                    Logger.info('Sharing lot details:', lot.id);
-
-                    // Create a shareable URL with lot ID
-                    const shareUrl = new URL(window.location.href);
-                    shareUrl.searchParams.set('lot', lot.id);
-
-                    // Check if Web Share API is available
-                    if (navigator.share) {
-                        navigator.share({
-                            title: `ИнвестУз - ${lot.neighborhood_name || 'Инвестиция майдони'}`,
-                            text: `${lot.neighborhood_name || 'Инвестиция майдони'} - ${lot.district_name || ''}, ${lot.area_hectare || ''} га`,
-                            url: shareUrl.toString()
-                        }).then(() => {
-                            Logger.info('Successfully shared');
-                        }).catch((error) => {
-                            Logger.error('Share failed:', error);
-                            APP.fallbackShare(shareUrl.toString());
-                        });
-                    } else {
-                        // Fallback for browsers that don't support the Web Share API
-                        APP.fallbackShare(shareUrl.toString());
-                    }
-                } catch (error) {
-                    Logger.error('Share failed:', error);
-                    Utils.showError('Улашиш амалиётида хатолик юз берди');
-                }
-            };
-
-            APP.fallbackShare = function(url) {
-                try {
-                    // Create a temporary input element
-                    const tempInput = document.createElement('input');
-                    tempInput.style.position = 'absolute';
-                    tempInput.style.left = '-1000px';
-                    tempInput.value = url;
-                    document.body.appendChild(tempInput);
-
-                    // Select and copy the URL
-                    tempInput.select();
-                    document.execCommand('copy');
-                    document.body.removeChild(tempInput);
-
-                    // Show success notification
-                    APP.showNotification('success', 'URL нусхаланди - уни улашишингиз мумкин', 3000);
-                } catch (error) {
-                    Logger.error('Fallback share failed:', error);
-                    Utils.showError('URL нусхалашда хатолик юз берди');
-                }
-            };
-
-            APP.exportLotDetails = function(lot) {
-                try {
-                    Logger.info('Exporting lot details to PDF:', lot.id);
-
-                    // This would normally use a PDF library like jsPDF
-                    // For this demo, we'll just show a notification
-                    APP.showNotification('success', 'PDF экспорт қилиш амалиёти бошланди...', 2000);
-
-                    // Simulate download after a delay
-                    setTimeout(() => {
-                        APP.showNotification('success', 'PDF файл тайёрланди ва юклаб олинди', 3000);
-                    }, 2000);
-                } catch (error) {
-                    Logger.error('Export failed:', error);
-                    Utils.showError('PDF экспорт қилишда хатолик юз берди');
-                }
-            };
-
-            // Generate mock data for testing
-            APP.generateMockData = function() {
-                Logger.info('Generating mock data for testing...');
-
-                // Define districts of Tashkent
-                const districts = [
-                    'Бектемир', 'Чилонзор', 'Миробод', 'Мирзо Улуғбек',
-                    'Олмазор', 'Сергели', 'Шайхонтоҳур', 'Учтепа',
-                    'Яккасарой', 'Яшнобод', 'Юнусобод', 'Янгиҳаёт'
-                ];
-
-                // Base coordinates for Tashkent
-                const baseLatCenter = 41.311;
-                const baseLngCenter = 69.279;
-
-                // Mock polygon data generator
-                const generateMockPolygon = (centerLat, centerLng, size = 0.003) => {
-                    const points = [];
-                    const sides = 5 + Math.floor(Math.random() * 4); // 5-8 sides
-
-                    for (let i = 0; i < sides; i++) {
-                        const angle = (i / sides) * 2 * Math.PI;
-                        const variation = 0.4 + Math.random() * 0.6; // Random variation in size
-                        const lat = centerLat + Math.sin(angle) * size * variation;
-                        const lng = centerLng + Math.cos(angle) * size * variation;
-
-                        // Create DMS format
-                        const latDeg = Math.floor(lat);
-                        const latMin = Math.floor((lat - latDeg) * 60);
-                        const latSec = ((lat - latDeg - latMin/60) * 3600).toFixed(2);
-                        const lngDeg = Math.floor(lng);
-                        const lngMin = Math.floor((lng - lngDeg) * 60);
-                        const lngSec = ((lng - lngDeg - lngMin/60) * 3600).toFixed(2);
-
-                        points.push({
-                            start_lat: `${latDeg}°${latMin}'${latSec}"С`,
-                            start_lon: `${lngDeg}°${lngMin}'${lngSec}"E`
-                        });
-                    }
-
-                    return points;
-                };
-
-                // Generate 40 random lots
-                APP.state.mockApiData.lots = [];
-                for (let i = 0; i < 40; i++) {
-                    const id = (100 + i).toString();
-                    const district = districts[Math.floor(Math.random() * districts.length)];
-
-                    // Random coordinates within Tashkent area
-                    const latOffset = (Math.random() - 0.5) * 0.1;
-                    const lngOffset = (Math.random() - 0.5) * 0.1;
-                    const lat = baseLatCenter + latOffset;
-                    const lng = baseLngCenter + lngOffset;
-
-                    // Random area
-                    const area = (Math.random() * 5 + 0.1).toFixed(2);
-
-                    // Random status
-                    const statuses = ["9", "1", "2"];
-                    const status = statuses[Math.floor(Math.random() * statuses.length)];
-
-                    const lot = {
-                        id: id,
-                        neighborhood_name: `Участок ${id} (${area} га)`,
-                        area_hectare: parseFloat(area),
-                        status: status,
-                        district_name: district,
-                        lat: lat,
-                        lng: lng,
-                        decision_number: Math.floor(Math.random() * 100).toString(),
-                        area_strategy: "инвест шартномаси тузиш",
-                        cadastre_certificate: `Сертификат ${Math.floor(Math.random() * 1000)}`,
-                        proposed_floors: Math.floor(Math.random() * 20 + 1).toString(),
-                        qmn_percentage: Math.floor(Math.random() * 20).toString(),
-                        umn_coefficient: Math.floor(Math.random() * 10).toString(),
-                        adjacent_area: Math.floor(Math.random() * 2000),
-                        residential_area: Math.floor(Math.random() * 1000),
-                        non_residential_area: Math.floor(Math.random() * 500),
-                        total_building_area: Math.floor(Math.random() * 1500),
-                        documents: []
-                    };
-
-                    // Add random mock polygon to 70% of lots
-                    if (Math.random() > 0.3) {
-                        lot.polygons = generateMockPolygon(lat, lng);
-                    }
-
-                    // Add to mock data
-                    APP.state.mockApiData.lots.push(lot);
-                }
-
-                Logger.info('Mock data generated:', APP.state.mockApiData.lots.length, 'total lots');
-            };
-
-            // Perform search
-            APP.performSearch = function(query) {
-                try {
-                    Logger.info('Performing search:', query);
-
-                    const searchResults = document.querySelector('.search-results');
-                    searchResults.innerHTML = '';
-
-                    // Find matching lots
-                    const results = [];
-
-                    // Search in markers
-                    APP.state.markers.forEach(({ data }) => {
-                        if (
-                            (data.neighborhood_name && data.neighborhood_name.toLowerCase().includes(query)) ||
-                            (data.district_name && data.district_name.toLowerCase().includes(query)) ||
-                            (data.cadastre_certificate && data.cadastre_certificate.toLowerCase().includes(query))
-                        ) {
-                            results.push(data);
-                        }
-                    });
-
-                    // Display results
-                    if (results.length > 0) {
-                        results.forEach(lot => {
-                            const resultItem = document.createElement('div');
-                            resultItem.className = 'search-result-item';
-                            resultItem.innerHTML = `
-                                <div class="search-result-title">${lot.neighborhood_name || 'Номсиз жой'}</div>
-                                <div class="search-result-address">${lot.district_name || ''}</div>
-                            `;
-
-                            resultItem.addEventListener('click', function() {
-                                APP.showDetails(lot.id);
-                                searchResults.classList.remove('active');
-                            });
-
-                            searchResults.appendChild(resultItem);
-                        });
-
-                        searchResults.classList.add('active');
-                    } else {
-                        // No results
-                        const noResults = document.createElement('div');
-                        noResults.className = 'search-result-item';
-                        noResults.innerHTML = `<div class="search-result-title">Натижалар топилмади</div>`;
-                        searchResults.appendChild(noResults);
-                        searchResults.classList.add('active');
-                    }
-
-                    Logger.debug('Search completed, results:', results.length);
-                } catch (error) {
-                    Logger.error('Search failed:', error);
-                }
-            };
-
-            // Setup event listeners
-            APP.setupEventListeners = function() {
-                try {
-                    Logger.info('Setting up event listeners...');
-
-                    // District selector change event
-                    const districtSelector = document.getElementById('district-selector');
-                    if (districtSelector) {
-                        districtSelector.addEventListener('change', function() {
-                            const selectedDistrict = this.value;
-                            APP.filterByDistrict(selectedDistrict);
-                        });
-                    }
-
-                    // Status filter buttons
-                    document.querySelectorAll('.status-btn').forEach(btn => {
-                        btn.addEventListener('click', function() {
-                            const status = this.dataset.status;
-                            APP.filterByStatus(status);
-                        });
-                    });
-
-                    // Show markers checkbox
-                    const showMarkersCheckbox = document.getElementById('show-markers');
-                    if (showMarkersCheckbox) {
-                        showMarkersCheckbox.addEventListener('change', function() {
-                            APP.toggleMarkers(this.checked);
-                        });
-                    }
-
-                    // Show polygons checkbox
-                    const showPolygonsCheckbox = document.getElementById('show-polygons');
-                    if (showPolygonsCheckbox) {
-                        showPolygonsCheckbox.addEventListener('change', function() {
-                            APP.togglePolygons(this.checked);
-                        });
-                    }
-
-                    // Show districts checkbox
-                    const showDistrictsCheckbox = document.getElementById('show-districts');
-                    if (showDistrictsCheckbox) {
-                        showDistrictsCheckbox.addEventListener('change', function() {
-                            APP.toggleDistricts(this.checked);
-                        });
-                    }
-
-                    // Mobile menu toggle
-                    const mobileToggle = document.getElementById('mobile-toggle');
-                    if (mobileToggle) {
-                        mobileToggle.addEventListener('click', function() {
-                            const toolbar = document.querySelector('.toolbar');
-                            if (toolbar) {
-                                toolbar.classList.toggle('show-mobile');
-                            }
-                        });
-                    }
-
-                    // Map controls
-                    document.getElementById('zoom-in').addEventListener('click', function() {
-                        APP.state.map.zoomIn();
-                    });
-
-                    document.getElementById('zoom-out').addEventListener('click', function() {
-                        APP.state.map.zoomOut();
-                    });
-
-                    document.getElementById('reset-view').addEventListener('click', function() {
-                        APP.state.map.setView(APP.CONFIG.MAP.CENTER, APP.CONFIG.MAP.DEFAULT_ZOOM, {
-                            animate: true
-                        });
-                    });
-
-                    // Language switcher
-                    document.querySelectorAll('.lang-btn').forEach(btn => {
-                        btn.addEventListener('click', function() {
-                            // This is a stub for language switching
-                            // In a real app, this would change the language
-                            document.querySelectorAll('.lang-btn').forEach(b => b.classList.remove('active'));
-                            this.classList.add('active');
-                        });
-                    });
-
-                    // Search functionality
-                    const searchInput = document.querySelector('.search-input');
-                    const searchBtn = document.querySelector('.search-btn');
-                    const searchResults = document.querySelector('.search-results');
-
-                    if (searchInput && searchBtn && searchResults) {
-                        // Search button click
-                        searchBtn.addEventListener('click', function() {
-                            const query = searchInput.value.trim().toLowerCase();
-                            if (query.length > 2) {
-                                APP.performSearch(query);
-                            }
-                        });
-
-                        // Search on enter key
-                        searchInput.addEventListener('keypress', function(e) {
-                            if (e.key === 'Enter') {
-                                const query = this.value.trim().toLowerCase();
-                                if (query.length > 2) {
-                                    APP.performSearch(query);
-                                }
-                            }
-                        });
-
-                        // Hide search results when clicking outside
-                        document.addEventListener('click', function(e) {
-                            if (!e.target.closest('.search-box')) {
-                                searchResults.classList.remove('active');
-                            }
-                        });
-                    }
-
-                    // Map click event to close sidebar on mobile
-                    APP.state.map.on('click', function() {
-                        if (window.innerWidth <= APP.CONFIG.MOBILE_BREAKPOINT) {
-                            APP.closeSidebar();
-                        }
-                    });
-
-                    // Window resize event
-                    window.addEventListener('resize', function() {
-                        APP.state.map.invalidateSize();
-                    });
-
-                    Logger.info('Event listeners setup complete');
-                } catch (error) {
-                    Logger.error('Failed to setup event listeners:', error);
-                }
-            };
-
-            // Initialize application
-            APP.init = async function() {
-                try {
-                    Utils.showLoading();
-
-                    // Enable debug panel if in debug mode
-                    if (APP.DEBUG) {
-                        document.getElementById('debug-panel').style.display = 'block';
-                    }
-
-                    // Initialize map
-                    if (!APP.initMap()) {
-                        throw new Error('Map initialization failed');
-                    }
-
-                    // Load district boundaries
-                    await APP.loadDistrictBoundaries();
-
-                    // Load investment data
-                    await APP.loadData();
-
-                    // Setup event listeners
-                    APP.setupEventListeners();
-
-                    // Close loading indicator
-                    Utils.hideLoading();
-
-                    Logger.info('Application initialized successfully');
-                } catch (error) {
-                    Logger.error('Application initialization failed:', error);
-                    Utils.hideLoading();
-                    Utils.showError('Иловани ишга туширишда хатолик юз берди. Саҳифани янгиланг.');
-                }
-            };
-
-            // Initialize on DOM ready
-            document.addEventListener('DOMContentLoaded', function() {
-                APP.init();
+                        App.isAnimating = false;
+                    }, 1000);
+                }, 300);
             });
-        })(window.MapApp = window.MapApp || {});
-</script>
+        }
+
+        // Highlight polygon
+        function highlightPolygon(polygon, lotId) {
+            if (!polygon) return;
+
+            // Store original style
+            const originalStyle = {
+                ...polygon.options
+            };
+
+            // Pulse effect
+            const pulseHighlight = () => {
+                polygon.setStyle({
+                    weight: 4,
+                    color: '#4A6FD4',
+                    dashArray: '5, 10',
+                    fillOpacity: 0.5
+                });
+
+                setTimeout(() => {
+                    polygon.setStyle(originalStyle);
+
+                    setTimeout(() => {
+                        // Only continue if still the current item
+                        if (App.currentItem === lotId) {
+                            pulseHighlight();
+                        } else {
+                            // If no longer current, stop the pulse
+                            return;
+                        }
+                    }, 1500);
+                }, 700);
+            };
+
+            // Start the pulse
+            pulseHighlight();
+
+            // Add the cleanup function to stop highlighting when sidebar is closed
+            App.cleanup.push(() => {
+                polygon.setStyle(originalStyle);
+            });
+        }
+
+        // Highlight marker
+        function highlightMarker(marker, lotId) {
+            if (!marker) return;
+            // You could add marker highlight effects here if needed
+        }
+
+        // Adjust polygon view
+        function adjustPolygonView(polygon) {
+            if (!polygon) return;
+
+            const bounds = polygon.getBounds();
+            App.map.fitBounds(bounds, {
+                padding: [50, 50],
+                maxZoom: 17,
+                animate: true
+            });
+        }
+
+        // Adjust marker view
+        function adjustMarkerView(marker) {
+            if (!marker) return;
+
+            const latLng = marker.getLatLng();
+            App.map.setView(latLng, 17, {
+                animate: true
+            });
+        }
+
+        // Add related investments
+        function addRelatedInvestments(sidebar, lot) {
+            if (!sidebar || !lot) return;
+
+            // Get the district from the lot data
+            const district = lot.district || lot.district_name;
+            if (!district) return;
+
+            const sidebarContent = sidebar.querySelector('.sidebar-content');
+            if (!sidebarContent) return;
+
+            // Find related investments
+            const related = App.markers
+                .filter(m => {
+                    // Get the district from each marker's data
+                    const markerDistrict = m.data.district || m.data.district_name;
+                    return m.data.id !== lot.id && markerDistrict === district;
+                })
+                .slice(0, 3);
+
+            if (related.length === 0) return;
+
+            // Create section
+            const section = document.createElement('div');
+
+            let html = `
+                <div class="section-title">Related Investments</div>
+                <div class="related-investments">
+            `;
+
+            related.forEach(({
+                data
+            }) => {
+                const name = data.name || data.neighborhood_name || 'Unnamed';
+                const district = data.district || data.district_name || '';
+                const area = data.area || data.area_hectare || '';
+
+                html += `
+                    <div class="data-card" data-lot-id="${data.id}">
+                        <div class="data-card-title">${name}</div>
+                        <div>${district}</div>
+                        <div>Area: ${area} га</div>
+                    </div>
+                `;
+            });
+
+            html += '</div>';
+            section.innerHTML = html;
+            sidebarContent.appendChild(section);
+
+            // Add click handlers
+            const cards = section.querySelectorAll('.data-card');
+            cards.forEach(card => {
+                card.addEventListener('click', function() {
+                    const id = this.getAttribute('data-lot-id');
+                    if (id) {
+                        setTimeout(() => {
+                            showDetails(id);
+                        }, 100);
+                    }
+                });
+            });
+        }
+
+        // Close sidebar
+        function closeSidebar(immediate = false) {
+            if (!App.currentSidebar) return;
+
+            if (immediate) {
+                // Run cleanup functions
+                if (App.cleanup && App.cleanup.length) {
+                    App.cleanup.forEach(fn => {
+                        try {
+                            fn();
+                        } catch (e) {
+                            console.error('Cleanup error:', e);
+                        }
+                    });
+                    App.cleanup = [];
+                }
+
+                // Remove sidebar immediately
+                App.currentSidebar.remove();
+                App.currentSidebar = null;
+                App.currentItem = null;
+                return;
+            }
+
+            // Normal animated close
+            App.currentSidebar.classList.remove('open');
+
+            setTimeout(() => {
+                // Run cleanup
+                if (App.cleanup && App.cleanup.length) {
+                    App.cleanup.forEach(fn => {
+                        try {
+                            fn();
+                        } catch (e) {
+                            console.error('Cleanup error:', e);
+                        }
+                    });
+                    App.cleanup = [];
+                }
+
+                // Remove sidebar
+                App.currentSidebar.remove();
+                App.currentSidebar = null;
+                App.currentItem = null;
+
+                // Restore previous view
+                if (App.lastView.center && App.lastView.zoom) {
+                    App.map.setView(App.lastView.center, App.lastView.zoom, {
+                        animate: true
+                    });
+                }
+            }, 300);
+        }
+
+        // Fetch data from API
+        async function fetchData() {
+            showLoading();
+
+            try {
+                // Use the correct API endpoint
+                const apiUrl = `${App.apiBaseUrl}/api/aktivs`;
+                console.log(`Fetching data from: ${apiUrl}`);
+
+                const response = await fetch(apiUrl);
+
+                if (!response.ok) {
+                    throw new Error(`API request failed with status ${response.status}`);
+                }
+
+                const data = await response.json();
+                console.log('API response:', data);
+
+                // Check if we have the lots array as expected from your API format
+                let lotsData = [];
+
+                if (data && data.lots && Array.isArray(data.lots)) {
+                    // We have the expected data format with a 'lots' array
+                    lotsData = data.lots;
+                    console.log(`Found ${lotsData.length} lots in API response`);
+                } else if (data && Array.isArray(data)) {
+                    // The data is a direct array
+                    lotsData = data;
+                    console.log(`Found ${lotsData.length} lots in array response`);
+                } else if (data && typeof data === 'object') {
+                    // Try to find arrays in the response
+                    let foundArray = false;
+
+                    // Check for common array property names
+                    const possibleArrayProps = ['data', 'items', 'results', 'features', 'objects'];
+
+                    for (const prop of possibleArrayProps) {
+                        if (data[prop] && Array.isArray(data[prop])) {
+                            lotsData = data[prop];
+                            foundArray = true;
+                            console.log(`Found ${lotsData.length} items in '${prop}' property`);
+                            break;
+                        }
+                    }
+
+                    if (!foundArray) {
+                        // If still not found, check all properties for arrays
+                        for (const key in data) {
+                            if (Array.isArray(data[key]) && data[key].length > 0) {
+                                lotsData = data[key];
+                                console.log(`Found ${lotsData.length} items in '${key}' property`);
+                                break;
+                            }
+                        }
+                    }
+
+                    // If still no array found, try to convert object to array
+                    if (lotsData.length === 0) {
+                        // Convert object to array if it looks like an object of objects
+                        const keys = Object.keys(data);
+
+                        if (keys.length > 0 && typeof data[keys[0]] === 'object') {
+                            lotsData = Object.values(data);
+                            console.log(`Converted object to array with ${lotsData.length} items`);
+                        } else if (Object.keys(data).length > 0) {
+                            // If it's just a single object, wrap it in an array
+                            lotsData = [data];
+                            console.log('Wrapped single object in array');
+                        }
+                    }
+                }
+
+                if (lotsData.length === 0) {
+                    console.warn('No data found in API response');
+                    showToast('No data found in API response. Using demo data.', 'warning');
+                    // useDemoData();
+                    return;
+                }
+
+                // Process the lots data
+                let processedCount = 0;
+
+                // Generate an ID counter for lots without IDs
+                let idCounter = 1;
+
+                lotsData.forEach(lot => {
+                    // Skip invalid items
+                    if (!lot || typeof lot !== 'object') {
+                        return;
+                    }
+
+                    // Add an ID if missing
+                    if (!lot.id) {
+                        lot.id = 'lot-' + idCounter++;
+                    }
+
+                    // Add marker if coordinates exist
+                    if (lot.lat && lot.lng) {
+                        if (addMarker(lot)) {
+                            processedCount++;
+                        }
+                    }
+
+                    // Add polygon if available
+                    if (lot.polygons) {
+                        if (addPolygon(lot)) {
+                            processedCount++;
+                        }
+                    }
+                });
+
+                if (processedCount > 0) {
+                    showToast(`Successfully loaded ${processedCount} items`, 'info');
+
+                    // Fit map to all markers
+                    if (App.markers.length > 0) {
+                        const group = L.featureGroup(App.markers.map(m => m.marker));
+                        App.map.fitBounds(group.getBounds(), {
+                            padding: [50, 50]
+                        });
+                    }
+                } else {
+                    console.warn('No valid items were processed from API data');
+                    showToast('No valid items found in data. Using demo data.', 'warning');
+                    // useDemoData();
+                }
+            } catch (error) {
+                console.error('Error fetching data:', error);
+                showToast('Error loading data: ' + error.message + '. Using demo data.', 'error');
+                // useDemoData();
+            } finally {
+                hideLoading();
+            }
+        }
+
+        // Create and use demo data when API fails
+        function useDemoData() {
+            console.log('Using demo data');
+
+            // Clear any existing data
+            App.markers.forEach(marker => {
+                if (marker.marker) {
+                    App.markerCluster.removeLayer(marker.marker);
+                }
+            });
+
+            Object.values(App.polygons).forEach(item => {
+                if (item.polygon) {
+                    App.map.removeLayer(item.polygon);
+                }
+            });
+
+            App.markers = [];
+            App.polygons = {};
+
+            // Generate demo data based on the exact format from API sample
+            const demoData = [{
+                    id: 'demo-1',
+                    district_name: "Юнусабадский",
+                    neighborhood_name: "Кашгар (0,12 га) - Demo",
+                    lat: 41.3187611,
+                    lng: 69.2739611,
+                    area_hectare: 0.12,
+                    total_building_area: 400,
+                    residential_area: 400,
+                    non_residential_area: 0,
+                    adjacent_area: 800,
+                    object_information: null,
+                    umn_coefficient: "7",
+                    qmn_percentage: "11",
+                    designated_floors: "520-14-0-Q/24 \n01.08.2024",
+                    proposed_floors: "кадастр акт",
+                    decision_number: "1",
+                    cadastre_certificate: "Dream Visualization",
+                    area_strategy: "заключение инвест договора",
+                    investor: "0",
+                    status: "9",
+                    population: null,
+                    household_count: null,
+                    additional_information: null,
+                    main_image: "https://cdn.dribbble.com/users/1651691/screenshots/5336717/404_v2.png",
+                    polygons: [{
+                            start_lat: "41°19'7.54\"С",
+                            start_lon: "69°16'26.26\"В",
+                            end_lat: "41°19'7.18\"С",
+                            end_lon: "69°16'28.05\"В"
+                        },
+                        {
+                            start_lat: "41°19'7.18\"С",
+                            start_lon: "69°16'28.05\"В",
+                            end_lat: "41°19'8.02\"С",
+                            end_lon: "69°16'28.35\"В"
+                        },
+                        {
+                            start_lat: "41°19'8.02\"С",
+                            start_lon: "69°16'28.35\"В",
+                            end_lat: "41°19'8.40\"С",
+                            end_lon: "69°16'26.60\"В"
+                        },
+                        {
+                            start_lat: "41°19'8.40\"С",
+                            start_lon: "69°16'26.60\"В",
+                            end_lat: "41°19'7.54\"С",
+                            end_lon: "69°16'26.26\"В"
+                        }
+                    ],
+                    documents: [{
+                        id: 1,
+                        doc_type: "pdf-document",
+                        path: "assets/data/demo.pdf",
+                        url: "#",
+                        filename: "Demo Document 1.pdf"
+                    }]
+                },
+                {
+                    id: 'demo-2',
+                    district_name: "Чиланзарский",
+                    neighborhood_name: "Катта Козиробод-1 (3,77/1,52 га) - Demo",
+                    lat: 41.2709194,
+                    lng: 69.2128778,
+                    area_hectare: 18994,
+                    total_building_area: 9100,
+                    residential_area: 6400,
+                    non_residential_area: 2700,
+                    adjacent_area: 6100,
+                    object_information: null,
+                    umn_coefficient: "7",
+                    qmn_percentage: "42552",
+                    designated_floors: "523-14-0-Q/24\n01.08.2024",
+                    proposed_floors: "кадастр акт",
+                    decision_number: "1",
+                    cadastre_certificate: "Isaar Development",
+                    area_strategy: "заключение инвест договора",
+                    investor: null,
+                    status: "2",
+                    population: null,
+                    household_count: null,
+                    additional_information: null,
+                    main_image: "https://cdn.dribbble.com/users/1651691/screenshots/5336717/404_v2.png",
+                    polygons: [{
+                            start_lat: "41°16'15.31\"С",
+                            start_lon: "69°12'46.36\"В",
+                            end_lat: "41°16'20.51\"С",
+                            end_lon: "69°12'48.70\"В"
+                        },
+                        {
+                            start_lat: "41°16'20.51\"С",
+                            start_lon: "69°12'48.70\"В",
+                            end_lat: "41°16'26.59\"С",
+                            end_lon: "69°12'55.48\"В"
+                        },
+                        {
+                            start_lat: "41°16'26.59\"С",
+                            start_lon: "69°12'55.48\"В",
+                            end_lat: "41°16'28.57\"С",
+                            end_lon: "69°12'50.75\"В"
+                        },
+                        {
+                            start_lat: "41°16'28.57\"С",
+                            start_lon: "69°12'50.75\"В",
+                            end_lat: "41°16'23.36\"С",
+                            end_lon: "69°12'46.76\"В"
+                        },
+                        {
+                            start_lat: "41°16'23.36\"С",
+                            start_lon: "69°12'46.76\"В",
+                            end_lat: "41°16'16.09\"С",
+                            end_lon: "69°12'43.48\"В"
+                        },
+                        {
+                            start_lat: "41°16'16.09\"С",
+                            start_lon: "69°12'43.48\"В",
+                            end_lat: "41°16'15.31\"С",
+                            end_lon: "69°12'46.36\"В"
+                        }
+                    ]
+                },
+                {
+                    id: 'demo-3',
+                    district_name: "Чиланзарский",
+                    neighborhood_name: "Катта Козиробод-2 (3,77/2,13 га) - Demo",
+                    lat: 41.2729194,
+                    lng: 69.2148778,
+                    area_hectare: 41306,
+                    total_building_area: 9400,
+                    residential_area: 9400,
+                    non_residential_area: 0,
+                    adjacent_area: 11900,
+                    object_information: null,
+                    umn_coefficient: "7",
+                    qmn_percentage: "41974",
+                    designated_floors: "523-14-0-Q/24\n01.08.2025",
+                    proposed_floors: "кадастр акт",
+                    decision_number: "1",
+                    cadastre_certificate: "Nur Hayat Classics",
+                    area_strategy: "заключение инвест договора",
+                    investor: null,
+                    status: "1",
+                    population: null,
+                    household_count: null,
+                    additional_information: null,
+                    main_image: "https://cdn.dribbble.com/users/1651691/screenshots/5336717/404_v2.png"
+                }
+            ];
+
+            // Process demo data
+            demoData.forEach(lot => {
+                if (lot.lat && lot.lng) {
+                    addMarker(lot);
+                }
+
+                if (lot.polygons) {
+                    addPolygon(lot);
+                }
+            });
+
+            // Fit map to all markers
+            if (App.markers.length > 0) {
+                const group = L.featureGroup(App.markers.map(m => m.marker));
+                App.map.fitBounds(group.getBounds(), {
+                    padding: [50, 50]
+                });
+            }
+
+            hideLoading();
+            showToast('Using demo data', 'warning');
+        }
+
+        // Setup event listeners
+        function setupEventListeners() {
+            // Popup button clicks
+            document.addEventListener('click', function(e) {
+                if (e.target.classList.contains('details-btn')) {
+                    const lotId = e.target.getAttribute('data-lot-id');
+                    if (lotId) {
+                        showDetails(lotId);
+                    }
+                }
+            });
+
+            // Map click
+            App.map.on('click', function() {
+                if (window.innerWidth <= 768) {
+                    closeSidebar();
+                }
+            });
+
+            // Window resize
+            window.addEventListener('resize', function() {
+                App.map.invalidateSize();
+            });
+        }
+
+        // Initialize app
+        async function init() {
+            showLoading();
+
+            try {
+                // Initialize map
+                initMap();
+
+                // Setup event listeners
+                setupEventListeners();
+
+                // Fetch and process data
+                await fetchData();
+
+                // Check if data was loaded successfully
+                if (App.markers.length === 0 && Object.keys(App.polygons).length === 0) {
+                    console.warn('No data loaded on map');
+                    showToast('No map data found. Using demo data.', 'warning');
+                    // useDemoData();
+                }
+            } catch (error) {
+                console.error('Initialization error:', error);
+                showToast('Error initializing map: ' + error.message + '. Using demo data.', 'error');
+                // useDemoData();
+            } finally {
+                hideLoading();
+            }
+        }
+
+        // Start the app when DOM is ready
+        document.addEventListener('DOMContentLoaded', init);
+    </script>
 </body>
 
 </html>
