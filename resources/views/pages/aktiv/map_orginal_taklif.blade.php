@@ -264,7 +264,7 @@
                 zoom: null
             },
             cleanup: [],
-            apiBaseUrl: 'http://127.0.0.1:8000' // Your API base URL
+            apiBaseUrl: 'https://development.toshkentinvest.uz/' // Your API base URL
         };
 
         // Show loading indicator
