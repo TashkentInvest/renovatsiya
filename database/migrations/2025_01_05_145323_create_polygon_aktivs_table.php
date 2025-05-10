@@ -4,38 +4,36 @@ use Illuminate\Database\Migrations\Migration;
 use Illuminate\Database\Schema\Blueprint;
 use Illuminate\Support\Facades\Schema;
 
-class CreatePolygonAktivsTable extends Migration
+return new class extends Migration
 {
     /**
      * Run the migrations.
-     *
-     * @return void
      */
-    public function up()
+    public function up(): void
     {
         Schema::create('polygon_aktivs', function (Blueprint $table) {
             $table->id();
-            $table->unsignedBigInteger('aktiv_id')->nullable(); // Foreign key to Aktiv
+            $table->unsignedBigInteger('aktiv_id');
             $table->string('start_lat')->nullable();
             $table->string('start_lon')->nullable();
             $table->string('end_lat')->nullable();
             $table->string('end_lon')->nullable();
-            $table->string('distance')->nullable();
+            $table->float('distance')->nullable();
             $table->text('comment')->nullable();
             $table->timestamps();
 
-            // Add foreign key constraint
-            $table->foreign('aktiv_id')->references('id')->on('aktivs')->onDelete('cascade');
+            $table->foreign('aktiv_id')
+                  ->references('id')
+                  ->on('aktivs')
+                  ->onDelete('cascade');
         });
     }
 
     /**
      * Reverse the migrations.
-     *
-     * @return void
      */
-    public function down()
+    public function down(): void
     {
         Schema::dropIfExists('polygon_aktivs');
     }
-}
+};

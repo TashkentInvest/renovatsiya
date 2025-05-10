@@ -31,12 +31,10 @@ class RenovationProjectSeeder extends Seeder
         Schema::enableForeignKeyConstraints();
 
         // Set the path to the Excel file
-    $path = public_path('assets/data/renovation_upgrade.xlsx');
+        $path = public_path('assets/data/renovation_upgrade.xlsx');
 
         // Set the path to the PDF directory
         $pdfDirectoryPath = public_path('assets/data/RENOVATSIYA ISXOD PDF/');
-
-        // $pdfDirectoryPath = 'C:/Users/inves/OneDrive/Ishchi stol/ren.new/public/assets/data/RENOVATSIYA ISXOD PDF/';
 
         // Cache all PDF files in the directory for faster matching
         $pdfFiles = $this->scanPdfDirectory($pdfDirectoryPath);
@@ -66,80 +64,62 @@ class RenovationProjectSeeder extends Seeder
             // Process each row
             for ($row = 2; $row <= $highestRow; $row++) {
                 try {
-                    // Log the row data
+                    // Log the row number
                     Log::info("Processing row $row --------------------------------- ");
 
-                    // Extract and log each cell value
+                    // Extract each cell value by column index
                     $district_name = trim($worksheet->getCellByColumnAndRow(2, $row)->getValue() ?? '');
-                    $start_lat_raw = $worksheet->getCellByColumnAndRow(3, $row)->getValue();
-                    $start_lon_raw = $worksheet->getCellByColumnAndRow(4, $row)->getValue();
-                    $end_lat_raw = $worksheet->getCellByColumnAndRow(5, $row)->getValue();
-                    $end_lon_raw = $worksheet->getCellByColumnAndRow(6, $row)->getValue();
-                    $neighborhood_name = $worksheet->getCellByColumnAndRow(7, $row)->getValue();
-                    $area_hectare = $worksheet->getCellByColumnAndRow(8, $row)->getValue();
-                    $total_building_area = $worksheet->getCellByColumnAndRow(9, $row)->getValue();
-                    $residential_area = $worksheet->getCellByColumnAndRow(10, $row)->getValue();
-                    $non_residential_area = $worksheet->getCellByColumnAndRow(11, $row)->getValue();
-                    $adjacent_area = $worksheet->getCellByColumnAndRow(12, $row)->getValue();
-                    $object_information = $worksheet->getCellByColumnAndRow(13, $row)->getValue();
-                    $umn_coefficient = $worksheet->getCellByColumnAndRow(19, $row)->getValue();
-                    $qmn_percentage = $worksheet->getCellByColumnAndRow(20, $row)->getValue();
-                    $designated_floors = $worksheet->getCellByColumnAndRow(21, $row)->getValue();
-                    $proposed_floors = $worksheet->getCellByColumnAndRow(22, $row)->getValue();
-                    $decision_number = $worksheet->getCellByColumnAndRow(23, $row)->getValue();
-                    $cadastre_certificate = $worksheet->getCellByColumnAndRow(24, $row)->getValue();
-                    $area_strategy = $worksheet->getCellByColumnAndRow(25, $row)->getValue();
-                    $investor = $worksheet->getCellByColumnAndRow(26, $row)->getValue();
-                    $status = $worksheet->getCellByColumnAndRow(27, $row)->getValue();
-                    $population = $worksheet->getCellByColumnAndRow(28, $row)->getValue();
-                    $household_count = $worksheet->getCellByColumnAndRow(29, $row)->getValue();
-                    $additional_information = $worksheet->getCellByColumnAndRow(33, $row)->getValue();
+                    $neighborhood_name = $worksheet->getCellByColumnAndRow(3, $row)->getValue();
+                    $area_hectare = $worksheet->getCellByColumnAndRow(4, $row)->getValue();
+                    $single_house_count = $worksheet->getCellByColumnAndRow(5, $row)->getValue();
+                    $single_house_area = $worksheet->getCellByColumnAndRow(6, $row)->getValue();
+                    $multi_story_house_count = $worksheet->getCellByColumnAndRow(7, $row)->getValue();
+                    $multi_story_house_area = $worksheet->getCellByColumnAndRow(8, $row)->getValue();
+                    $non_residential_count = $worksheet->getCellByColumnAndRow(9, $row)->getValue();
+                    $non_residential_building_area = $worksheet->getCellByColumnAndRow(10, $row)->getValue();
+                    $umn_coefficient = $worksheet->getCellByColumnAndRow(11, $row)->getValue();
+                    $qmn_percentage = $worksheet->getCellByColumnAndRow(12, $row)->getValue();
+                    $designated_floors = $worksheet->getCellByColumnAndRow(13, $row)->getValue();
+                    $proposed_floors = $worksheet->getCellByColumnAndRow(14, $row)->getValue();
+                    $decision_number = $worksheet->getCellByColumnAndRow(15, $row)->getValue();
+                    $cadastre_certificate = $worksheet->getCellByColumnAndRow(16, $row)->getValue();
+                    $area_passport = $worksheet->getCellByColumnAndRow(17, $row)->getValue();
+                    $investor = $worksheet->getCellByColumnAndRow(18, $row)->getValue();
+                    $status = $worksheet->getCellByColumnAndRow(19, $row)->getValue();
+                    $protocol_number = $worksheet->getCellByColumnAndRow(20, $row)->getValue();
+                    $land_assessment = $worksheet->getCellByColumnAndRow(21, $row)->getValue();
+                    $assessment_status = $worksheet->getCellByColumnAndRow(22, $row)->getValue();
+                    $assessment_end = $worksheet->getCellByColumnAndRow(23, $row)->getValue();
+                    $investment_contract = $worksheet->getCellByColumnAndRow(24, $row)->getValue();
+                    $public_discussion = $worksheet->getCellByColumnAndRow(25, $row)->getValue();
+                    $resettlement_start = $worksheet->getCellByColumnAndRow(26, $row)->getValue();
+                    $resettlement_end = $worksheet->getCellByColumnAndRow(27, $row)->getValue();
+                    $project_start = $worksheet->getCellByColumnAndRow(28, $row)->getValue();
+                    $project_status = $worksheet->getCellByColumnAndRow(29, $row)->getValue();
+                    $announcement = $worksheet->getCellByColumnAndRow(30, $row)->getValue();
 
-                    $single_house_count = $worksheet->getCellByColumnAndRow(14, $row)->getValue();
-                    $single_house_area = $worksheet->getCellByColumnAndRow(15, $row)->getValue();
-                    $multi_story_house_count = $worksheet->getCellByColumnAndRow(16, $row)->getValue();
-                    $multi_story_house_area = $worksheet->getCellByColumnAndRow(17, $row)->getValue();
-                    $non_residential_count = $worksheet->getCellByColumnAndRow(18, $row)->getValue();
-                    $non_residential_building_area = $worksheet->getCellByColumnAndRow(19, $row)->getValue();
-                    $area_passport = $worksheet->getCellByColumnAndRow(20, $row)->getValue();
-                    $protocol_number = $worksheet->getCellByColumnAndRow(21, $row)->getValue();
-                    $land_assessment = $worksheet->getCellByColumnAndRow(22, $row)->getValue();
-                    $investment_contract = $worksheet->getCellByColumnAndRow(23, $row)->getValue();
-                    $public_discussion = $worksheet->getCellByColumnAndRow(24, $row)->getValue();
-                    $resettlement_start = $worksheet->getCellByColumnAndRow(25, $row)->getValue();
-                    $resettlement_end = $worksheet->getCellByColumnAndRow(26, $row)->getValue();
-                    $project_start = $worksheet->getCellByColumnAndRow(27, $row)->getValue();
-                    $assessment_status = $worksheet->getCellByColumnAndRow(28, $row)->getValue();
-                    $announcement = $worksheet->getCellByColumnAndRow(29, $row)->getValue();
-                    $zone = $worksheet->getCellByColumnAndRow(30, $row)->getValue();
+                    // Coordinates
+                    $start_lat_raw = $worksheet->getCellByColumnAndRow(31, $row)->getValue();
+                    $start_lon_raw = $worksheet->getCellByColumnAndRow(32, $row)->getValue();
+                    $end_lat_raw = $worksheet->getCellByColumnAndRow(33, $row)->getValue();
+                    $end_lon_raw = $worksheet->getCellByColumnAndRow(34, $row)->getValue();
+                    $zone = $worksheet->getCellByColumnAndRow(35, $row)->getValue();
 
-                    // Log the row data in detail
-                    Log::info("Row $row Data: ", [
-                        'district_name' => $district_name,
-                        'start_lat_raw' => $start_lat_raw,
-                        'start_lon_raw' => $start_lon_raw,
-                        'end_lat_raw' => $end_lat_raw,
-                        'end_lon_raw' => $end_lon_raw,
-                        'neighborhood_name' => $neighborhood_name,
-                        'area_hectare' => $area_hectare,
-                        'total_building_area' => $total_building_area,
-                        'residential_area' => $residential_area,
-                        'non_residential_area' => $non_residential_area,
-                        'adjacent_area' => $adjacent_area,
-                        'object_information' => $object_information,
-                        'umn_coefficient' => $umn_coefficient,
-                        'qmn_percentage' => $qmn_percentage,
-                        'designated_floors' => $designated_floors,
-                        'proposed_floors' => $proposed_floors,
-                        'decision_number' => $decision_number,
-                        'cadastre_certificate' => $cadastre_certificate,
-                        'area_strategy' => $area_strategy,
-                        'investor' => $investor,
-                        'status' => $status,
-                        'population' => $population,
-                        'household_count' => $household_count,
-                        'additional_information' => $additional_information,
-                    ]);
+                    // Additional fields that may exist
+                    $additional_information = $worksheet->getCellByColumnAndRow(36, $row)->getValue() ?? null;
+                    $object_information = null; // This seems to be missing in your sample Excel, set to null
+
+                    // Calculate total building area from residential + non-residential
+                    $residential_area = $this->parseNumeric($multi_story_house_area);
+                    $non_residential_area = $this->parseNumeric($non_residential_building_area);
+                    $total_building_area = null;
+
+                    if ($residential_area !== null || $non_residential_area !== null) {
+                        $total_building_area = ($residential_area ?? 0) + ($non_residential_area ?? 0);
+                    }
+
+                    // Calculate adjacent area - seems to be missing in your sample data
+                    $adjacent_area = null;
 
                     // Skip empty rows
                     if (empty($district_name)) {
@@ -176,76 +156,64 @@ class RenovationProjectSeeder extends Seeder
                     $latDecimal = $this->dmsToDecimal($latDms);
                     $lonDecimal = $this->dmsToDecimal($lonDms);
 
-                    // Validate and clean the data before inserting
-                    $data = [
+                    // Format dates - get correct parsing for Excel date values
+                    $resettlement_start_date = $this->parseDate($resettlement_start);
+                    $resettlement_end_date = $this->parseDate($resettlement_end);
+                    $project_start_date = $this->parseDate($project_start);
+
+                    // Map status values to make them consistent
+                    $mapped_status = $this->mapStatus($status);
+
+                    // Create the main record
+                    $aktiv = Aktiv::create([
                         'district_name' => substr($district_name, 0, 255),
                         'neighborhood_name' => $neighborhood_name,
+                        'lat' => $latDecimal,  // For map display
+                        'lng' => $lonDecimal,  // For map display
+                        'latitude' => $latDecimal, // For existing code compatibility
+                        'longitude' => $lonDecimal, // For existing code compatibility
                         'area_hectare' => $this->parseNumeric($area_hectare),
-                        'total_building_area' => $this->parseNumeric($total_building_area),
-                        'residential_area' => $this->parseNumeric($residential_area),
-                        'non_residential_area' => $this->parseNumeric($non_residential_area),
+                        'total_building_area' => $total_building_area,
+                        'residential_area' => $residential_area,
+                        'non_residential_area' => $non_residential_area,
                         'adjacent_area' => $this->parseNumeric($adjacent_area),
-                        'object_information' => $object_information ?? null,
-                        'umn_coefficient' => $umn_coefficient ?? null,
-                        'qmn_percentage' => $qmn_percentage ?? null,
-                        'designated_floors' => $designated_floors ?? null,
-                        'proposed_floors' => $proposed_floors ?? null,
-                        'decision_number' => $decision_number ?? null,
-                        'cadastre_certificate' => $cadastre_certificate ?? null,
-                        'area_strategy' => $area_strategy ?? null,
-                        'investor' => $investor ?? null,
-                        'status' => $status ?? null,
-                        'population' => $this->parseNumeric($population),
-                        'household_count' => $this->parseNumeric($household_count),
-                        'additional_information' => $additional_information ?? null,
-                        'created_at' => now(),
-                        'updated_at' => now(),
-                        // Use the first point's coordinates exactly as they are in DMS format
-                        'latitude' => $latDecimal,
-                        'longitude' => $lonDecimal,
+                        'object_information' => $object_information,
+                        'umn_coefficient' => $umn_coefficient,
+                        'qmn_percentage' => $qmn_percentage,
+                        'designated_floors' => $designated_floors,
+                        'proposed_floors' => $proposed_floors,
+                        'decision_number' => $decision_number,
+                        'cadastre_certificate' => $cadastre_certificate,
+                        'area_strategy' => $investment_contract,  // Seems to be similar to investment_contract
+                        'investor' => $investor,
+                        'status' => $mapped_status,
+                        'population' => null,  // Not provided in the Excel sample
+                        'household_count' => null,  // Not provided in the Excel sample
+                        'additional_information' => $additional_information,
 
-                        // ... existing fields ...
+                        // Additional fields
                         'single_house_count' => $this->parseNumeric($single_house_count),
                         'single_house_area' => $this->parseNumeric($single_house_area),
                         'multi_story_house_count' => $this->parseNumeric($multi_story_house_count),
                         'multi_story_house_area' => $this->parseNumeric($multi_story_house_area),
                         'non_residential_count' => $this->parseNumeric($non_residential_count),
                         'non_residential_building_area' => $this->parseNumeric($non_residential_building_area),
-                        'area_passport' => $area_passport ?? null,
-                        'protocol_number' => $protocol_number ?? null,
-                        'land_assessment' => $land_assessment ?? null,
-                        'investment_contract' => $investment_contract ?? null,
-                        'public_discussion' => $public_discussion ?? null,
-                        'resettlement_start' => $this->parseDate($resettlement_start),
-                        'resettlement_end' => $this->parseDate($resettlement_end),
-                        'project_start' => $this->parseDate($project_start),
-                        'assessment_status' => $assessment_status ?? null,
-                        'announcement' => $announcement ?? null,
-                        'zone' => $zone ?? null,
-                    ];
-
-                    // Create the project
-                    $aktiv = Aktiv::create($data);
+                        'area_passport' => $area_passport,
+                        'protocol_number' => $protocol_number,
+                        'land_assessment' => $land_assessment,
+                        'investment_contract' => $investment_contract,
+                        'public_discussion' => $public_discussion,
+                        'resettlement_start' => $resettlement_start_date,
+                        'resettlement_end' => $resettlement_end_date,
+                        'project_start' => $project_start_date,
+                        'assessment_status' => $assessment_status,
+                        'announcement' => $announcement,
+                        'zone' => $zone,
+                    ]);
 
                     // Create complete polygon records with start and end points
-                    $comment = "{$district_name} tuman, {$neighborhood_name} " . ($area_hectare ? $area_hectare . " gektar" : "");
-                    $this->createCompletePolygonRecords($aktivId = $aktiv->id, $start_lat_raw, $start_lon_raw, $end_lat_raw, $end_lon_raw, $comment);
-
-                    // Update the Aktiv with the correct decimalized coordinates after polygons are created
-                    if (!$latDecimal || !$lonDecimal) {
-                        $firstPolygon = PolygonAktiv::where('aktiv_id', $aktiv->id)->first();
-                        if ($firstPolygon) {
-                            $latDecimal = $this->dmsToDecimal($firstPolygon->start_lat);
-                            $lonDecimal = $this->dmsToDecimal($firstPolygon->start_lon);
-
-                            if ($latDecimal && $lonDecimal) {
-                                $aktiv->update([
-                                    'latitude' => $latDecimal,
-                                    'longitude' => $lonDecimal
-                                ]);
-                            }
-                        }
-                    }
+                    $comment = "{$district_name} тумани, {$neighborhood_name} " . ($area_hectare ? $area_hectare . " гектар" : "");
+                    $this->createCompletePolygonRecords($aktiv->id, $start_lat_raw, $start_lon_raw, $end_lat_raw, $end_lon_raw, $comment);
 
                     // Match and link PDF files with the neighborhood name
                     if ($neighborhood_name) {
@@ -258,6 +226,7 @@ class RenovationProjectSeeder extends Seeder
                     // Log the error but continue with the next row
                     $this->command->error("Error processing row $row: " . $e->getMessage());
                     Log::error("Error processing row $row: " . $e->getMessage());
+                    Log::error($e->getTraceAsString());
                 }
 
                 $bar->advance();
@@ -271,9 +240,36 @@ class RenovationProjectSeeder extends Seeder
             Log::error("Error importing Excel file: " . $e->getMessage());
             Log::error($e->getTraceAsString());
             $this->command->error("Error importing Excel file: " . $e->getMessage());
-            $this->command->error($e->getTraceAsString());
         }
     }
+
+    /**
+     * Map status values to standardized format
+     */
+    private function mapStatus($status)
+    {
+        if (empty($status)) {
+            return null;
+        }
+
+        $status = trim(strtolower($status));
+
+        // Map Uzbek status values
+        if (strpos($status, 'инвест') !== false || strpos($status, 'договор') !== false) {
+            return "9"; // Investment contract
+        } elseif (strpos($status, 'ишлаб') !== false || strpos($status, 'чиқилмоқда') !== false) {
+            return "1"; // In development
+        } elseif (strpos($status, 'қурилиш') !== false || strpos($status, 'жараёнида') !== false) {
+            return "2"; // Under construction
+        }
+
+        // Return as-is if no mapping found
+        return $status;
+    }
+
+    /**
+     * Parse date value from various formats
+     */
     private function parseDate($value)
     {
         if (empty($value)) {
@@ -281,17 +277,26 @@ class RenovationProjectSeeder extends Seeder
         }
 
         try {
+            // If it's a numeric value, treat as Excel date
             if (is_numeric($value)) {
                 return \PhpOffice\PhpSpreadsheet\Shared\Date::excelToDateTimeObject($value)
                     ->format('Y-m-d');
             }
 
+            // If it's a string that starts with "до", extract the date part
+            if (is_string($value) && strpos($value, 'до') === 0) {
+                $datePart = trim(substr($value, 2)); // Remove the "до " prefix
+                return date('Y-m-d', strtotime($datePart));
+            }
+
+            // For other string formats
             return date('Y-m-d', strtotime($value));
         } catch (\Exception $e) {
             Log::warning("Failed to parse date: $value");
             return null;
         }
     }
+
     /**
      * Scan the PDF directory and return all PDF files
      */
@@ -342,9 +347,6 @@ class RenovationProjectSeeder extends Seeder
     /**
      * Link PDF documents to an Aktiv record based on neighborhood name
      */
-    /**
-     * Link PDF documents to an Aktiv record based on neighborhood name
-     */
     private function linkPdfDocumentsToAktiv($aktivId, $neighborhoodName, $pdfFiles, $areaHectare = null)
     {
         $linkedDocs = 0;
@@ -374,7 +376,7 @@ class RenovationProjectSeeder extends Seeder
             }
         );
 
-        foreach ($pdfFiles as $pdfFile) {
+        foreach ($pdfFiles as $key => $pdfFile) {
             $match = false;
             $matchReason = '';
 
@@ -455,6 +457,8 @@ class RenovationProjectSeeder extends Seeder
                     'aktiv_id' => $aktivId,
                     'doc_type' => 'pdf-document',
                     'path' => $relativePath,
+                    'filename' => $pdfFile['filename'],  // Store the filename separately
+                    'url' => url($relativePath),  // Store the full URL for easy access
                     'created_at' => now(),
                     'updated_at' => now(),
                 ]);
@@ -463,7 +467,7 @@ class RenovationProjectSeeder extends Seeder
 
                 // Important: Remove this PDF from the array to prevent it from matching with other records
                 // This ensures each PDF is only linked to the most relevant Aktiv record
-                unset($pdfFiles[array_search($pdfFile, $pdfFiles)]);
+                unset($pdfFiles[$key]);
             }
         }
 
@@ -590,22 +594,29 @@ class RenovationProjectSeeder extends Seeder
     }
 
     /**
-     * Parse numeric values, handling commas as decimal separators
+     * Parse numeric values, handling various formats
      */
     private function parseNumeric($value)
     {
-        if (empty($value)) {
+        if (empty($value) || $value === '---') {
             return null;
         }
 
-        // If the value is a formula or contains non-numeric characters, return null
-        if (is_string($value) && (strpos($value, '=') === 0 || preg_match('/[a-zA-Z]/', $value))) {
+        // If the value is a formula or contains non-numeric characters (except comma or dot), return null
+        if (is_string($value) && (
+            strpos($value, '=') === 0 ||
+            preg_match('/[a-zA-Z]/', $value) ||
+            $value === '-'
+        )) {
             return null;
         }
 
-        // Remove any commas used as thousand separators and convert to float
+        // Replace comma with dot for decimal values
         if (is_string($value)) {
-            $value = str_replace(',', '', $value);
+            $value = str_replace(',', '.', $value);
+
+            // Remove any non-numeric characters except the decimal point
+            $value = preg_replace('/[^0-9.]/', '', $value);
         }
 
         return is_numeric($value) ? (float)$value : null;
