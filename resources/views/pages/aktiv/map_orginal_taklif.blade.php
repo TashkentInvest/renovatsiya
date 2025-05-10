@@ -264,7 +264,7 @@
                 zoom: null
             },
             cleanup: [],
-            apiBaseUrl: 'https://development.toshkentinvest.uz/' // Your API base URL
+            apiBaseUrl: 'https://development.toshkentinvest.uz' // Your API base URL
         };
 
         // Show loading indicator
