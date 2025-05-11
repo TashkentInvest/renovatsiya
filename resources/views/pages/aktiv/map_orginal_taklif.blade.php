@@ -265,6 +265,7 @@
             },
             cleanup: [],
             apiBaseUrl: 'https://development.toshkentinvest.uz' // Your API base URL
+            // apiBaseUrl: 'http://127.0.0.1:8000' // Your API base URL
         };
 
         // Show loading indicator
@@ -703,25 +704,7 @@
                 `;
             }
 
-            // Add documents section if available
-            if (lot.documents && lot.documents.length > 0) {
-                sidebarHtml += `
-                    <div class="section-title">Ҳужжатлар</div>
-                    <div class="documents-list">
-                `;
 
-                lot.documents.forEach(doc => {
-                    sidebarHtml += `
-                        <div class="data-card">
-                            <div class="data-card-title">${doc.filename || 'Ҳужжат'}</div>
-                            <div>Тури: ${doc.doc_type || 'Кўрсатилмаган'}</div>
-                            ${doc.url ? `<a href="${doc.url}" target="_blank" class="document-link">Ҳужжатни кўриш</a>` : ''}
-                        </div>
-                    `;
-                });
-
-                sidebarHtml += `</div>`;
-            }
 
             // Add additional information if available
             if (additionalInfo !== 'N/A') {
