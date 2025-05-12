@@ -264,9 +264,16 @@
                 zoom: null
             },
             cleanup: [],
-            apiBaseUrl: 'https://development.toshkentinvest.uz' // Your API base URL
-            // apiBaseUrl: 'http://127.0.0.1:8000' // Your API base URL
+            apiBaseUrl: (function() {
+                const hostname = window.location.hostname;
+                if (hostname === 'localhost' || hostname === '127.0.0.1') {
+                    return 'http://127.0.0.1:8000';
+                } else {
+                    return 'https://development.toshkentinvest.uz';
+                }
+            })()
         };
+
 
         // Show loading indicator
         function showLoading() {

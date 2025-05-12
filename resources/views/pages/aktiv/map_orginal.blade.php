@@ -1,5 +1,6 @@
 <!DOCTYPE html>
 <html lang="uz">
+
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
@@ -229,7 +230,7 @@
             <button class="lang-btn active">УЗ</button>
             <button class="lang-btn">RU</button>
             <button class="lang-btn">EN</button>
-            <a class="lang-btn" href="{{route('aktivs.index')}}">Aktivs</a>
+            <a class="lang-btn" href="{{ route('aktivs.index') }}">Aktivs</a>
         </div>
     </header>
 
@@ -264,9 +265,16 @@
                 zoom: null
             },
             cleanup: [],
-            apiBaseUrl: 'https://development.toshkentinvest.uz' // Your API base URL
-            // apiBaseUrl: 'http://127.0.0.1:8000' // Your API base URL
+            apiBaseUrl: (function() {
+                const hostname = window.location.hostname;
+                if (hostname === 'localhost' || hostname === '127.0.0.1') {
+                    return 'http://127.0.0.1:8000';
+                } else {
+                    return 'https://development.toshkentinvest.uz';
+                }
+            })()
         };
+
 
         // Show loading indicator
         function showLoading() {
