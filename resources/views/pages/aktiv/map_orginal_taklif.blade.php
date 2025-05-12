@@ -229,8 +229,10 @@
         <div class="lang-switcher">
             <button class="lang-btn active">УЗ</button>
             <button class="lang-btn">RU</button>
-            <button class="lang-btn">EN</button>
+            <a class="lang-btn" href="{{ route('login') }}">Login</a>
+
         </div>
+
     </header>
 
     <!-- Flag Decoration -->

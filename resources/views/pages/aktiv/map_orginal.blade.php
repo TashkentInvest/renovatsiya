@@ -229,8 +229,14 @@
         <div class="lang-switcher">
             <button class="lang-btn active">УЗ</button>
             <button class="lang-btn">RU</button>
-            <button class="lang-btn">EN</button>
-            <a class="lang-btn" href="{{ route('aktivs.index') }}">Aktivs</a>
+            <a class="lang-btn" href="{{ route('aktivs.index') }}">Dashboard</a>
+
+            <form id="logout-form" action="{{ route('logout') }}" method="POST" >
+                @csrf
+
+                <button type="submit" class="lang-btn">Chiqish</button>
+
+            </form>
         </div>
     </header>
 
