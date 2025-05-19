@@ -219,7 +219,6 @@
         }
     </style> --}}
 </head>
-
 <body>
     <header class="app-header">
         <div class="app-logo">
