@@ -5,7 +5,7 @@
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>InvestUz Map</title>
-
+{{-- @dd('da') --}}
     <!-- Leaflet CSS -->
     <link rel="stylesheet" href="https://unpkg.com/leaflet@1.9.4/dist/leaflet.css" />
     <link rel="stylesheet" href="https://unpkg.com/leaflet.markercluster@1.4.1/dist/MarkerCluster.css" />
@@ -13,34 +13,107 @@
 
     <!-- Font Awesome -->
     <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.0.0/css/all.min.css" />
-    <link rel="stylesheet" href="{{ asset('assets/css/map_style/main.css') }}">
 
-    {{-- <style>
-        body,
-        html {
+    <style>
+        /* Main styles */
+        body, html {
             margin: 0;
             padding: 0;
-            font-family: Arial, sans-serif;
+            font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
             height: 100%;
             width: 100%;
+            overflow: hidden;
         }
 
         #map {
-            height: 100vh;
+            height: calc(100vh - 50px);
             width: 100%;
+            z-index: 1;
         }
 
+        /* Header styles */
+        .app-header {
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            height: 50px;
+            padding: 0 15px;
+            background-color: #fff;
+            box-shadow: 0 2px 4px rgba(0,0,0,0.1);
+            z-index: 2;
+            position: relative;
+        }
+
+        .app-logo {
+            display: flex;
+            align-items: center;
+            color: #1E3685;
+        }
+
+        .app-title {
+            margin-left: 10px;
+            font-weight: 600;
+            font-size: 18px;
+        }
+
+        .lang-switcher {
+            display: flex;
+            gap: 5px;
+        }
+
+        .lang-btn {
+            padding: 5px 10px;
+            border: 1px solid #ddd;
+            background: #f5f5f5;
+            border-radius: 3px;
+            cursor: pointer;
+            font-size: 14px;
+            text-decoration: none;
+            color: #333;
+        }
+
+        .lang-btn.active {
+            background: #1E3685;
+            color: white;
+            border-color: #1E3685;
+        }
+
+        /* Flag decoration */
+        .flag-decoration {
+            height: 3px;
+            width: 100%;
+            display: flex;
+            z-index: 2;
+        }
+
+        .flag-blue {
+            flex: 1;
+            background-color: #0099CC;
+        }
+
+        .flag-red {
+            flex: 1;
+            background-color: #CC0000;
+        }
+
+        .flag-green {
+            flex: 1;
+            background-color: #009933;
+        }
+
+        /* Sidebar styles */
         .sidebar {
             position: fixed;
             top: 0;
             right: -400px;
-            width: 400px;
+            width: 380px;
             height: 100vh;
             background: white;
-            box-shadow: -2px 0 5px rgba(0, 0, 0, 0.2);
-            overflow-y: auto;
-            transition: right 0.3s;
+            box-shadow: -3px 0 10px rgba(0,0,0,0.1);
             z-index: 1000;
+            transition: right 0.3s ease;
+            overflow-y: auto;
+            padding-bottom: 20px;
         }
 
         .sidebar.open {
@@ -48,23 +121,36 @@
         }
 
         .sidebar-header {
+            padding: 15px;
+            border-bottom: 1px solid #ddd;
             display: flex;
             justify-content: space-between;
             align-items: center;
-            padding: 15px;
-            border-bottom: 1px solid #eee;
+            background-color: #1E3685;
+            color: white;
         }
 
         .sidebar-header h2 {
             margin: 0;
-            font-size: 20px;
+            font-size: 18px;
+            max-width: 300px;
+            overflow: hidden;
+            text-overflow: ellipsis;
+            white-space: nowrap;
         }
 
         .sidebar-close-btn {
             background: none;
             border: none;
-            font-size: 20px;
+            color: white;
+            font-size: 24px;
             cursor: pointer;
+            padding: 0;
+            width: 30px;
+            height: 30px;
+            display: flex;
+            align-items: center;
+            justify-content: center;
         }
 
         .sidebar-content {
@@ -72,11 +158,12 @@
         }
 
         .section-title {
-            font-size: 18px;
-            font-weight: bold;
+            font-size: 16px;
+            font-weight: 600;
             margin: 15px 0 10px;
             padding-bottom: 5px;
             border-bottom: 1px solid #eee;
+            color: #1E3685;
         }
 
         .details-table {
@@ -85,13 +172,14 @@
         }
 
         .details-table td {
-            padding: 8px 0;
-            border-bottom: 1px solid #eee;
+            padding: 6px 0;
+            color: #333;
+            font-size: 14px;
         }
 
         .details-table td:first-child {
-            width: 50%;
-            color: #666;
+            font-weight: 500;
+            width: 40%;
         }
 
         .badge {
@@ -99,45 +187,91 @@
             padding: 3px 8px;
             border-radius: 3px;
             font-size: 12px;
-            background: #f0f0f0;
+            font-weight: 500;
         }
 
         .badge-success {
-            background: #d4edda;
-            color: #155724;
+            background-color: #e6f7f1;
+            color: #0E6245;
         }
 
         .badge-warning {
-            background: #fff3cd;
-            color: #856404;
+            background-color: #fff8e6;
+            color: #F5A623;
         }
 
         .badge-info {
-            background: #d1ecf1;
-            color: #0c5460;
+            background-color: #e6f2ff;
+            color: #1E3685;
         }
 
+        .documents-list {
+            display: flex;
+            flex-direction: column;
+            gap: 15px;
+        }
+
+        .doc-group h4 {
+            margin-bottom: 10px;
+            font-size: 14px;
+            color: #666;
+        }
+
+        .document-link {
+            display: flex;
+            align-items: center;
+            color: #1E3685;
+            text-decoration: none;
+            padding: 8px;
+            border-radius: 4px;
+            background: #f5f5f5;
+            margin-bottom: 5px;
+            font-size: 14px;
+        }
+
+        .document-link i {
+            margin-right: 8px;
+        }
+
+        .document-link:hover {
+            background: #e6f2ff;
+        }
+
+        .additional-info {
+            font-size: 14px;
+            line-height: 1.5;
+            color: #555;
+            white-space: pre-line;
+        }
+
+        /* Related investments section */
         .related-investments {
-            margin-top: 10px;
+            display: flex;
+            flex-direction: column;
+            gap: 10px;
         }
 
         .data-card {
-            border: 1px solid #eee;
-            border-radius: 4px;
             padding: 10px;
-            margin-bottom: 10px;
+            border-radius: 4px;
+            border: 1px solid #eee;
+            background: #f9f9f9;
             cursor: pointer;
+            transition: all 0.2s;
         }
 
         .data-card:hover {
-            background: #f9f9f9;
+            background: #f0f7ff;
+            border-color: #1E3685;
         }
 
         .data-card-title {
-            font-weight: bold;
+            font-weight: 600;
             margin-bottom: 5px;
+            color: #1E3685;
         }
 
+        /* Loading indicator */
         .loading {
             position: fixed;
             top: 0;
@@ -148,77 +282,94 @@
             display: flex;
             justify-content: center;
             align-items: center;
-            z-index: 2000;
+            z-index: 1001;
         }
 
         .spinner {
-            border: 5px solid #f3f3f3;
-            border-top: 5px solid #3498db;
-            border-radius: 50%;
             width: 50px;
             height: 50px;
+            border: 5px solid #f3f3f3;
+            border-top: 5px solid #1E3685;
+            border-radius: 50%;
             animation: spin 1s linear infinite;
         }
 
         @keyframes spin {
-            0% {
-                transform: rotate(0deg);
-            }
-
-            100% {
-                transform: rotate(360deg);
-            }
+            0% { transform: rotate(0deg); }
+            100% { transform: rotate(360deg); }
         }
 
+        /* Toast notification */
         .toast {
             position: fixed;
-            top: 20px;
-            right: 20px;
-            padding: 10px 15px;
+            bottom: 20px;
+            left: 50%;
+            transform: translateX(-50%);
+            background: #333;
+            color: white;
+            padding: 10px 20px;
             border-radius: 4px;
-            background: white;
-            box-shadow: 0 2px 10px rgba(0, 0, 0, 0.2);
-            z-index: 2000;
+            z-index: 1002;
+            opacity: 0.9;
+            box-shadow: 0 2px 10px rgba(0,0,0,0.2);
         }
 
-        .document-link {
-            display: inline-block;
+        .toast.info {
+            background: #1E3685;
+        }
+
+        .toast.warning {
+            background: #F5A623;
+        }
+
+        .toast.error {
+            background: #D62839;
+        }
+
+        /* Popup customization */
+        .leaflet-popup-content {
+            margin: 10px 12px;
+        }
+
+        .leaflet-popup-content h3 {
+            margin: 0 0 5px 0;
+            font-size: 16px;
+        }
+
+        .leaflet-popup-content p {
+            margin: 3px 0;
+            font-size: 14px;
+        }
+
+        .details-btn {
+            margin-top: 8px;
             padding: 5px 10px;
-            margin-top: 5px;
-            background: #f0f0f0;
+            background: #1E3685;
+            color: white;
+            border: none;
             border-radius: 3px;
-            text-decoration: none;
-            color: #333;
+            cursor: pointer;
+            font-size: 13px;
         }
 
-        .document-link:hover {
-            background: #e0e0e0;
+        .details-btn:hover {
+            background: #152a6c;
         }
 
-        .documents-list {
-            margin-bottom: 15px;
-        }
-
-        .document-link i {
-            margin-right: 5px;
-        }
-
-        .main-image {
-            width: 100%;
-            border-radius: 5px;
-            margin-bottom: 15px;
-            max-height: 200px;
-            object-fit: cover;
-        }
-
+        /* Responsive adjustments */
         @media (max-width: 768px) {
             .sidebar {
                 width: 100%;
                 right: -100%;
             }
+
+            .app-title {
+                font-size: 16px;
+            }
         }
-    </style> --}}
+    </style>
 </head>
+
 <body>
     <header class="app-header">
         <div class="app-logo">
@@ -228,14 +379,7 @@
         <div class="lang-switcher">
             <button class="lang-btn active">УЗ</button>
             <button class="lang-btn">RU</button>
-            <a class="lang-btn" href="{{ route('aktivs.index') }}">Dashboard</a>
-
-            <form id="logout-form" action="{{ route('logout') }}" method="POST" >
-                @csrf
-
-                <button type="submit" class="lang-btn">Chiqish</button>
-
-            </form>
+            <a class="lang-btn" href="{{ route('login') }}">Login</a>
         </div>
     </header>
 
@@ -255,12 +399,18 @@
     <script src="https://unpkg.com/leaflet@1.9.4/dist/leaflet.js"></script>
     <script src="https://unpkg.com/leaflet.markercluster@1.4.1/dist/leaflet.markercluster.js"></script>
 
+    <!-- KMZ Support -->
+    <script src="https://unpkg.com/jszip@3.10.1/dist/jszip.min.js"></script>
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/leaflet-omnivore/0.3.4/leaflet-omnivore.min.js"></script>
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/togeojson/0.16.0/togeojson.min.js"></script>
+
     <script>
         // App namespace
         const App = {
             map: null,
             markers: [],
             polygons: {},
+            kmzLayers: {}, // Store KMZ layers
             markerCluster: null,
             currentSidebar: null,
             isAnimating: false,
@@ -579,47 +729,236 @@
             return true;
         }
 
-        // Show details
-        function showDetails(lotId) {
-            // Validate ID
-            if (!lotId) {
-                console.error('Invalid lot ID');
-                return;
+// Process KMZ files - FIXED VERSION
+async function processKmzFile(lot, kmzDoc) {
+    if (!lot || !lot.id || !kmzDoc) {
+        console.error('Invalid lot or KMZ document data');
+        return false;
+    }
+
+    try {
+        // Fix the URL path by making it relative to the current domain
+        let kmzUrl = kmzDoc.url;
+
+        // Check if URL is absolute and doesn't match current domain
+        if (kmzUrl.startsWith('http') && !kmzUrl.includes(window.location.hostname)) {
+            const paths = kmzUrl.split('/assets/');
+            if (paths.length > 1) {
+                kmzUrl = App.apiBaseUrl + '/assets/data/BASA_RENOVA/' + paths[1].split('/').pop();
             }
+        }
 
-            // Prevent multiple animations
-            if (App.isAnimating) {
-                console.log('Animation in progress, ignoring request');
-                return;
+        console.log(`Processing KMZ file: ${kmzUrl} for lot ID: ${lot.id}`);
+
+        // Check if we already have a layer for this KMZ
+        if (App.kmzLayers[kmzUrl]) {
+            console.log('KMZ layer already exists, adding to lot');
+            // Update the lot ID for this layer
+            App.kmzLayers[kmzUrl].lotId = lot.id;
+            // Also store lot data in the layer for direct access
+            App.kmzLayers[kmzUrl].lotData = lot;
+            return true;
+        }
+
+        // Fetch the KMZ file
+        const response = await fetch(kmzUrl);
+        if (!response.ok) {
+            throw new Error(`Failed to fetch KMZ file: ${response.statusText}`);
+        }
+
+        const kmzData = await response.arrayBuffer();
+        const zip = await JSZip.loadAsync(kmzData);
+
+        // Find the KML file in the KMZ archive
+        let kmlFile;
+        let kmlContent;
+
+        // Look for doc.kml or any .kml file in the root of the zip
+        if (zip.file('doc.kml')) {
+            kmlFile = zip.file('doc.kml');
+        } else {
+            // Try to find any KML file
+            const kmlFiles = Object.keys(zip.files).filter(filename =>
+                filename.toLowerCase().endsWith('.kml') && !zip.files[filename].dir
+            );
+
+            if (kmlFiles.length > 0) {
+                kmlFile = zip.file(kmlFiles[0]);
             }
+        }
 
-            // Find lot data
-            let lot = null;
-            let markerEntry = null;
-            let polygonEntry = null;
+        if (!kmlFile) {
+            throw new Error('No KML file found in KMZ archive');
+        }
 
-            // Search in markers
-            for (let i = 0; i < App.markers.length; i++) {
-                if (App.markers[i].data && App.markers[i].data.id === lotId) {
-                    markerEntry = App.markers[i];
-                    lot = markerEntry.data;
+        // Extract the KML content
+        kmlContent = await kmlFile.async('text');
+
+        // Parse the KML using toGeoJSON library
+        const parser = new DOMParser();
+        const kmlDoc = parser.parseFromString(kmlContent, 'text/xml');
+        const geoJson = toGeoJSON.kml(kmlDoc);
+
+        // Determine style based on lot status
+        let style = {
+            color: '#1E3685',
+            weight: 2,
+            opacity: 0.7,
+            fillColor: '#1E3685',
+            fillOpacity: 0.2
+        };
+
+        if (lot.status === "9") {
+            style.color = '#0E6245';
+            style.fillColor = '#0E6245';
+        } else if (lot.status === "2") {
+            style.color = '#D62839';
+            style.fillColor = '#D62839';
+        }
+
+        // Create a GeoJSON layer from the parsed KML
+        const kmzLayer = L.geoJSON(geoJson, {
+            style: style,
+            pointToLayer: function(feature, latlng) {
+                return L.marker(latlng);
+            },
+            onEachFeature: function(feature, layer) {
+                // Add hover effect
+                if (layer.setStyle) {
+                    layer.on('mouseover', function() {
+                        this.setStyle({
+                            weight: 3,
+                            fillOpacity: 0.4
+                        });
+                    });
+
+                    layer.on('mouseout', function() {
+                        this.setStyle(style);
+                    });
+                }
+
+                // Add popup with any properties in the KML
+                if (feature.properties && feature.properties.name) {
+                    let popupContent = `<div><strong>${feature.properties.name}</strong>`;
+
+                    if (feature.properties.description) {
+                        popupContent += `<p>${feature.properties.description}</p>`;
+                    }
+
+                    popupContent +=
+                        `<button class="details-btn" data-lot-id="${lot.id}">Тафсилотлар</button></div>`;
+
+                    layer.bindPopup(popupContent);
+                }
+
+                // Add click handler to show lot details
+                layer.on('click', function(e) {
+                    showDetails(lot.id);
+                    L.DomEvent.stopPropagation(e);
+                });
+            }
+        });
+
+        // Store lot ID and data on the layer for direct access
+        kmzLayer.lotId = lot.id;
+        kmzLayer.lotData = lot;
+
+        // Add to map
+        kmzLayer.addTo(App.map);
+
+        // Store reference
+        App.kmzLayers[kmzUrl] = kmzLayer;
+
+        console.log(`Successfully processed KMZ file for lot ${lot.id}`);
+        return true;
+
+    } catch (error) {
+        console.error(`Error processing KMZ file for lot ${lot.id}: ${error.message}`, error);
+        return false;
+    }
+}
+
+// Show details - FIXED VERSION
+function showDetails(lotId) {
+    // Validate ID
+    if (!lotId) {
+        console.error('Invalid lot ID');
+        return;
+    }
+
+    // Prevent multiple animations
+    if (App.isAnimating) {
+        console.log('Animation in progress, ignoring request');
+        return;
+    }
+
+    // Find lot data
+    let lot = null;
+    let markerEntry = null;
+    let polygonEntry = null;
+    let kmzLayerFound = null;
+
+    // Search in markers
+    for (let i = 0; i < App.markers.length; i++) {
+        if (App.markers[i].data && App.markers[i].data.id === lotId) {
+            markerEntry = App.markers[i];
+            lot = markerEntry.data;
+            console.log("Found lot in markers:", lot);
+            break;
+        }
+    }
+
+    // If not found in markers, check polygons
+    if (!lot && App.polygons[lotId]) {
+        polygonEntry = App.polygons[lotId];
+        lot = polygonEntry.data;
+        console.log("Found lot in polygons:", lot);
+    }
+
+    // If still not found, check KMZ layers
+    if (!lot) {
+        for (const url in App.kmzLayers) {
+            const kmzLayer = App.kmzLayers[url];
+            if (kmzLayer.lotId === lotId) {
+                kmzLayerFound = kmzLayer;
+
+                // If lotData is stored directly on the layer, use it
+                if (kmzLayer.lotData) {
+                    lot = kmzLayer.lotData;
+                    console.log("Found lot data directly in KMZ layer:", lot);
                     break;
                 }
-            }
 
-            // If not found in markers, check polygons
-            if (!lot && App.polygons[lotId]) {
-                polygonEntry = App.polygons[lotId];
-                lot = polygonEntry.data;
-            }
+                // Otherwise try to find it in markers or polygons
+                for (let i = 0; i < App.markers.length; i++) {
+                    if (App.markers[i].data && App.markers[i].data.id === lotId) {
+                        lot = App.markers[i].data;
+                        console.log("Found lot in markers via KMZ reference:", lot);
+                        break;
+                    }
+                }
 
-            // Validate lot data
-            if (!lot) {
-                console.error(`Lot with ID ${lotId} not found`);
-                return;
-            }
+                if (!lot && App.polygons[lotId]) {
+                    lot = App.polygons[lotId].data;
+                    console.log("Found lot in polygons via KMZ reference:", lot);
+                }
 
-            console.log(`Found lot:`, lot);
+                break;
+            }
+        }
+    }
+
+    // Validate lot data
+    if (!lot) {
+        console.error(`Lot with ID ${lotId} not found in any data source`);
+        // Look through all data sources to try to find the lot
+        console.log("Available marker IDs:", App.markers.map(m => m.data.id));
+        console.log("Available polygon IDs:", Object.keys(App.polygons));
+        console.log("Available KMZ layer IDs:", Object.values(App.kmzLayers).map(l => l.lotId));
+        return;
+    }
+
+    console.log(`Found lot:`, lot);
 
             // Store view state
             App.lastView.zoom = App.map.getZoom();
@@ -656,7 +995,7 @@
             const household = lot.household_count || 'N/A';
             const additionalInfo = lot.additional_information || 'N/A';
 
-            // Create sidebar
+// Create sidebar
             const sidebar = document.createElement('div');
             sidebar.className = 'sidebar';
             sidebar.id = `sidebar-${Date.now()}`;
@@ -668,8 +1007,6 @@
                     <button class="sidebar-close-btn">×</button>
                 </div>
                 <div class="sidebar-content">`;
-
-
 
             sidebarHtml += `
                     <div class="section-title">Асосий маълумотлар</div>
@@ -717,22 +1054,65 @@
                 `;
             }
 
-            // Add documents section if available
+            // Add documents if available
             if (lot.documents && lot.documents.length > 0) {
                 sidebarHtml += `
                     <div class="section-title">Ҳужжатлар</div>
-                    <div class="documents-list">
-                `;
+                    <div class="documents-list">`;
 
-                lot.documents.forEach(doc => {
-                    sidebarHtml += `
-                        <div class="data-card">
-                            <div class="data-card-title">${doc.filename || 'Ҳужжат'}</div>
-                            <div>Тури: ${doc.doc_type || 'Кўрсатилмаган'}</div>
-                            ${doc.url ? `<a href="${doc.url}" target="_blank" class="document-link">Ҳужжатни кўриш</a>` : ''}
-                        </div>
-                    `;
-                });
+                // Group documents by type
+                const pdfDocs = lot.documents.filter(doc => doc.doc_type === 'pdf-document');
+                const kmzDocs = lot.documents.filter(doc => doc.doc_type === 'kmz-document');
+
+                // Add PDF documents
+                if (pdfDocs.length > 0) {
+                    sidebarHtml += `<div class="doc-group">
+                        <h4>PDF Ҳужжатлар</h4>`;
+
+                    pdfDocs.forEach(doc => {
+                        const fileName = doc.filename || 'Ҳужжат';
+                        // Fix URL to use the apiBaseUrl
+                        let pdfUrl = doc.url;
+                        if (pdfUrl.startsWith('http') && !pdfUrl.includes(window.location.hostname)) {
+                            const paths = pdfUrl.split('/assets/');
+                            if (paths.length > 1) {
+                                pdfUrl = App.apiBaseUrl + '/assets/data/BASA_RENOVA/' + paths[1].split('/').pop();
+                            }
+                        }
+
+                        sidebarHtml += `
+                            <a href="${pdfUrl}" target="_blank" class="document-link">
+                                <i class="fas fa-file-pdf"></i> ${fileName}
+                            </a>`;
+                    });
+
+                    sidebarHtml += `</div>`;
+                }
+
+                // Add KMZ documents
+                if (kmzDocs.length > 0) {
+                    sidebarHtml += `<div class="doc-group">
+                        <h4>KMZ Харита файллари</h4>`;
+
+                    kmzDocs.forEach(doc => {
+                        const fileName = doc.filename || 'KMZ файл';
+                        // Fix URL to use the apiBaseUrl
+                        let kmzUrl = doc.url;
+                        if (kmzUrl.startsWith('http') && !kmzUrl.includes(window.location.hostname)) {
+                            const paths = kmzUrl.split('/assets/');
+                            if (paths.length > 1) {
+                                kmzUrl = App.apiBaseUrl + '/assets/data/BASA_RENOVA/' + paths[1].split('/').pop();
+                            }
+                        }
+
+                        sidebarHtml += `
+                            <a href="${kmzUrl}" download class="document-link">
+                                <i class="fas fa-map"></i> ${fileName}
+                            </a>`;
+                    });
+
+                    sidebarHtml += `</div>`;
+                }
 
                 sidebarHtml += `</div>`;
             }
@@ -747,6 +1127,7 @@
 
             // Close the content div
             sidebarHtml += `</div>`;
+
             // Set the sidebar HTML
             sidebar.innerHTML = sidebarHtml;
 
@@ -781,6 +1162,15 @@
                     } else if (markerEntry && markerEntry.marker) {
                         highlightMarker(markerEntry.marker, lot.id);
                         adjustMarkerView(markerEntry.marker);
+                    } else {
+                        // Try to find and focus on KMZ layer if it exists
+                        for (const url in App.kmzLayers) {
+                            if (App.kmzLayers[url].lotId === lot.id) {
+                                highlightKmzLayer(App.kmzLayers[url], lot.id);
+                                adjustKmzLayerView(App.kmzLayers[url]);
+                                break;
+                            }
+                        }
                     }
 
                     // Add related investments
@@ -836,6 +1226,42 @@
             });
         }
 
+        // Highlight KMZ layer
+        function highlightKmzLayer(kmzLayer, lotId) {
+            if (!kmzLayer) return;
+
+            // Store all original styles for each feature in the layer
+            const originalStyles = [];
+
+            // Apply highlighting to all features in the layer
+            kmzLayer.eachLayer(function(layer) {
+                if (layer.setStyle) {
+                    // Store the original style
+                    originalStyles.push({
+                        layer: layer,
+                        style: {
+                            ...layer.options
+                        }
+                    });
+
+                    // Apply highlight style
+                    layer.setStyle({
+                        weight: 4,
+                        color: '#4A6FD4',
+                        dashArray: '5, 10',
+                        fillOpacity: 0.5
+                    });
+                }
+            });
+
+            // Add cleanup function to restore original styles
+            App.cleanup.push(() => {
+                originalStyles.forEach(item => {
+                    item.layer.setStyle(item.style);
+                });
+            });
+        }
+
         // Highlight marker
         function highlightMarker(marker, lotId) {
             if (!marker) return;
@@ -852,6 +1278,40 @@
                 maxZoom: 17,
                 animate: true
             });
+        }
+
+        // Adjust KMZ layer view
+        function adjustKmzLayerView(kmzLayer) {
+            if (!kmzLayer) return;
+
+            try {
+                const bounds = kmzLayer.getBounds();
+                App.map.fitBounds(bounds, {
+                    padding: [50, 50],
+                    maxZoom: 17,
+                    animate: true
+                });
+            } catch (error) {
+                console.error('Error adjusting KMZ layer view:', error);
+                // If bounds can't be determined, try to zoom to a layer feature
+                let featureFound = false;
+
+                kmzLayer.eachLayer(function(layer) {
+                    if (!featureFound && layer.getLatLng) {
+                        App.map.setView(layer.getLatLng(), 17, {
+                            animate: true
+                        });
+                        featureFound = true;
+                    } else if (!featureFound && layer.getBounds) {
+                        App.map.fitBounds(layer.getBounds(), {
+                            padding: [50, 50],
+                            maxZoom: 17,
+                            animate: true
+                        });
+                        featureFound = true;
+                    }
+                });
+            }
         }
 
         // Adjust marker view
@@ -1056,16 +1516,19 @@
 
                 if (lotsData.length === 0) {
                     console.warn('No data found in API response');
-                    showToast('No data found in API response. Using demo data.', 'warning');
-                    // useDemoData();
+                    showToast('No data found in API response', 'warning');
                     return;
                 }
 
                 // Process the lots data
                 let processedCount = 0;
+                let processedKmzCount = 0;
 
                 // Generate an ID counter for lots without IDs
                 let idCounter = 1;
+
+                // Track promises for KMZ processing
+                const kmzPromises = [];
 
                 lotsData.forEach(lot => {
                     // Skip invalid items
@@ -1091,10 +1554,38 @@
                             processedCount++;
                         }
                     }
+
+                    // Process KMZ documents if available
+                    if (lot.documents && Array.isArray(lot.documents)) {
+                        const kmzDocs = lot.documents.filter(doc =>
+                            doc.doc_type === 'kmz-document'
+                        );
+
+                        if (kmzDocs.length > 0) {
+                            // Process the first KMZ document only to avoid overlapping polygons
+                            const promise = processKmzFile(lot, kmzDocs[0])
+                                .then(success => {
+                                    if (success) {
+                                        processedKmzCount++;
+                                    }
+                                })
+                                .catch(error => {
+                                    console.error(`Error processing KMZ for lot ${lot.id}:`, error);
+                                });
+
+                            kmzPromises.push(promise);
+                        }
+                    }
                 });
 
-                if (processedCount > 0) {
-                    showToast(`Successfully loaded ${processedCount} items`, 'info');
+                // Wait for all KMZ processing to complete
+                await Promise.allSettled(kmzPromises);
+
+                if (processedCount > 0 || processedKmzCount > 0) {
+                    showToast(
+                        `Successfully loaded ${processedCount} polygons/markers and ${processedKmzCount} KMZ files`,
+                        'info'
+                    );
 
                     // Fit map to all markers
                     if (App.markers.length > 0) {
@@ -1105,209 +1596,14 @@
                     }
                 } else {
                     console.warn('No valid items were processed from API data');
-                    showToast('No valid items found in data. Using demo data.', 'warning');
-                    // useDemoData();
+                    showToast('No valid items found in data', 'warning');
                 }
             } catch (error) {
                 console.error('Error fetching data:', error);
-                showToast('Error loading data: ' + error.message + '. Using demo data.', 'error');
-                // useDemoData();
+                showToast('Error loading data: ' + error.message, 'error');
             } finally {
                 hideLoading();
             }
-        }
-
-        // Create and use demo data when API fails
-        function useDemoData() {
-            console.log('Using demo data');
-
-            // Clear any existing data
-            App.markers.forEach(marker => {
-                if (marker.marker) {
-                    App.markerCluster.removeLayer(marker.marker);
-                }
-            });
-
-            Object.values(App.polygons).forEach(item => {
-                if (item.polygon) {
-                    App.map.removeLayer(item.polygon);
-                }
-            });
-
-            App.markers = [];
-            App.polygons = {};
-
-            // Generate demo data based on the exact format from API sample
-            const demoData = [{
-                    id: 'demo-1',
-                    district_name: "Юнусабадский",
-                    neighborhood_name: "Кашгар (0,12 га) - Demo",
-                    lat: 41.3187611,
-                    lng: 69.2739611,
-                    area_hectare: 0.12,
-                    total_building_area: 400,
-                    residential_area: 400,
-                    non_residential_area: 0,
-                    adjacent_area: 800,
-                    object_information: null,
-                    umn_coefficient: "7",
-                    qmn_percentage: "11",
-                    designated_floors: "520-14-0-Q/24 \n01.08.2024",
-                    proposed_floors: "кадастр акт",
-                    decision_number: "1",
-                    cadastre_certificate: "Dream Visualization",
-                    area_strategy: "заключение инвест договора",
-                    investor: "0",
-                    status: "9",
-                    population: null,
-                    household_count: null,
-                    additional_information: null,
-                    main_image: "https://cdn.dribbble.com/users/1651691/screenshots/5336717/404_v2.png",
-                    polygons: [{
-                            start_lat: "41°19'7.54\"С",
-                            start_lon: "69°16'26.26\"В",
-                            end_lat: "41°19'7.18\"С",
-                            end_lon: "69°16'28.05\"В"
-                        },
-                        {
-                            start_lat: "41°19'7.18\"С",
-                            start_lon: "69°16'28.05\"В",
-                            end_lat: "41°19'8.02\"С",
-                            end_lon: "69°16'28.35\"В"
-                        },
-                        {
-                            start_lat: "41°19'8.02\"С",
-                            start_lon: "69°16'28.35\"В",
-                            end_lat: "41°19'8.40\"С",
-                            end_lon: "69°16'26.60\"В"
-                        },
-                        {
-                            start_lat: "41°19'8.40\"С",
-                            start_lon: "69°16'26.60\"В",
-                            end_lat: "41°19'7.54\"С",
-                            end_lon: "69°16'26.26\"В"
-                        }
-                    ],
-                    documents: [{
-                        id: 1,
-                        doc_type: "pdf-document",
-                        path: "assets/data/demo.pdf",
-                        url: "#",
-                        filename: "Demo Document 1.pdf"
-                    }]
-                },
-                {
-                    id: 'demo-2',
-                    district_name: "Чиланзарский",
-                    neighborhood_name: "Катта Козиробод-1 (3,77/1,52 га) - Demo",
-                    lat: 41.2709194,
-                    lng: 69.2128778,
-                    area_hectare: 18994,
-                    total_building_area: 9100,
-                    residential_area: 6400,
-                    non_residential_area: 2700,
-                    adjacent_area: 6100,
-                    object_information: null,
-                    umn_coefficient: "7",
-                    qmn_percentage: "42552",
-                    designated_floors: "523-14-0-Q/24\n01.08.2024",
-                    proposed_floors: "кадастр акт",
-                    decision_number: "1",
-                    cadastre_certificate: "Isaar Development",
-                    area_strategy: "заключение инвест договора",
-                    investor: null,
-                    status: "2",
-                    population: null,
-                    household_count: null,
-                    additional_information: null,
-                    main_image: "https://cdn.dribbble.com/users/1651691/screenshots/5336717/404_v2.png",
-                    polygons: [{
-                            start_lat: "41°16'15.31\"С",
-                            start_lon: "69°12'46.36\"В",
-                            end_lat: "41°16'20.51\"С",
-                            end_lon: "69°12'48.70\"В"
-                        },
-                        {
-                            start_lat: "41°16'20.51\"С",
-                            start_lon: "69°12'48.70\"В",
-                            end_lat: "41°16'26.59\"С",
-                            end_lon: "69°12'55.48\"В"
-                        },
-                        {
-                            start_lat: "41°16'26.59\"С",
-                            start_lon: "69°12'55.48\"В",
-                            end_lat: "41°16'28.57\"С",
-                            end_lon: "69°12'50.75\"В"
-                        },
-                        {
-                            start_lat: "41°16'28.57\"С",
-                            start_lon: "69°12'50.75\"В",
-                            end_lat: "41°16'23.36\"С",
-                            end_lon: "69°12'46.76\"В"
-                        },
-                        {
-                            start_lat: "41°16'23.36\"С",
-                            start_lon: "69°12'46.76\"В",
-                            end_lat: "41°16'16.09\"С",
-                            end_lon: "69°12'43.48\"В"
-                        },
-                        {
-                            start_lat: "41°16'16.09\"С",
-                            start_lon: "69°12'43.48\"В",
-                            end_lat: "41°16'15.31\"С",
-                            end_lon: "69°12'46.36\"В"
-                        }
-                    ]
-                },
-                {
-                    id: 'demo-3',
-                    district_name: "Чиланзарский",
-                    neighborhood_name: "Катта Козиробод-2 (3,77/2,13 га) - Demo",
-                    lat: 41.2729194,
-                    lng: 69.2148778,
-                    area_hectare: 41306,
-                    total_building_area: 9400,
-                    residential_area: 9400,
-                    non_residential_area: 0,
-                    adjacent_area: 11900,
-                    object_information: null,
-                    umn_coefficient: "7",
-                    qmn_percentage: "41974",
-                    designated_floors: "523-14-0-Q/24\n01.08.2025",
-                    proposed_floors: "кадастр акт",
-                    decision_number: "1",
-                    cadastre_certificate: "Nur Hayat Classics",
-                    area_strategy: "заключение инвест договора",
-                    investor: null,
-                    status: "1",
-                    population: null,
-                    household_count: null,
-                    additional_information: null,
-                    main_image: "https://cdn.dribbble.com/users/1651691/screenshots/5336717/404_v2.png"
-                }
-            ];
-
-            // Process demo data
-            demoData.forEach(lot => {
-                if (lot.lat && lot.lng) {
-                    addMarker(lot);
-                }
-
-                if (lot.polygons) {
-                    addPolygon(lot);
-                }
-            });
-
-            // Fit map to all markers
-            if (App.markers.length > 0) {
-                const group = L.featureGroup(App.markers.map(m => m.marker));
-                App.map.fitBounds(group.getBounds(), {
-                    padding: [50, 50]
-                });
-            }
-
-            hideLoading();
-            showToast('Using demo data', 'warning');
         }
 
         // Setup event listeners
@@ -1350,15 +1646,15 @@
                 await fetchData();
 
                 // Check if data was loaded successfully
-                if (App.markers.length === 0 && Object.keys(App.polygons).length === 0) {
+                if (App.markers.length === 0 &&
+                    Object.keys(App.polygons).length === 0 &&
+                    Object.keys(App.kmzLayers).length === 0) {
                     console.warn('No data loaded on map');
-                    showToast('No map data found. Using demo data.', 'warning');
-                    // useDemoData();
+                    showToast('No map data found', 'warning');
                 }
             } catch (error) {
                 console.error('Initialization error:', error);
-                showToast('Error initializing map: ' + error.message + '. Using demo data.', 'error');
-                // useDemoData();
+                showToast('Error initializing map: ' + error.message, 'error');
             } finally {
                 hideLoading();
             }

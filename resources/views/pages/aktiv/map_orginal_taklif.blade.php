@@ -1064,30 +1064,30 @@ function showDetails(lotId) {
                 const pdfDocs = lot.documents.filter(doc => doc.doc_type === 'pdf-document');
                 const kmzDocs = lot.documents.filter(doc => doc.doc_type === 'kmz-document');
 
-                // Add PDF documents
-                if (pdfDocs.length > 0) {
-                    sidebarHtml += `<div class="doc-group">
-                        <h4>PDF Ҳужжатлар</h4>`;
+                // // Add PDF documents
+                // if (pdfDocs.length > 0) {
+                //     sidebarHtml += `<div class="doc-group">
+                //         <h4>PDF Ҳужжатлар</h4>`;
 
-                    pdfDocs.forEach(doc => {
-                        const fileName = doc.filename || 'Ҳужжат';
-                        // Fix URL to use the apiBaseUrl
-                        let pdfUrl = doc.url;
-                        if (pdfUrl.startsWith('http') && !pdfUrl.includes(window.location.hostname)) {
-                            const paths = pdfUrl.split('/assets/');
-                            if (paths.length > 1) {
-                                pdfUrl = App.apiBaseUrl + '/assets/data/BASA_RENOVA/' + paths[1].split('/').pop();
-                            }
-                        }
+                //     pdfDocs.forEach(doc => {
+                //         const fileName = doc.filename || 'Ҳужжат';
+                //         // Fix URL to use the apiBaseUrl
+                //         let pdfUrl = doc.url;
+                //         if (pdfUrl.startsWith('http') && !pdfUrl.includes(window.location.hostname)) {
+                //             const paths = pdfUrl.split('/assets/');
+                //             if (paths.length > 1) {
+                //                 pdfUrl = App.apiBaseUrl + '/assets/data/BASA_RENOVA/' + paths[1].split('/').pop();
+                //             }
+                //         }
 
-                        sidebarHtml += `
-                            <a href="${pdfUrl}" target="_blank" class="document-link">
-                                <i class="fas fa-file-pdf"></i> ${fileName}
-                            </a>`;
-                    });
+                //         sidebarHtml += `
+                //             <a href="${pdfUrl}" target="_blank" class="document-link">
+                //                 <i class="fas fa-file-pdf"></i> ${fileName}
+                //             </a>`;
+                //     });
 
-                    sidebarHtml += `</div>`;
-                }
+                //     sidebarHtml += `</div>`;
+                // }
 
                 // Add KMZ documents
                 if (kmzDocs.length > 0) {
