@@ -5,7 +5,7 @@
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>InvestUz Map</title>
-{{-- @dd('da') --}}
+    {{-- @dd('da') --}}
     <!-- Leaflet CSS -->
     <link rel="stylesheet" href="https://unpkg.com/leaflet@1.9.4/dist/leaflet.css" />
     <link rel="stylesheet" href="https://unpkg.com/leaflet.markercluster@1.4.1/dist/MarkerCluster.css" />
@@ -16,7 +16,8 @@
 
     <style>
         /* Main styles */
-        body, html {
+        body,
+        html {
             margin: 0;
             padding: 0;
             font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
@@ -39,7 +40,7 @@
             height: 50px;
             padding: 0 15px;
             background-color: #fff;
-            box-shadow: 0 2px 4px rgba(0,0,0,0.1);
+            box-shadow: 0 2px 4px rgba(0, 0, 0, 0.1);
             z-index: 2;
             position: relative;
         }
@@ -109,7 +110,7 @@
             width: 380px;
             height: 100vh;
             background: white;
-            box-shadow: -3px 0 10px rgba(0,0,0,0.1);
+            box-shadow: -3px 0 10px rgba(0, 0, 0, 0.1);
             z-index: 1000;
             transition: right 0.3s ease;
             overflow-y: auto;
@@ -295,8 +296,13 @@
         }
 
         @keyframes spin {
-            0% { transform: rotate(0deg); }
-            100% { transform: rotate(360deg); }
+            0% {
+                transform: rotate(0deg);
+            }
+
+            100% {
+                transform: rotate(360deg);
+            }
         }
 
         /* Toast notification */
@@ -311,7 +317,7 @@
             border-radius: 4px;
             z-index: 1002;
             opacity: 0.9;
-            box-shadow: 0 2px 10px rgba(0,0,0,0.2);
+            box-shadow: 0 2px 10px rgba(0, 0, 0, 0.2);
         }
 
         .toast.info {
@@ -406,12 +412,16 @@
 
     <script>
         // App namespace
+        // Add this to your App namespace (right after the existing properties)
         const App = {
             map: null,
             markers: [],
             polygons: {},
             kmzLayers: {}, // Store KMZ layers
+            auctionMarkers: [], // Store auction markers separately
+            auctionMarkersVisible: false, // Track if auction markers are visible
             markerCluster: null,
+            auctionCluster: null, // Separate cluster for auction markers
             currentSidebar: null,
             isAnimating: false,
             currentItem: null,
@@ -729,236 +739,236 @@
             return true;
         }
 
-// Process KMZ files - FIXED VERSION
-async function processKmzFile(lot, kmzDoc) {
-    if (!lot || !lot.id || !kmzDoc) {
-        console.error('Invalid lot or KMZ document data');
-        return false;
-    }
-
-    try {
-        // Fix the URL path by making it relative to the current domain
-        let kmzUrl = kmzDoc.url;
-
-        // Check if URL is absolute and doesn't match current domain
-        if (kmzUrl.startsWith('http') && !kmzUrl.includes(window.location.hostname)) {
-            const paths = kmzUrl.split('/assets/');
-            if (paths.length > 1) {
-                kmzUrl = App.apiBaseUrl + '/assets/data/BASA_RENOVA/' + paths[1].split('/').pop();
+        // Process KMZ files - FIXED VERSION
+        async function processKmzFile(lot, kmzDoc) {
+            if (!lot || !lot.id || !kmzDoc) {
+                console.error('Invalid lot or KMZ document data');
+                return false;
             }
-        }
 
-        console.log(`Processing KMZ file: ${kmzUrl} for lot ID: ${lot.id}`);
+            try {
+                // Fix the URL path by making it relative to the current domain
+                let kmzUrl = kmzDoc.url;
 
-        // Check if we already have a layer for this KMZ
-        if (App.kmzLayers[kmzUrl]) {
-            console.log('KMZ layer already exists, adding to lot');
-            // Update the lot ID for this layer
-            App.kmzLayers[kmzUrl].lotId = lot.id;
-            // Also store lot data in the layer for direct access
-            App.kmzLayers[kmzUrl].lotData = lot;
-            return true;
-        }
-
-        // Fetch the KMZ file
-        const response = await fetch(kmzUrl);
-        if (!response.ok) {
-            throw new Error(`Failed to fetch KMZ file: ${response.statusText}`);
-        }
-
-        const kmzData = await response.arrayBuffer();
-        const zip = await JSZip.loadAsync(kmzData);
-
-        // Find the KML file in the KMZ archive
-        let kmlFile;
-        let kmlContent;
-
-        // Look for doc.kml or any .kml file in the root of the zip
-        if (zip.file('doc.kml')) {
-            kmlFile = zip.file('doc.kml');
-        } else {
-            // Try to find any KML file
-            const kmlFiles = Object.keys(zip.files).filter(filename =>
-                filename.toLowerCase().endsWith('.kml') && !zip.files[filename].dir
-            );
-
-            if (kmlFiles.length > 0) {
-                kmlFile = zip.file(kmlFiles[0]);
-            }
-        }
-
-        if (!kmlFile) {
-            throw new Error('No KML file found in KMZ archive');
-        }
-
-        // Extract the KML content
-        kmlContent = await kmlFile.async('text');
-
-        // Parse the KML using toGeoJSON library
-        const parser = new DOMParser();
-        const kmlDoc = parser.parseFromString(kmlContent, 'text/xml');
-        const geoJson = toGeoJSON.kml(kmlDoc);
-
-        // Determine style based on lot status
-        let style = {
-            color: '#1E3685',
-            weight: 2,
-            opacity: 0.7,
-            fillColor: '#1E3685',
-            fillOpacity: 0.2
-        };
-
-        if (lot.status === "9") {
-            style.color = '#0E6245';
-            style.fillColor = '#0E6245';
-        } else if (lot.status === "2") {
-            style.color = '#D62839';
-            style.fillColor = '#D62839';
-        }
-
-        // Create a GeoJSON layer from the parsed KML
-        const kmzLayer = L.geoJSON(geoJson, {
-            style: style,
-            pointToLayer: function(feature, latlng) {
-                return L.marker(latlng);
-            },
-            onEachFeature: function(feature, layer) {
-                // Add hover effect
-                if (layer.setStyle) {
-                    layer.on('mouseover', function() {
-                        this.setStyle({
-                            weight: 3,
-                            fillOpacity: 0.4
-                        });
-                    });
-
-                    layer.on('mouseout', function() {
-                        this.setStyle(style);
-                    });
-                }
-
-                // Add popup with any properties in the KML
-                if (feature.properties && feature.properties.name) {
-                    let popupContent = `<div><strong>${feature.properties.name}</strong>`;
-
-                    if (feature.properties.description) {
-                        popupContent += `<p>${feature.properties.description}</p>`;
+                // Check if URL is absolute and doesn't match current domain
+                if (kmzUrl.startsWith('http') && !kmzUrl.includes(window.location.hostname)) {
+                    const paths = kmzUrl.split('/assets/');
+                    if (paths.length > 1) {
+                        kmzUrl = App.apiBaseUrl + '/assets/data/BASA_RENOVA/' + paths[1].split('/').pop();
                     }
-
-                    popupContent +=
-                        `<button class="details-btn" data-lot-id="${lot.id}">Тафсилотлар</button></div>`;
-
-                    layer.bindPopup(popupContent);
                 }
 
-                // Add click handler to show lot details
-                layer.on('click', function(e) {
-                    showDetails(lot.id);
-                    L.DomEvent.stopPropagation(e);
+                console.log(`Processing KMZ file: ${kmzUrl} for lot ID: ${lot.id}`);
+
+                // Check if we already have a layer for this KMZ
+                if (App.kmzLayers[kmzUrl]) {
+                    console.log('KMZ layer already exists, adding to lot');
+                    // Update the lot ID for this layer
+                    App.kmzLayers[kmzUrl].lotId = lot.id;
+                    // Also store lot data in the layer for direct access
+                    App.kmzLayers[kmzUrl].lotData = lot;
+                    return true;
+                }
+
+                // Fetch the KMZ file
+                const response = await fetch(kmzUrl);
+                if (!response.ok) {
+                    throw new Error(`Failed to fetch KMZ file: ${response.statusText}`);
+                }
+
+                const kmzData = await response.arrayBuffer();
+                const zip = await JSZip.loadAsync(kmzData);
+
+                // Find the KML file in the KMZ archive
+                let kmlFile;
+                let kmlContent;
+
+                // Look for doc.kml or any .kml file in the root of the zip
+                if (zip.file('doc.kml')) {
+                    kmlFile = zip.file('doc.kml');
+                } else {
+                    // Try to find any KML file
+                    const kmlFiles = Object.keys(zip.files).filter(filename =>
+                        filename.toLowerCase().endsWith('.kml') && !zip.files[filename].dir
+                    );
+
+                    if (kmlFiles.length > 0) {
+                        kmlFile = zip.file(kmlFiles[0]);
+                    }
+                }
+
+                if (!kmlFile) {
+                    throw new Error('No KML file found in KMZ archive');
+                }
+
+                // Extract the KML content
+                kmlContent = await kmlFile.async('text');
+
+                // Parse the KML using toGeoJSON library
+                const parser = new DOMParser();
+                const kmlDoc = parser.parseFromString(kmlContent, 'text/xml');
+                const geoJson = toGeoJSON.kml(kmlDoc);
+
+                // Determine style based on lot status
+                let style = {
+                    color: '#1E3685',
+                    weight: 2,
+                    opacity: 0.7,
+                    fillColor: '#1E3685',
+                    fillOpacity: 0.2
+                };
+
+                if (lot.status === "9") {
+                    style.color = '#0E6245';
+                    style.fillColor = '#0E6245';
+                } else if (lot.status === "2") {
+                    style.color = '#D62839';
+                    style.fillColor = '#D62839';
+                }
+
+                // Create a GeoJSON layer from the parsed KML
+                const kmzLayer = L.geoJSON(geoJson, {
+                    style: style,
+                    pointToLayer: function(feature, latlng) {
+                        return L.marker(latlng);
+                    },
+                    onEachFeature: function(feature, layer) {
+                        // Add hover effect
+                        if (layer.setStyle) {
+                            layer.on('mouseover', function() {
+                                this.setStyle({
+                                    weight: 3,
+                                    fillOpacity: 0.4
+                                });
+                            });
+
+                            layer.on('mouseout', function() {
+                                this.setStyle(style);
+                            });
+                        }
+
+                        // Add popup with any properties in the KML
+                        if (feature.properties && feature.properties.name) {
+                            let popupContent = `<div><strong>${feature.properties.name}</strong>`;
+
+                            if (feature.properties.description) {
+                                popupContent += `<p>${feature.properties.description}</p>`;
+                            }
+
+                            popupContent +=
+                                `<button class="details-btn" data-lot-id="${lot.id}">Тафсилотлар</button></div>`;
+
+                            layer.bindPopup(popupContent);
+                        }
+
+                        // Add click handler to show lot details
+                        layer.on('click', function(e) {
+                            showDetails(lot.id);
+                            L.DomEvent.stopPropagation(e);
+                        });
+                    }
                 });
+
+                // Store lot ID and data on the layer for direct access
+                kmzLayer.lotId = lot.id;
+                kmzLayer.lotData = lot;
+
+                // Add to map
+                kmzLayer.addTo(App.map);
+
+                // Store reference
+                App.kmzLayers[kmzUrl] = kmzLayer;
+
+                console.log(`Successfully processed KMZ file for lot ${lot.id}`);
+                return true;
+
+            } catch (error) {
+                console.error(`Error processing KMZ file for lot ${lot.id}: ${error.message}`, error);
+                return false;
             }
-        });
-
-        // Store lot ID and data on the layer for direct access
-        kmzLayer.lotId = lot.id;
-        kmzLayer.lotData = lot;
-
-        // Add to map
-        kmzLayer.addTo(App.map);
-
-        // Store reference
-        App.kmzLayers[kmzUrl] = kmzLayer;
-
-        console.log(`Successfully processed KMZ file for lot ${lot.id}`);
-        return true;
-
-    } catch (error) {
-        console.error(`Error processing KMZ file for lot ${lot.id}: ${error.message}`, error);
-        return false;
-    }
-}
-
-// Show details - FIXED VERSION
-function showDetails(lotId) {
-    // Validate ID
-    if (!lotId) {
-        console.error('Invalid lot ID');
-        return;
-    }
-
-    // Prevent multiple animations
-    if (App.isAnimating) {
-        console.log('Animation in progress, ignoring request');
-        return;
-    }
-
-    // Find lot data
-    let lot = null;
-    let markerEntry = null;
-    let polygonEntry = null;
-    let kmzLayerFound = null;
-
-    // Search in markers
-    for (let i = 0; i < App.markers.length; i++) {
-        if (App.markers[i].data && App.markers[i].data.id === lotId) {
-            markerEntry = App.markers[i];
-            lot = markerEntry.data;
-            console.log("Found lot in markers:", lot);
-            break;
         }
-    }
 
-    // If not found in markers, check polygons
-    if (!lot && App.polygons[lotId]) {
-        polygonEntry = App.polygons[lotId];
-        lot = polygonEntry.data;
-        console.log("Found lot in polygons:", lot);
-    }
+        // Show details - FIXED VERSION
+        function showDetails(lotId) {
+            // Validate ID
+            if (!lotId) {
+                console.error('Invalid lot ID');
+                return;
+            }
 
-    // If still not found, check KMZ layers
-    if (!lot) {
-        for (const url in App.kmzLayers) {
-            const kmzLayer = App.kmzLayers[url];
-            if (kmzLayer.lotId === lotId) {
-                kmzLayerFound = kmzLayer;
+            // Prevent multiple animations
+            if (App.isAnimating) {
+                console.log('Animation in progress, ignoring request');
+                return;
+            }
 
-                // If lotData is stored directly on the layer, use it
-                if (kmzLayer.lotData) {
-                    lot = kmzLayer.lotData;
-                    console.log("Found lot data directly in KMZ layer:", lot);
+            // Find lot data
+            let lot = null;
+            let markerEntry = null;
+            let polygonEntry = null;
+            let kmzLayerFound = null;
+
+            // Search in markers
+            for (let i = 0; i < App.markers.length; i++) {
+                if (App.markers[i].data && App.markers[i].data.id === lotId) {
+                    markerEntry = App.markers[i];
+                    lot = markerEntry.data;
+                    console.log("Found lot in markers:", lot);
                     break;
                 }
+            }
 
-                // Otherwise try to find it in markers or polygons
-                for (let i = 0; i < App.markers.length; i++) {
-                    if (App.markers[i].data && App.markers[i].data.id === lotId) {
-                        lot = App.markers[i].data;
-                        console.log("Found lot in markers via KMZ reference:", lot);
+            // If not found in markers, check polygons
+            if (!lot && App.polygons[lotId]) {
+                polygonEntry = App.polygons[lotId];
+                lot = polygonEntry.data;
+                console.log("Found lot in polygons:", lot);
+            }
+
+            // If still not found, check KMZ layers
+            if (!lot) {
+                for (const url in App.kmzLayers) {
+                    const kmzLayer = App.kmzLayers[url];
+                    if (kmzLayer.lotId === lotId) {
+                        kmzLayerFound = kmzLayer;
+
+                        // If lotData is stored directly on the layer, use it
+                        if (kmzLayer.lotData) {
+                            lot = kmzLayer.lotData;
+                            console.log("Found lot data directly in KMZ layer:", lot);
+                            break;
+                        }
+
+                        // Otherwise try to find it in markers or polygons
+                        for (let i = 0; i < App.markers.length; i++) {
+                            if (App.markers[i].data && App.markers[i].data.id === lotId) {
+                                lot = App.markers[i].data;
+                                console.log("Found lot in markers via KMZ reference:", lot);
+                                break;
+                            }
+                        }
+
+                        if (!lot && App.polygons[lotId]) {
+                            lot = App.polygons[lotId].data;
+                            console.log("Found lot in polygons via KMZ reference:", lot);
+                        }
+
                         break;
                     }
                 }
-
-                if (!lot && App.polygons[lotId]) {
-                    lot = App.polygons[lotId].data;
-                    console.log("Found lot in polygons via KMZ reference:", lot);
-                }
-
-                break;
             }
-        }
-    }
 
-    // Validate lot data
-    if (!lot) {
-        console.error(`Lot with ID ${lotId} not found in any data source`);
-        // Look through all data sources to try to find the lot
-        console.log("Available marker IDs:", App.markers.map(m => m.data.id));
-        console.log("Available polygon IDs:", Object.keys(App.polygons));
-        console.log("Available KMZ layer IDs:", Object.values(App.kmzLayers).map(l => l.lotId));
-        return;
-    }
+            // Validate lot data
+            if (!lot) {
+                console.error(`Lot with ID ${lotId} not found in any data source`);
+                // Look through all data sources to try to find the lot
+                console.log("Available marker IDs:", App.markers.map(m => m.data.id));
+                console.log("Available polygon IDs:", Object.keys(App.polygons));
+                console.log("Available KMZ layer IDs:", Object.values(App.kmzLayers).map(l => l.lotId));
+                return;
+            }
 
-    console.log(`Found lot:`, lot);
+            console.log(`Found lot:`, lot);
 
             // Store view state
             App.lastView.zoom = App.map.getZoom();
@@ -995,7 +1005,7 @@ function showDetails(lotId) {
             const household = lot.household_count || 'N/A';
             const additionalInfo = lot.additional_information || 'N/A';
 
-// Create sidebar
+            // Create sidebar
             const sidebar = document.createElement('div');
             sidebar.className = 'sidebar';
             sidebar.id = `sidebar-${Date.now()}`;
@@ -1076,7 +1086,8 @@ function showDetails(lotId) {
                         if (pdfUrl.startsWith('http') && !pdfUrl.includes(window.location.hostname)) {
                             const paths = pdfUrl.split('/assets/');
                             if (paths.length > 1) {
-                                pdfUrl = App.apiBaseUrl + '/assets/data/RENOVATSIYA ISXOD PDF/' + paths[1].split('/').pop();
+                                pdfUrl = App.apiBaseUrl + '/assets/data/RENOVATSIYA ISXOD PDF/' + paths[1].split(
+                                    '/').pop();
                             }
                         }
 
@@ -1606,6 +1617,198 @@ function showDetails(lotId) {
             }
         }
 
+// Fetch and process auction data
+async function fetchAuctionData() {
+    try {
+        const auctionApiUrl = 'https://projects.toshkentinvest.uz/api/markersing';
+        console.log(`Fetching auction data from: ${auctionApiUrl}`);
+
+        const response = await fetch(auctionApiUrl);
+        if (!response.ok) {
+            throw new Error(`Auction API request failed with status ${response.status}`);
+        }
+
+        const data = await response.json();
+        console.log('Auction API response:', data);
+
+        // Check if we have the lots array as expected
+        if (!data || !data.lots || !Array.isArray(data.lots) || data.lots.length === 0) {
+            console.warn('No auction data found in API response');
+            return false;
+        }
+
+        console.log(`Found ${data.lots.length} auction lots`);
+
+        // Create a marker cluster for auction markers if it doesn't exist
+        if (!App.auctionCluster) {
+            App.auctionCluster = L.markerClusterGroup({
+                chunkedLoading: true,
+                maxClusterRadius: 50,
+                spiderfyOnMaxZoom: true,
+                showCoverageOnHover: false,
+                disableClusteringAtZoom: 16
+            });
+        }
+
+        // Process auction data
+        let processedCount = 0;
+
+        data.lots.forEach(lot => {
+            if (!lot || typeof lot !== 'object' || !lot.lat || !lot.lng) {
+                return;
+            }
+
+            // Create a unique ID for this auction lot
+            const auctionId = 'auction-' + lot.lot_number;
+
+            // Create marker with custom icon
+            const auctionIcon = L.divIcon({
+                html: `<div class="auction-marker" style="background-color: #FF5722; width: 12px; height: 12px; border-radius: 50%; border: 2px solid white;"></div>`,
+                className: 'auction-marker-container',
+                iconSize: [16, 16],
+                iconAnchor: [8, 8]
+            });
+
+            const marker = L.marker([lot.lat, lot.lng], { icon: auctionIcon });
+
+            // Add popup with auction details
+            const price = Number(lot.start_price).toLocaleString('uz-UZ');
+            const popup = `
+                <div class="auction-popup">
+                    <h3>${lot.property_name}</h3>
+                    <div class="auction-image">
+                        <img src="${lot.main_image}" alt="${lot.property_name}" style="width:100%; max-height:150px; object-fit:cover;">
+                    </div>
+                    <p><strong>Бошланғич нархи:</strong> ${price} сўм</p>
+                    <p><strong>Аукцион санаси:</strong> ${lot.auction_date}</p>
+                    <p><strong>Жойлашуви:</strong> ${lot.region}, ${lot.area}, ${lot.address}</p>
+                    <p><strong>Майдони:</strong> ${lot.land_area} га</p>
+                    <p><strong>Тури:</strong> ${lot.property_category}</p>
+                    <p><strong>Ҳолати:</strong> ${lot.lot_status}</p>
+                    <a href="${lot.lot_link}" target="_blank" class="auction-link" style="display:block; text-align:center; background:#FF5722; color:white; padding:8px; text-decoration:none; border-radius:4px; margin-top:10px;">
+                        Батафсил маълумот
+                    </a>
+                </div>
+            `;
+
+            marker.bindPopup(popup, { maxWidth: 300 });
+
+            // Add to auction markers array and cluster
+            App.auctionMarkers.push({
+                marker: marker,
+                data: lot
+            });
+
+            App.auctionCluster.addLayer(marker);
+            processedCount++;
+        });
+
+        console.log(`Processed ${processedCount} auction markers`);
+
+        // Return success if we processed any markers
+        return processedCount > 0;
+    } catch (error) {
+        console.error('Error fetching auction data:', error);
+        return false;
+    }
+}
+
+// Toggle auction markers visibility
+function toggleAuctionMarkers() {
+    if (App.auctionMarkersVisible) {
+        // If currently visible, remove from map
+        App.map.removeLayer(App.auctionCluster);
+        App.auctionMarkersVisible = false;
+    } else {
+        // If currently hidden, add to map
+        App.map.addLayer(App.auctionCluster);
+        App.auctionMarkersVisible = true;
+    }
+
+    // Update button text
+    updateAuctionButtonText();
+}
+
+// Update the auction toggle button text
+function updateAuctionButtonText() {
+    const button = document.getElementById('toggle-auction-btn');
+    if (button) {
+        button.innerHTML = App.auctionMarkersVisible ?
+            '<i class="fas fa-gavel"></i> Аукционларни яшириш' :
+            '<i class="fas fa-gavel"></i> Аукционларни кўрсатиш';
+
+        // Update button style
+        button.className = App.auctionMarkersVisible ?
+            'map-control-btn active' : 'map-control-btn';
+    }
+}
+
+// Create auction control
+function createAuctionControl() {
+    // Add CSS for the control
+    const style = document.createElement('style');
+    style.textContent = `
+        .map-controls {
+            position: absolute;
+            top: 80px;
+            right: 10px;
+            z-index: 1000;
+            background: white;
+            border-radius: 4px;
+            box-shadow: 0 1px 5px rgba(0,0,0,0.4);
+            padding: 6px;
+        }
+        .map-control-btn {
+            padding: 8px 12px;
+            background: white;
+            border: 1px solid #ccc;
+            border-radius: 4px;
+            cursor: pointer;
+            font-size: 14px;
+            display: flex;
+            align-items: center;
+            gap: 6px;
+            transition: all 0.2s;
+        }
+        .map-control-btn:hover {
+            background: #f4f4f4;
+        }
+        .map-control-btn.active {
+            background: #FF5722;
+            color: white;
+            border-color: #FF5722;
+        }
+        .map-control-btn i {
+            font-size: 16px;
+        }
+        .auction-popup {
+            padding: 5px;
+        }
+        .auction-image {
+            margin: 8px 0;
+            border-radius: 4px;
+            overflow: hidden;
+        }
+    `;
+    document.head.appendChild(style);
+
+    // Create control container
+    const controlDiv = document.createElement('div');
+    controlDiv.className = 'map-controls';
+
+    // Create auction toggle button
+    const auctionButton = document.createElement('button');
+    auctionButton.id = 'toggle-auction-btn';
+    auctionButton.className = 'map-control-btn';
+    auctionButton.innerHTML = '<i class="fas fa-gavel"></i> Аукционларни кўрсатиш';
+    auctionButton.addEventListener('click', toggleAuctionMarkers);
+
+    // Add button to control div
+    controlDiv.appendChild(auctionButton);
+
+    // Add control to the map container
+    document.getElementById('map').appendChild(controlDiv);
+}
         // Setup event listeners
         function setupEventListeners() {
             // Popup button clicks
@@ -1632,33 +1835,46 @@ function showDetails(lotId) {
         }
 
         // Initialize app
-        async function init() {
-            showLoading();
+      // Initialize app
+async function init() {
+    showLoading();
 
-            try {
-                // Initialize map
-                initMap();
+    try {
+        // Initialize map
+        initMap();
 
-                // Setup event listeners
-                setupEventListeners();
+        // Setup event listeners
+        setupEventListeners();
 
-                // Fetch and process data
-                await fetchData();
+        // Create auction control
+        createAuctionControl();
 
-                // Check if data was loaded successfully
-                if (App.markers.length === 0 &&
-                    Object.keys(App.polygons).length === 0 &&
-                    Object.keys(App.kmzLayers).length === 0) {
-                    console.warn('No data loaded on map');
-                    showToast('No map data found', 'warning');
-                }
-            } catch (error) {
-                console.error('Initialization error:', error);
-                showToast('Error initializing map: ' + error.message, 'error');
-            } finally {
-                hideLoading();
-            }
+        // Fetch and process data in parallel
+        const [regularDataResult, auctionDataResult] = await Promise.all([
+            fetchData(),
+            fetchAuctionData()
+        ]);
+
+        // Check if data was loaded successfully
+        if (App.markers.length === 0 &&
+            Object.keys(App.polygons).length === 0 &&
+            Object.keys(App.kmzLayers).length === 0) {
+            console.warn('No regular data loaded on map');
+            showToast('No investment data found', 'warning');
         }
+
+        if (auctionDataResult) {
+            console.log('Auction data loaded successfully');
+        } else {
+            console.warn('No auction data loaded');
+        }
+    } catch (error) {
+        console.error('Initialization error:', error);
+        showToast('Error initializing map: ' + error.message, 'error');
+    } finally {
+        hideLoading();
+    }
+}
 
         // Start the app when DOM is ready
         document.addEventListener('DOMContentLoaded', init);
