@@ -658,18 +658,17 @@ class AktivController extends Controller
             // $lots = Cache::remember($cacheKey, 60 * 60, function () {
             // Fetch the data from the database
             $isSuperAdmin = auth()->id() === 1 || true;
-            Log::info($isSuperAdmin);
+            Log::info("User is superAdmin: " . ($isSuperAdmin ? 'Yes' : 'No'));
 
             if ($isSuperAdmin) {
                 // Super Admin sees all aktivs
-                $aktivs = Aktiv::with(['files', 'user', 'polygonAktivs'])->get();
+                $aktivs = Aktiv::with(['files', 'user', 'polygonAktivs', 'aktivDocs'])->get();
             } else {
                 // Other users should not see aktivs created by the Super Admin (user_id = 1)
-                $aktivs = Aktiv::with(['files', 'user', 'polygonAktivs'])
+                $aktivs = Aktiv::with(['files', 'user', 'polygonAktivs', 'aktivDocs'])
                     ->where('user_id', '!=', 1)  // Exclude records created by the Super Admin
                     ->get();
             }
-
 
             // Define the default image in case there is no image
             $defaultImage = 'https://cdn.dribbble.com/users/1651691/screenshots/5336717/404_v2.png';
@@ -684,6 +683,7 @@ class AktivController extends Controller
 
                 // Return the necessary data
                 return [
+                    'id' => $aktiv->id, // Make sure to include the ID
                     'district_name' => $aktiv->district_name,
                     'neighborhood_name' => $aktiv->neighborhood_name,
                     'lat' => $aktiv->latitude, // Make sure this matches the field name in your JS
@@ -716,15 +716,17 @@ class AktivController extends Controller
                         ];
                     }),
                     'documents' => $aktiv->aktivDocs->map(function ($doc) {
+                        // Ensure URL is absolute
+                        $url = $doc->url ? $doc->url : asset($doc->path);
+
                         return [
                             'id' => $doc->id,
                             'doc_type' => $doc->doc_type,
                             'path' => $doc->path,
-                            'url' => asset($doc->path),
-                            'filename' => basename($doc->path)
+                            'url' => $url,
+                            'filename' => $doc->filename ?: basename($doc->path)
                         ];
                     }),
-
                 ];
             });
             // });
@@ -739,7 +741,6 @@ class AktivController extends Controller
             return response()->json(['error' => 'An error occurred while fetching the lots.'], 500);
         }
     }
-
 
     // public function getLots()
     // {
