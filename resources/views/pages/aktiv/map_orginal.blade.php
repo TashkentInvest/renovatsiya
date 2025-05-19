@@ -1076,7 +1076,7 @@ function showDetails(lotId) {
                         if (pdfUrl.startsWith('http') && !pdfUrl.includes(window.location.hostname)) {
                             const paths = pdfUrl.split('/assets/');
                             if (paths.length > 1) {
-                                pdfUrl = App.apiBaseUrl + '/assets/data/BASA_RENOVA/' + paths[1].split('/').pop();
+                                pdfUrl = App.apiBaseUrl + '/assets/data/RENOVATSIYA ISXOD PDF/' + paths[1].split('/').pop();
                             }
                         }
 
