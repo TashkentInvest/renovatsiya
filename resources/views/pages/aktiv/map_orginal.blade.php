@@ -585,6 +585,139 @@
             })()
         };
 
+        // Enhanced coordinate extraction from Google Maps and Yandex URLs
+        function extractCoordinatesFromUrl(url) {
+            if (!url) return null;
+
+            try {
+                const decodedUrl = decodeURIComponent(url);
+                console.log('Processing URL:', decodedUrl);
+
+                // Handle Yandex Maps URLs
+                if (decodedUrl.includes('yandex.uz/maps') || decodedUrl.includes('yandex.com/maps')) {
+                    const llMatch = decodedUrl.match(/ll=([^&]+)/);
+                    if (llMatch) {
+                        const coords = llMatch[1].split(',');
+                        if (coords.length === 2) {
+                            const lng = parseFloat(coords[0]);
+                            const lat = parseFloat(coords[1]);
+                            // Validate coordinates for Tashkent area
+                            if (lat >= 39 && lat <= 43 && lng >= 68 && lng <= 71) {
+                                console.log('Extracted Yandex coordinates:', [lat, lng]);
+                                return [lat, lng];
+                            }
+                        }
+                    }
+                }
+
+                // Handle Google Maps URLs - Multiple patterns
+
+                // Pattern 1: @ symbol pattern (@lat,lng,zoom)
+                const atPattern = decodedUrl.match(/@(-?\d+\.?\d*),(-?\d+\.?\d*),?\d*z?/);
+                if (atPattern) {
+                    const lat = parseFloat(atPattern[1]);
+                    const lng = parseFloat(atPattern[2]);
+                    if (lat >= 39 && lat <= 43 && lng >= 68 && lng <= 71) {
+                        console.log('Extracted @ pattern coordinates:', [lat, lng]);
+                        return [lat, lng];
+                    }
+                }
+
+                // Pattern 2: Direct coordinates in URL (lat,lng)
+                const coordPattern = decodedUrl.match(/(-?\d+\.\d{4,}),(-?\d+\.\d{4,})/);
+                if (coordPattern) {
+                    const lat = parseFloat(coordPattern[1]);
+                    const lng = parseFloat(coordPattern[2]);
+                    if (lat >= 39 && lat <= 43 && lng >= 68 && lng <= 71) {
+                        console.log('Extracted direct coordinates:', [lat, lng]);
+                        return [lat, lng];
+                    }
+                }
+
+                // Pattern 3: !3d and !4d pattern
+                const bangPattern = decodedUrl.match(/!3d(-?\d+\.?\d*)!4d(-?\d+\.?\d*)/);
+                if (bangPattern) {
+                    const lat = parseFloat(bangPattern[1]);
+                    const lng = parseFloat(bangPattern[2]);
+                    if (lat >= 39 && lat <= 43 && lng >= 68 && lng <= 71) {
+                        console.log('Extracted !3d/!4d coordinates:', [lat, lng]);
+                        return [lat, lng];
+                    }
+                }
+
+                // Pattern 4: /place/ pattern with coordinates
+                const placePattern = decodedUrl.match(/\/place\/[^@]*@(-?\d+\.?\d*),(-?\d+\.?\d*)/);
+                if (placePattern) {
+                    const lat = parseFloat(placePattern[1]);
+                    const lng = parseFloat(placePattern[2]);
+                    if (lat >= 39 && lat <= 43 && lng >= 68 && lng <= 71) {
+                        console.log('Extracted place pattern coordinates:', [lat, lng]);
+                        return [lat, lng];
+                    }
+                }
+
+                // Pattern 5: Query parameters
+                try {
+                    const urlObj = new URL(decodedUrl);
+                    const params = urlObj.searchParams;
+
+                    const qParam = params.get('q');
+                    if (qParam) {
+                        const qMatch = qParam.match(/(-?\d+\.?\d*),(-?\d+\.?\d*)/);
+                        if (qMatch) {
+                            const lat = parseFloat(qMatch[1]);
+                            const lng = parseFloat(qMatch[2]);
+                            if (lat >= 39 && lat <= 43 && lng >= 68 && lng <= 71) {
+                                console.log('Extracted q parameter coordinates:', [lat, lng]);
+                                return [lat, lng];
+                            }
+                        }
+                    }
+
+                    const llParam = params.get('ll');
+                    if (llParam) {
+                        const llMatch = llParam.match(/(-?\d+\.?\d*),(-?\d+\.?\d*)/);
+                        if (llMatch) {
+                            const lng = parseFloat(llMatch[1]);
+                            const lat = parseFloat(llMatch[2]);
+                            if (lat >= 39 && lat <= 43 && lng >= 68 && lng <= 71) {
+                                console.log('Extracted ll parameter coordinates:', [lat, lng]);
+                                return [lat, lng];
+                            }
+                        }
+                    }
+                } catch (urlError) {
+                    // URL parsing failed, continue with other methods
+                }
+
+                // Pattern 6: Any two decimal numbers that look like coordinates
+                const allCoordMatches = decodedUrl.match(/(-?\d+\.\d+)/g);
+                if (allCoordMatches && allCoordMatches.length >= 2) {
+                    for (let i = 0; i < allCoordMatches.length - 1; i++) {
+                        const coord1 = parseFloat(allCoordMatches[i]);
+                        const coord2 = parseFloat(allCoordMatches[i + 1]);
+
+                        // Try both orders (lat,lng and lng,lat)
+                        if (coord1 >= 39 && coord1 <= 43 && coord2 >= 68 && coord2 <= 71) {
+                            console.log('Extracted fallback coordinates (lat,lng):', [coord1, coord2]);
+                            return [coord1, coord2];
+                        }
+                        if (coord2 >= 39 && coord2 <= 43 && coord1 >= 68 && coord1 <= 71) {
+                            console.log('Extracted fallback coordinates (lng,lat):', [coord2, coord1]);
+                            return [coord2, coord1];
+                        }
+                    }
+                }
+
+                console.log('No valid coordinates found in URL');
+                return null;
+
+            } catch (error) {
+                console.error('Error extracting coordinates from URL:', url, error);
+                return null;
+            }
+        }
+
         // Fetch JSON data from local file
         async function fetchJsonData() {
             try {
@@ -608,36 +741,48 @@
                 console.log(`Found ${data.length} items in JSON data`);
 
                 let processedCount = 0;
+                let skippedCount = 0;
 
                 for (const item of data) {
                     if (!item || typeof item !== 'object') {
+                        skippedCount++;
                         continue;
                     }
 
                     try {
                         if (addJsonDataMarker(item)) {
                             processedCount++;
+                        } else {
+                            skippedCount++;
+                            console.log(`Skipped item ${item['№']}: No valid coordinates found`);
                         }
                     } catch (error) {
                         console.warn('Error processing item:', item['№'], error);
+                        skippedCount++;
                     }
 
-                    if (processedCount % 10 === 0) {
+                    // Update UI every 20 items
+                    if ((processedCount + skippedCount) % 20 === 0) {
                         await new Promise(resolve => setTimeout(resolve, 10));
                         updateCounts();
                     }
                 }
 
-                console.log(`Processed ${processedCount} JSON data markers`);
+                console.log(`JSON data processing summary:`);
+                console.log(`- Total items: ${data.length}`);
+                console.log(`- Successfully processed: ${processedCount}`);
+                console.log(`- Skipped (no coordinates): ${skippedCount}`);
 
                 updateCounts();
 
                 if (processedCount > 0) {
-                    showToast(`Юкланди ${processedCount} та JSON маълумот`, 'info');
+                    showToast(`Юкланди ${processedCount} та JSON маълумот (${skippedCount} та ўтказилди)`, 'info');
                     return true;
+                } else {
+                    showToast(`${data.length} та элемент топилди, лекин ҳеч биридан координата олинмади`, 'warning');
+                    return false;
                 }
 
-                return false;
             } catch (error) {
                 console.error('Error fetching JSON data:', error);
                 showToast('JSON маълумотларни юклашда хатолик: ' + error.message, 'warning');
@@ -1171,103 +1316,6 @@
         // Start the app when DOM is ready
         document.addEventListener('DOMContentLoaded', init);
 
-        // Enhanced coordinate extraction from Google Maps and Yandex URLs
-        function extractCoordinatesFromUrl(url) {
-            if (!url) return null;
-
-            try {
-                const decodedUrl = decodeURIComponent(url);
-
-                // Handle Yandex Maps URLs
-                if (decodedUrl.includes('yandex.uz/maps')) {
-                    const llMatch = decodedUrl.match(/ll=([^&]+)/);
-                    if (llMatch) {
-                        const coords = llMatch[1].split(',');
-                        if (coords.length === 2) {
-                            const lng = parseFloat(coords[0]);
-                            const lat = parseFloat(coords[1]);
-                            // Validate coordinates for Tashkent area
-                            if (lat >= 40 && lat <= 42 && lng >= 68 && lng <= 70) {
-                                return [lat, lng];
-                            }
-                        }
-                    }
-                }
-
-                // Handle Google Maps URLs - Try multiple patterns
-
-                // Pattern 1: Direct coordinates in URL
-                const coordPattern1 = decodedUrl.match(/(-?\d+\.\d+),(-?\d+\.\d+)/);
-                if (coordPattern1) {
-                    const lat = parseFloat(coordPattern1[1]);
-                    const lng = parseFloat(coordPattern1[2]);
-                    if (lat >= 40 && lat <= 42 && lng >= 68 && lng <= 70) {
-                        return [lat, lng];
-                    }
-                }
-
-                // Pattern 2: @ symbol pattern (@lat,lng)
-                const atPattern = decodedUrl.match(/@(-?\d+\.?\d*),(-?\d+\.?\d*)/);
-                if (atPattern) {
-                    const lat = parseFloat(atPattern[1]);
-                    const lng = parseFloat(atPattern[2]);
-                    if (lat >= 40 && lat <= 42 && lng >= 68 && lng <= 70) {
-                        return [lat, lng];
-                    }
-                }
-
-                // Pattern 3: !3d and !4d pattern
-                const bangPattern = decodedUrl.match(/!3d(-?\d+\.?\d*)!4d(-?\d+\.?\d*)/);
-                if (bangPattern) {
-                    const lat = parseFloat(bangPattern[1]);
-                    const lng = parseFloat(bangPattern[2]);
-                    if (lat >= 40 && lat <= 42 && lng >= 68 && lng <= 70) {
-                        return [lat, lng];
-                    }
-                }
-
-                // Pattern 4: Query parameters
-                try {
-                    const urlObj = new URL(decodedUrl);
-                    const params = urlObj.searchParams;
-
-                    const qParam = params.get('q');
-                    if (qParam) {
-                        const qMatch = qParam.match(/(-?\d+\.?\d*),(-?\d+\.?\d*)/);
-                        if (qMatch) {
-                            const lat = parseFloat(qMatch[1]);
-                            const lng = parseFloat(qMatch[2]);
-                            if (lat >= 40 && lat <= 42 && lng >= 68 && lng <= 70) {
-                                return [lat, lng];
-                            }
-                        }
-                    }
-
-                    const llParam = params.get('ll');
-                    if (llParam) {
-                        const llMatch = llParam.match(/(-?\d+\.?\d*),(-?\d+\.?\d*)/);
-                        if (llMatch) {
-                            const lat = parseFloat(llMatch[1]);
-                            const lng = parseFloat(llMatch[2]);
-                            if (lat >= 40 && lat <= 42 && lng >= 68 && lng <= 70) {
-                                return [lat, lng];
-                            }
-                        }
-                    }
-                } catch (urlError) {
-                    // URL parsing failed, continue with other methods
-                }
-
-                // For Google shortened URLs, we'll need to expand them server-side
-                // For now, return null and handle gracefully
-                return null;
-
-            } catch (error) {
-                console.error('Error extracting coordinates from URL:', url, error);
-                return null;
-            }
-        }
-
         // Get status info for different types
         function getStatusInfo(item) {
             const type = item['Таклиф_тури_(Реновация,_Инвестиция,_Аукцион)'];
@@ -1489,6 +1537,7 @@
             const coordinates = extractCoordinatesFromUrl(item['Таклиф_Харита']);
 
             if (!coordinates) {
+                console.log(`No valid coordinates extracted for item ${item['№']}, URL: ${item['Таклиф_Харита']}`);
                 return false;
             }
 
@@ -1531,6 +1580,7 @@
             });
 
             App.counts.jsonData++;
+            console.log(`Successfully added marker for item ${item['№']} at coordinates:`, coordinates);
             return true;
         }
 
@@ -2111,89 +2161,11 @@
 
                     pdfDocs.forEach(doc => {
                         const fileName = doc.filename || 'Ҳужжат';
-                        const pdfUrl = doc.url;
-
-                        sidebarHtml += `
-                            <a href="${pdfUrl}" target="_blank" class="document-link">
-                                <i class="fas fa-file-pdf"></i> ${fileName}
-                            </a>`;
-                    });
-
-                    sidebarHtml += `</div>`;
-                }
-
-                // Add KMZ documents
-                if (kmzDocs.length > 0) {
-                    sidebarHtml += `<div class="doc-group">
-                        <h4>KMZ Харита файллари</h4>`;
-
-                    kmzDocs.forEach(doc => {
-                        const fileName = doc.filename || 'KMZ файл';
-                        const kmzUrl = doc.url;
-
-                        sidebarHtml += `
-                            <a href="${kmzUrl}" download class="document-link">
-                                <i class="fas fa-map"></i> ${fileName}
-                            </a>`;
-                    });
-
-                    sidebarHtml += `</div>`;
-                }
-
-                sidebarHtml += `</div>`;
-            }
-
-            sidebarHtml += `</div>`;
-
-            sidebar.innerHTML = sidebarHtml;
-            document.body.appendChild(sidebar);
-            App.currentSidebar = sidebar;
-
-            const closeBtn = sidebar.querySelector('.sidebar-close-btn');
-            if (closeBtn) {
-                closeBtn.addEventListener('click', function() {
-                    closeSidebar();
-                });
-            }
-
-            requestAnimationFrame(() => {
-                sidebar.classList.add('open');
-                setTimeout(() => {
-                    App.isAnimating = false;
-                }, 300);
-            });
-
-        //     showToast('Маълумотлар юкланди');
-        // }оли сони:</td><td>${population}</td></tr>` : ''}
-        //                 ${household !== 'N/A' ? `<tr><td>Хонадонлар сони:</td><td>${household}</td></tr>` : ''}
-        //             </table>
-        //         `;
-        //     }
-
-            // Add documents if available
-            if (lot.documents && lot.documents.length > 0) {
-                sidebarHtml += `
-                    <div class="section-title">Ҳужжатлар</div>
-                    <div class="documents-list">`;
-
-                // Group documents by type
-                const pdfDocs = lot.documents.filter(doc => doc.doc_type === 'pdf-document');
-                const kmzDocs = lot.documents.filter(doc => doc.doc_type === 'kmz-document');
-
-                // Add PDF documents
-                if (pdfDocs.length > 0) {
-                    sidebarHtml += `<div class="doc-group">
-                        <h4>PDF Ҳужжатлар</h4>`;
-
-                    pdfDocs.forEach(doc => {
-                        const fileName = doc.filename || 'Ҳужжат';
-                        // Fix URL to use the apiBaseUrl
                         let pdfUrl = doc.url;
                         if (pdfUrl.startsWith('http') && !pdfUrl.includes(window.location.hostname)) {
                             const paths = pdfUrl.split('/assets/');
                             if (paths.length > 1) {
-                                pdfUrl = App.apiBaseUrl + '/assets/data/RENOVATSIYA ISXOD PDF/' + paths[1].split(
-                                    '/').pop();
+                                pdfUrl = App.apiBaseUrl + '/assets/data/RENOVATSIYA ISXOD PDF/' + paths[1].split('/').pop();
                             }
                         }
 
@@ -2213,7 +2185,6 @@
 
                     kmzDocs.forEach(doc => {
                         const fileName = doc.filename || 'KMZ файл';
-                        // Fix URL to use the apiBaseUrl
                         let kmzUrl = doc.url;
                         if (kmzUrl.startsWith('http') && !kmzUrl.includes(window.location.hostname)) {
                             const paths = kmzUrl.split('/assets/');
@@ -2240,7 +2211,7 @@
             document.body.appendChild(sidebar);
             App.currentSidebar = sidebar;
 
-            // const closeBtn = sidebar.querySelector('.sidebar-close-btn');
+            const closeBtn = sidebar.querySelector('.sidebar-close-btn');
             if (closeBtn) {
                 closeBtn.addEventListener('click', function() {
                     closeSidebar();
