@@ -206,6 +206,21 @@
             color: #1E3685;
         }
 
+        .badge-renovation {
+            background-color: #f3e5f5;
+            color: #8e24aa;
+        }
+
+        .badge-investment {
+            background-color: #e1f5fe;
+            color: #0277bd;
+        }
+
+        .badge-auction {
+            background-color: #fff3e0;
+            color: #f57c00;
+        }
+
         .documents-list {
             display: flex;
             flex-direction: column;
@@ -362,6 +377,60 @@
             background: #152a6c;
         }
 
+        /* Map controls */
+        .map-controls {
+            position: absolute;
+            top: 80px;
+            right: 10px;
+            z-index: 1000;
+            background: white;
+            border-radius: 4px;
+            box-shadow: 0 1px 5px rgba(0,0,0,0.4);
+            padding: 6px;
+        }
+
+        .map-control-btn {
+            padding: 8px 12px;
+            background: white;
+            border: 1px solid #ccc;
+            border-radius: 4px;
+            cursor: pointer;
+            font-size: 14px;
+            display: flex;
+            align-items: center;
+            gap: 6px;
+            transition: all 0.2s;
+            margin-bottom: 4px;
+        }
+
+        .map-control-btn:last-child {
+            margin-bottom: 0;
+        }
+
+        .map-control-btn:hover {
+            background: #f4f4f4;
+        }
+
+        .map-control-btn.active {
+            background: #FF5722;
+            color: white;
+            border-color: #FF5722;
+        }
+
+        .map-control-btn i {
+            font-size: 16px;
+        }
+
+        .auction-popup {
+            padding: 5px;
+        }
+
+        .auction-image {
+            margin: 8px 0;
+            border-radius: 4px;
+            overflow: hidden;
+        }
+
         /* Responsive adjustments */
         @media (max-width: 768px) {
             .sidebar {
@@ -412,16 +481,18 @@
 
     <script>
         // App namespace
-        // Add this to your App namespace (right after the existing properties)
         const App = {
             map: null,
             markers: [],
             polygons: {},
-            kmzLayers: {}, // Store KMZ layers
-            auctionMarkers: [], // Store auction markers separately
-            auctionMarkersVisible: false, // Track if auction markers are visible
+            kmzLayers: {},
+            auctionMarkers: [],
+            auctionMarkersVisible: false,
             markerCluster: null,
-            auctionCluster: null, // Separate cluster for auction markers
+            auctionCluster: null,
+            jsonDataMarkers: [], // New array for JSON data markers
+            jsonDataVisible: true, // Track if JSON data is visible
+            jsonDataCluster: null, // Separate cluster for JSON data
             currentSidebar: null,
             isAnimating: false,
             currentItem: null,
@@ -440,6 +511,85 @@
             })()
         };
 
+        // Extract coordinates from Google Maps or Yandex links
+        function extractCoordinatesFromUrl(url) {
+            if (!url) return null;
+
+            try {
+                // Google Maps - various formats
+                const googleMatch1 = url.match(/@(-?\d+\.\d+),(-?\d+\.\d+)/);
+                if (googleMatch1) {
+                    return [parseFloat(googleMatch1[1]), parseFloat(googleMatch1[2])];
+                }
+
+                const googleMatch2 = url.match(/!3d(-?\d+\.\d+)!4d(-?\d+\.\d+)/);
+                if (googleMatch2) {
+                    return [parseFloat(googleMatch2[1]), parseFloat(googleMatch2[2])];
+                }
+
+                const googleMatch3 = url.match(/place\/(-?\d+(?:\.\d+)?)%2C(-?\d+(?:\.\d+)?)/);
+                if (googleMatch3) {
+                    return [parseFloat(googleMatch3[1]), parseFloat(googleMatch3[2])];
+                }
+
+                // Coordinates in query format
+                const coordMatch = url.match(/(\d+)°(\d+)'(\d+(?:\.\d+)?)"([NS])\+(\d+)°(\d+)'(\d+(?:\.\d+)?)"([EW])/);
+                if (coordMatch) {
+                    let lat = parseFloat(coordMatch[1]) + parseFloat(coordMatch[2])/60 + parseFloat(coordMatch[3])/3600;
+                    let lng = parseFloat(coordMatch[5]) + parseFloat(coordMatch[6])/60 + parseFloat(coordMatch[7])/3600;
+
+                    if (coordMatch[4] === 'S') lat = -lat;
+                    if (coordMatch[8] === 'W') lng = -lng;
+
+                    return [lat, lng];
+                }
+
+                // Yandex Maps
+                const yandexMatch = url.match(/ll=(-?\d+(?:\.\d+)?)%2C(-?\d+(?:\.\d+)?)/);
+                if (yandexMatch) {
+                    return [parseFloat(yandexMatch[2]), parseFloat(yandexMatch[1])]; // Yandex is lng,lat
+                }
+
+                // Simple lat,lng in URL
+                const simpleMatch = url.match(/(-?\d+\.\d+),(-?\d+\.\d+)/);
+                if (simpleMatch) {
+                    return [parseFloat(simpleMatch[1]), parseFloat(simpleMatch[2])];
+                }
+
+            } catch (error) {
+                console.error('Error extracting coordinates from URL:', url, error);
+            }
+
+            return null;
+        }
+
+        // Get status info for different types
+        function getStatusInfo(item) {
+            const type = item['Таклиф_тури_(Реновация,_Инвестиция,_Аукцион)'];
+
+            switch (type) {
+                case 'Реновация':
+                    return { text: 'Реновация', class: 'badge-renovation', color: '#8e24aa' };
+                case 'Инвестиция':
+                    return { text: 'Инвестиция', class: 'badge-investment', color: '#0277bd' };
+                case 'Аукцион':
+                    return { text: 'Аукцион', class: 'badge-auction', color: '#f57c00' };
+                default:
+                    return { text: type || 'Белгисиз', class: 'badge-info', color: '#1E3685' };
+            }
+        }
+
+        // Create marker icon based on type
+        function createMarkerIcon(item) {
+            const status = getStatusInfo(item);
+
+            return L.divIcon({
+                html: `<div style="background-color: ${status.color}; width: 12px; height: 12px; border-radius: 50%; border: 2px solid white;"></div>`,
+                className: 'custom-marker',
+                iconSize: [16, 16],
+                iconAnchor: [8, 8]
+            });
+        }
 
         // Show loading indicator
         function showLoading() {
@@ -532,7 +682,7 @@
                 attribution: '© OpenStreetMap contributors'
             }).addTo(App.map);
 
-            // Create marker cluster
+            // Create marker clusters
             App.markerCluster = L.markerClusterGroup({
                 chunkedLoading: true,
                 maxClusterRadius: 50,
@@ -541,7 +691,219 @@
                 disableClusteringAtZoom: 16
             });
 
+            App.auctionCluster = L.markerClusterGroup({
+                chunkedLoading: true,
+                maxClusterRadius: 50,
+                spiderfyOnMaxZoom: true,
+                showCoverageOnHover: false,
+                disableClusteringAtZoom: 16
+            });
+
+            App.jsonDataCluster = L.markerClusterGroup({
+                chunkedLoading: true,
+                maxClusterRadius: 50,
+                spiderfyOnMaxZoom: true,
+                showCoverageOnHover: false,
+                disableClusteringAtZoom: 16
+            });
+
+            // Add clusters to map
             App.map.addLayer(App.markerCluster);
+            App.map.addLayer(App.jsonDataCluster);
+        }
+
+        // Add JSON data marker to map
+        function addJsonDataMarker(item) {
+            const coordinates = extractCoordinatesFromUrl(item['Таклиф_Харита']);
+
+            if (!coordinates) {
+                console.warn('Could not extract coordinates for item:', item);
+                return false;
+            }
+
+            // Create unique ID
+            const itemId = 'json-item-' + item['№'];
+
+            // Create custom marker icon
+            const icon = createMarkerIcon(item);
+            const marker = L.marker(coordinates, { icon: icon });
+
+            // Store item ID on marker
+            marker.itemId = itemId;
+
+            // Get status info
+            const status = getStatusInfo(item);
+
+            // Create popup content
+            const district = item['Туман'] || '';
+            const address = item['Манзил_(МФЙ,_кўча)'] || '';
+            const area = item['Таклиф_Ер_майдони_(га)'] || '';
+            const floors = item['Таклиф_қавати_ва_ҳудуд'] || '';
+            const activity = item['Таклиф_Фаолият_тури'] || '';
+
+            const popup = `
+                <div>
+                    <h3>${district} - ${item['№']}</h3>
+                    <p><strong>Манзил:</strong> ${address}</p>
+                    <p><strong>Майдон:</strong> ${area} га</p>
+                    <p><strong>Қаватлар:</strong> ${floors}</p>
+                    <p><strong>Фаолият:</strong> ${activity}</p>
+                    <p><span class="badge ${status.class}">${status.text}</span></p>
+                    <button class="details-btn" data-item-id="${itemId}">Тафсилотлар</button>
+                </div>
+            `;
+
+            marker.bindPopup(popup);
+
+            // Add click handler
+            marker.on('click', function(e) {
+                showJsonItemDetails(this.itemId);
+                L.DomEvent.stopPropagation(e);
+            });
+
+            // Add to cluster and store reference
+            App.jsonDataCluster.addLayer(marker);
+            App.jsonDataMarkers.push({
+                marker: marker,
+                data: item
+            });
+
+            return true;
+        }
+
+        // Show JSON item details
+        function showJsonItemDetails(itemId) {
+            if (App.isAnimating) {
+                return;
+            }
+
+            // Find item data
+            let item = null;
+            for (let i = 0; i < App.jsonDataMarkers.length; i++) {
+                if (App.jsonDataMarkers[i].marker.itemId === itemId) {
+                    item = App.jsonDataMarkers[i].data;
+                    break;
+                }
+            }
+
+            if (!item) {
+                console.error(`Item with ID ${itemId} not found`);
+                return;
+            }
+
+            // Store view state and close existing sidebar
+            App.lastView.zoom = App.map.getZoom();
+            App.lastView.center = App.map.getCenter();
+            closeSidebar(true);
+
+            App.currentItem = itemId;
+            App.isAnimating = true;
+
+            // Get status info
+            const status = getStatusInfo(item);
+
+            // Create sidebar
+            const sidebar = document.createElement('div');
+            sidebar.className = 'sidebar';
+            sidebar.id = `sidebar-${Date.now()}`;
+
+            // Generate sidebar HTML
+            let sidebarHtml = `
+                <div class="sidebar-header">
+                    <h2>${item['Туман']} - ${item['№']}</h2>
+                    <button class="sidebar-close-btn">×</button>
+                </div>
+                <div class="sidebar-content">
+                    <div class="section-title">Асосий маълумотлар</div>
+                    <table class="details-table">
+                        <tr><td>№:</td><td>${item['№'] || 'N/A'}</td></tr>
+                        <tr><td>Туман:</td><td>${item['Туман'] || 'N/A'}</td></tr>
+                        <tr><td>Манзил:</td><td>${item['Манзил_(МФЙ,_кўча)'] || 'N/A'}</td></tr>
+                        <tr><td>Тури:</td><td><span class="badge ${status.class}">${status.text}</span></td></tr>
+                        <tr><td>Майдон:</td><td>${item['Таклиф_Ер_майдони_(га)'] || 'N/A'} га</td></tr>
+                    </table>
+
+                    <div class="section-title">Лойиҳа тафсилотлари</div>
+                    <table class="details-table">
+                        <tr><td>Бош режадаги ҳолат:</td><td>${item['Бош_режадаги_ҳолати_ва_қавати'] || 'N/A'}</td></tr>
+                        <tr><td>Таклиф қават:</td><td>${item['Таклиф_қавати_ва_ҳудуд'] || 'N/A'}</td></tr>
+                        <tr><td>Фаолият тури:</td><td>${item['Таклиф_Фаолият_тури'] || 'N/A'}</td></tr>
+                        <tr><td>Филтр фаолияти:</td><td>${item['Таклиф_Фалияти_филтир_учун'] || 'N/A'}</td></tr>
+                    </table>
+
+                    <div class="section-title">Бош режа ҳолати</div>
+                    <table class="details-table">
+                        <tr><td>Киритилганлиги:</td><td>${item['Таклиф_Бош_режага_таклиф_киритилганлиги_(таклиф_берилган_лекин_киритилмаган_бўлас_КИРИТИЛМАГАН_хисобланади)'] || 'N/A'}</td></tr>
+                    </table>
+            `;
+
+            // Add technical parameters if available
+            if (item['Этажность'] || item['Қурилиш_ости_майдони'] || item['Бинонинг_умумий_майдони']) {
+                sidebarHtml += `
+                    <div class="section-title">Техник параметрлар</div>
+                    <table class="details-table">
+                        ${item['Этажность'] ? `<tr><td>Этажность:</td><td>${item['Этажность']}</td></tr>` : ''}
+                        ${item['Қурилиш_ости_майдони'] ? `<tr><td>Қурилиш ости майдони:</td><td>${item['Қурилиш_ости_майдони']} м²</td></tr>` : ''}
+                        ${item['Бинонинг_умумий_майдони'] ? `<tr><td>Умумий майдон:</td><td>${item['Бинонинг_умумий_майдони']} м²</td></tr>` : ''}
+                        ${item['Хизмат_кўрсатиш_сохаси'] ? `<tr><td>Хизмат кўрсатиш:</td><td>${item['Хизмат_кўрсатиш_сохаси']} м²</td></tr>` : ''}
+                        ${item['Яшаш_майдон'] ? `<tr><td>Яшаш майдон:</td><td>${item['Яшаш_майдон']} м²</td></tr>` : ''}
+                    </table>
+                `;
+            }
+
+            // Add demographic info if available
+            if (item['хонадонлар_сони'] || item['Ахоли_сони']) {
+                sidebarHtml += `
+                    <div class="section-title">Демографик маълумотлар</div>
+                    <table class="details-table">
+                        ${item['хонадонлар_сони'] ? `<tr><td>Хонадонлар сони:</td><td>${item['хонадонлар_сони']}</td></tr>` : ''}
+                        ${item['Ахоли_сони'] ? `<tr><td>Аҳоли сони:</td><td>${item['Ахоли_сони']}</td></tr>` : ''}
+                    </table>
+                `;
+            }
+
+            // Add map link if available
+            if (item['Таклиф_Харита']) {
+                sidebarHtml += `
+                    <div class="section-title">Харита</div>
+                    <a href="${item['Таклиф_Харита']}" target="_blank" class="document-link">
+                        <i class="fas fa-map"></i> Харитада кўриш
+                    </a>
+                `;
+            }
+
+            sidebarHtml += `</div>`;
+
+            // Set sidebar HTML and add to body
+            sidebar.innerHTML = sidebarHtml;
+            document.body.appendChild(sidebar);
+            App.currentSidebar = sidebar;
+
+            // Add close button event
+            const closeBtn = sidebar.querySelector('.sidebar-close-btn');
+            if (closeBtn) {
+                closeBtn.addEventListener('click', function() {
+                    closeSidebar();
+                });
+            }
+
+            // Show sidebar with animation
+            requestAnimationFrame(() => {
+                sidebar.classList.add('open');
+
+                setTimeout(() => {
+                    // Find and focus on marker
+                    const markerEntry = App.jsonDataMarkers.find(m => m.marker.itemId === itemId);
+                    if (markerEntry) {
+                        const coordinates = markerEntry.marker.getLatLng();
+                        App.map.setView(coordinates, 17, { animate: true });
+                    }
+
+                    App.isAnimating = false;
+                }, 300);
+            });
+
+            showToast('Маълумотлар юкланди');
         }
 
         // Extract polygon coordinates
@@ -1453,6 +1815,56 @@
             }, 300);
         }
 
+        // Fetch JSON data from local file
+        async function fetchJsonData() {
+            try {
+                console.log('Fetching JSON data from local file...');
+
+                // Fetch the JSON file using the relative path
+                const response = await fetch('/assets/data/443_output.json');
+
+                if (!response.ok) {
+                    throw new Error(`Failed to fetch JSON file: ${response.status}`);
+                }
+
+                const data = await response.json();
+                console.log('JSON data response:', data);
+
+                if (!Array.isArray(data) || data.length === 0) {
+                    console.warn('No valid JSON data found');
+                    return false;
+                }
+
+                console.log(`Found ${data.length} items in JSON data`);
+
+                // Process each item
+                let processedCount = 0;
+
+                data.forEach(item => {
+                    if (!item || typeof item !== 'object') {
+                        return;
+                    }
+
+                    if (addJsonDataMarker(item)) {
+                        processedCount++;
+                    }
+                });
+
+                console.log(`Processed ${processedCount} JSON data markers`);
+
+                if (processedCount > 0) {
+                    showToast(`Юкланди ${processedCount} та JSON маълумот`, 'info');
+                    return true;
+                }
+
+                return false;
+            } catch (error) {
+                console.error('Error fetching JSON data:', error);
+                showToast('JSON маълумотларни юклашда хатолик: ' + error.message, 'warning');
+                return false;
+            }
+        }
+
         // Fetch data from API
         async function fetchData() {
             showLoading();
@@ -1617,206 +2029,191 @@
             }
         }
 
-// Fetch and process auction data
-async function fetchAuctionData() {
-    try {
-        const auctionApiUrl = 'https://projects.toshkentinvest.uz/api/markersing';
-        console.log(`Fetching auction data from: ${auctionApiUrl}`);
+        // Fetch and process auction data
+        async function fetchAuctionData() {
+            try {
+                const auctionApiUrl = 'https://projects.toshkentinvest.uz/api/markersing';
+                console.log(`Fetching auction data from: ${auctionApiUrl}`);
 
-        const response = await fetch(auctionApiUrl);
-        if (!response.ok) {
-            throw new Error(`Auction API request failed with status ${response.status}`);
+                const response = await fetch(auctionApiUrl);
+                if (!response.ok) {
+                    throw new Error(`Auction API request failed with status ${response.status}`);
+                }
+
+                const data = await response.json();
+                console.log('Auction API response:', data);
+
+                // Check if we have the lots array as expected
+                if (!data || !data.lots || !Array.isArray(data.lots) || data.lots.length === 0) {
+                    console.warn('No auction data found in API response');
+                    return false;
+                }
+
+                console.log(`Found ${data.lots.length} auction lots`);
+
+                // Process auction data
+                let processedCount = 0;
+
+                data.lots.forEach(lot => {
+                    if (!lot || typeof lot !== 'object' || !lot.lat || !lot.lng) {
+                        return;
+                    }
+
+                    // Create a unique ID for this auction lot
+                    const auctionId = 'auction-' + lot.lot_number;
+
+                    // Create marker with custom icon
+                    const auctionIcon = L.divIcon({
+                        html: `<div class="auction-marker" style="background-color: #FF5722; width: 12px; height: 12px; border-radius: 50%; border: 2px solid white;"></div>`,
+                        className: 'auction-marker-container',
+                        iconSize: [16, 16],
+                        iconAnchor: [8, 8]
+                    });
+
+                    const marker = L.marker([lot.lat, lot.lng], { icon: auctionIcon });
+
+                    // Add popup with auction details
+                    const price = Number(lot.start_price).toLocaleString('uz-UZ');
+                    const popup = `
+                        <div class="auction-popup">
+                            <h3>${lot.property_name}</h3>
+                            <div class="auction-image">
+                                <img src="${lot.main_image}" alt="${lot.property_name}" style="width:100%; max-height:150px; object-fit:cover;">
+                            </div>
+                            <p><strong>Бошланғич нархи:</strong> ${price} сўм</p>
+                            <p><strong>Аукцион санаси:</strong> ${lot.auction_date}</p>
+                            <p><strong>Жойлашуви:</strong> ${lot.region}, ${lot.area}, ${lot.address}</p>
+                            <p><strong>Майдони:</strong> ${lot.land_area} га</p>
+                            <p><strong>Тури:</strong> ${lot.property_category}</p>
+                            <p><strong>Ҳолати:</strong> ${lot.lot_status}</p>
+                            <a href="${lot.lot_link}" target="_blank" class="auction-link" style="display:block; text-align:center; background:#FF5722; color:white; padding:8px; text-decoration:none; border-radius:4px; margin-top:10px;">
+                                Батафсил маълумот
+                            </a>
+                        </div>
+                    `;
+
+                    marker.bindPopup(popup, { maxWidth: 300 });
+
+                    // Add to auction markers array and cluster
+                    App.auctionMarkers.push({
+                        marker: marker,
+                        data: lot
+                    });
+
+                    App.auctionCluster.addLayer(marker);
+                    processedCount++;
+                });
+
+                console.log(`Processed ${processedCount} auction markers`);
+
+                // Return success if we processed any markers
+                return processedCount > 0;
+            } catch (error) {
+                console.error('Error fetching auction data:', error);
+                return false;
+            }
         }
 
-        const data = await response.json();
-        console.log('Auction API response:', data);
-
-        // Check if we have the lots array as expected
-        if (!data || !data.lots || !Array.isArray(data.lots) || data.lots.length === 0) {
-            console.warn('No auction data found in API response');
-            return false;
-        }
-
-        console.log(`Found ${data.lots.length} auction lots`);
-
-        // Create a marker cluster for auction markers if it doesn't exist
-        if (!App.auctionCluster) {
-            App.auctionCluster = L.markerClusterGroup({
-                chunkedLoading: true,
-                maxClusterRadius: 50,
-                spiderfyOnMaxZoom: true,
-                showCoverageOnHover: false,
-                disableClusteringAtZoom: 16
-            });
-        }
-
-        // Process auction data
-        let processedCount = 0;
-
-        data.lots.forEach(lot => {
-            if (!lot || typeof lot !== 'object' || !lot.lat || !lot.lng) {
-                return;
+        // Toggle auction markers visibility
+        function toggleAuctionMarkers() {
+            if (App.auctionMarkersVisible) {
+                // If currently visible, remove from map
+                App.map.removeLayer(App.auctionCluster);
+                App.auctionMarkersVisible = false;
+            } else {
+                // If currently hidden, add to map
+                App.map.addLayer(App.auctionCluster);
+                App.auctionMarkersVisible = true;
             }
 
-            // Create a unique ID for this auction lot
-            const auctionId = 'auction-' + lot.lot_number;
-
-            // Create marker with custom icon
-            const auctionIcon = L.divIcon({
-                html: `<div class="auction-marker" style="background-color: #FF5722; width: 12px; height: 12px; border-radius: 50%; border: 2px solid white;"></div>`,
-                className: 'auction-marker-container',
-                iconSize: [16, 16],
-                iconAnchor: [8, 8]
-            });
-
-            const marker = L.marker([lot.lat, lot.lng], { icon: auctionIcon });
-
-            // Add popup with auction details
-            const price = Number(lot.start_price).toLocaleString('uz-UZ');
-            const popup = `
-                <div class="auction-popup">
-                    <h3>${lot.property_name}</h3>
-                    <div class="auction-image">
-                        <img src="${lot.main_image}" alt="${lot.property_name}" style="width:100%; max-height:150px; object-fit:cover;">
-                    </div>
-                    <p><strong>Бошланғич нархи:</strong> ${price} сўм</p>
-                    <p><strong>Аукцион санаси:</strong> ${lot.auction_date}</p>
-                    <p><strong>Жойлашуви:</strong> ${lot.region}, ${lot.area}, ${lot.address}</p>
-                    <p><strong>Майдони:</strong> ${lot.land_area} га</p>
-                    <p><strong>Тури:</strong> ${lot.property_category}</p>
-                    <p><strong>Ҳолати:</strong> ${lot.lot_status}</p>
-                    <a href="${lot.lot_link}" target="_blank" class="auction-link" style="display:block; text-align:center; background:#FF5722; color:white; padding:8px; text-decoration:none; border-radius:4px; margin-top:10px;">
-                        Батафсил маълумот
-                    </a>
-                </div>
-            `;
-
-            marker.bindPopup(popup, { maxWidth: 300 });
-
-            // Add to auction markers array and cluster
-            App.auctionMarkers.push({
-                marker: marker,
-                data: lot
-            });
-
-            App.auctionCluster.addLayer(marker);
-            processedCount++;
-        });
-
-        console.log(`Processed ${processedCount} auction markers`);
-
-        // Return success if we processed any markers
-        return processedCount > 0;
-    } catch (error) {
-        console.error('Error fetching auction data:', error);
-        return false;
-    }
-}
-
-// Toggle auction markers visibility
-function toggleAuctionMarkers() {
-    if (App.auctionMarkersVisible) {
-        // If currently visible, remove from map
-        App.map.removeLayer(App.auctionCluster);
-        App.auctionMarkersVisible = false;
-    } else {
-        // If currently hidden, add to map
-        App.map.addLayer(App.auctionCluster);
-        App.auctionMarkersVisible = true;
-    }
-
-    // Update button text
-    updateAuctionButtonText();
-}
-
-// Update the auction toggle button text
-function updateAuctionButtonText() {
-    const button = document.getElementById('toggle-auction-btn');
-    if (button) {
-        button.innerHTML = App.auctionMarkersVisible ?
-            '<i class="fas fa-gavel"></i> Аукционларни яшириш' :
-            '<i class="fas fa-gavel"></i> Аукционларни кўрсатиш';
-
-        // Update button style
-        button.className = App.auctionMarkersVisible ?
-            'map-control-btn active' : 'map-control-btn';
-    }
-}
-
-// Create auction control
-function createAuctionControl() {
-    // Add CSS for the control
-    const style = document.createElement('style');
-    style.textContent = `
-        .map-controls {
-            position: absolute;
-            top: 80px;
-            right: 10px;
-            z-index: 1000;
-            background: white;
-            border-radius: 4px;
-            box-shadow: 0 1px 5px rgba(0,0,0,0.4);
-            padding: 6px;
+            // Update button text
+            updateAuctionButtonText();
         }
-        .map-control-btn {
-            padding: 8px 12px;
-            background: white;
-            border: 1px solid #ccc;
-            border-radius: 4px;
-            cursor: pointer;
-            font-size: 14px;
-            display: flex;
-            align-items: center;
-            gap: 6px;
-            transition: all 0.2s;
-        }
-        .map-control-btn:hover {
-            background: #f4f4f4;
-        }
-        .map-control-btn.active {
-            background: #FF5722;
-            color: white;
-            border-color: #FF5722;
-        }
-        .map-control-btn i {
-            font-size: 16px;
-        }
-        .auction-popup {
-            padding: 5px;
-        }
-        .auction-image {
-            margin: 8px 0;
-            border-radius: 4px;
-            overflow: hidden;
-        }
-    `;
-    document.head.appendChild(style);
 
-    // Create control container
-    const controlDiv = document.createElement('div');
-    controlDiv.className = 'map-controls';
+        // Toggle JSON data markers visibility
+        function toggleJsonDataMarkers() {
+            if (App.jsonDataVisible) {
+                // If currently visible, remove from map
+                App.map.removeLayer(App.jsonDataCluster);
+                App.jsonDataVisible = false;
+            } else {
+                // If currently hidden, add to map
+                App.map.addLayer(App.jsonDataCluster);
+                App.jsonDataVisible = true;
+            }
 
-    // Create auction toggle button
-    const auctionButton = document.createElement('button');
-    auctionButton.id = 'toggle-auction-btn';
-    auctionButton.className = 'map-control-btn';
-    auctionButton.innerHTML = '<i class="fas fa-gavel"></i> Аукционларни кўрсатиш';
-    auctionButton.addEventListener('click', toggleAuctionMarkers);
+            // Update button text
+            updateJsonDataButtonText();
+        }
 
-    // Add button to control div
-    controlDiv.appendChild(auctionButton);
+        // Update the auction toggle button text
+        function updateAuctionButtonText() {
+            const button = document.getElementById('toggle-auction-btn');
+            if (button) {
+                button.innerHTML = App.auctionMarkersVisible ?
+                    '<i class="fas fa-gavel"></i> Аукционларни яшириш' :
+                    '<i class="fas fa-gavel"></i> Аукционларни кўрсатиш';
 
-    // Add control to the map container
-    document.getElementById('map').appendChild(controlDiv);
-}
+                // Update button style
+                button.className = App.auctionMarkersVisible ?
+                    'map-control-btn active' : 'map-control-btn';
+            }
+        }
+
+        // Update the JSON data toggle button text
+        function updateJsonDataButtonText() {
+            const button = document.getElementById('toggle-json-btn');
+            if (button) {
+                button.innerHTML = App.jsonDataVisible ?
+                    '<i class="fas fa-layer-group"></i> JSON маълумотларни яшириш' :
+                    '<i class="fas fa-layer-group"></i> JSON маълумотларни кўрсатиш';
+
+                // Update button style
+                button.className = App.jsonDataVisible ?
+                    'map-control-btn active' : 'map-control-btn';
+            }
+        }
+
+        // Create map controls
+        function createMapControls() {
+            // Create control container
+            const controlDiv = document.createElement('div');
+            controlDiv.className = 'map-controls';
+
+            // Create auction toggle button
+            const auctionButton = document.createElement('button');
+            auctionButton.id = 'toggle-auction-btn';
+            auctionButton.className = 'map-control-btn';
+            auctionButton.innerHTML = '<i class="fas fa-gavel"></i> Аукционларни кўрсатиш';
+            auctionButton.addEventListener('click', toggleAuctionMarkers);
+
+            // Create JSON data toggle button
+            const jsonButton = document.createElement('button');
+            jsonButton.id = 'toggle-json-btn';
+            jsonButton.className = 'map-control-btn active';
+            jsonButton.innerHTML = '<i class="fas fa-layer-group"></i> JSON маълумотларни яшириш';
+            jsonButton.addEventListener('click', toggleJsonDataMarkers);
+
+            // Add buttons to control div
+            controlDiv.appendChild(jsonButton);
+            controlDiv.appendChild(auctionButton);
+
+            // Add control to the map container
+            document.getElementById('map').appendChild(controlDiv);
+        }
+
         // Setup event listeners
         function setupEventListeners() {
             // Popup button clicks
             document.addEventListener('click', function(e) {
                 if (e.target.classList.contains('details-btn')) {
                     const lotId = e.target.getAttribute('data-lot-id');
+                    const itemId = e.target.getAttribute('data-item-id');
+
                     if (lotId) {
                         showDetails(lotId);
+                    } else if (itemId) {
+                        showJsonItemDetails(itemId);
                     }
                 }
             });
@@ -1835,46 +2232,72 @@ function createAuctionControl() {
         }
 
         // Initialize app
-      // Initialize app
-async function init() {
-    showLoading();
+        async function init() {
+            showLoading();
 
-    try {
-        // Initialize map
-        initMap();
+            try {
+                // Initialize map
+                initMap();
 
-        // Setup event listeners
-        setupEventListeners();
+                // Setup event listeners
+                setupEventListeners();
 
-        // Create auction control
-        createAuctionControl();
+                // Create map controls
+                createMapControls();
 
-        // Fetch and process data in parallel
-        const [regularDataResult, auctionDataResult] = await Promise.all([
-            fetchData(),
-            fetchAuctionData()
-        ]);
+                // Fetch and process data in parallel
+                const [regularDataResult, auctionDataResult, jsonDataResult] = await Promise.all([
+                    fetchData(),
+                    fetchAuctionData(),
+                    fetchJsonData()
+                ]);
 
-        // Check if data was loaded successfully
-        if (App.markers.length === 0 &&
-            Object.keys(App.polygons).length === 0 &&
-            Object.keys(App.kmzLayers).length === 0) {
-            console.warn('No regular data loaded on map');
-            showToast('No investment data found', 'warning');
+                // Check if data was loaded successfully
+                if (App.markers.length === 0 &&
+                    Object.keys(App.polygons).length === 0 &&
+                    Object.keys(App.kmzLayers).length === 0) {
+                    console.warn('No regular data loaded on map');
+                }
+
+                if (auctionDataResult) {
+                    console.log('Auction data loaded successfully');
+                } else {
+                    console.warn('No auction data loaded');
+                }
+
+                if (jsonDataResult) {
+                    console.log('JSON data loaded successfully');
+                } else {
+                    console.warn('No JSON data loaded');
+                }
+
+                // Fit map to show all data if available
+                const allMarkers = [];
+
+                // Add regular markers
+                if (App.markers.length > 0) {
+                    allMarkers.push(...App.markers.map(m => m.marker));
+                }
+
+                // Add JSON data markers
+                if (App.jsonDataMarkers.length > 0) {
+                    allMarkers.push(...App.jsonDataMarkers.map(m => m.marker));
+                }
+
+                if (allMarkers.length > 0) {
+                    const group = L.featureGroup(allMarkers);
+                    App.map.fitBounds(group.getBounds(), {
+                        padding: [50, 50]
+                    });
+                }
+
+            } catch (error) {
+                console.error('Initialization error:', error);
+                showToast('Error initializing map: ' + error.message, 'error');
+            } finally {
+                hideLoading();
+            }
         }
-
-        if (auctionDataResult) {
-            console.log('Auction data loaded successfully');
-        } else {
-            console.warn('No auction data loaded');
-        }
-    } catch (error) {
-        console.error('Initialization error:', error);
-        showToast('Error initializing map: ' + error.message, 'error');
-    } finally {
-        hideLoading();
-    }
-}
 
         // Start the app when DOM is ready
         document.addEventListener('DOMContentLoaded', init);
