@@ -4,8 +4,7 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>InvestUz Map</title>
-
+    <title>InvestUz Map Not auth</title>
     <!-- Leaflet CSS -->
     <link rel="stylesheet" href="https://unpkg.com/leaflet@1.9.4/dist/leaflet.css" />
     <link rel="stylesheet" href="https://unpkg.com/leaflet.markercluster@1.4.1/dist/MarkerCluster.css" />
@@ -1064,30 +1063,7 @@ function showDetails(lotId) {
                 const pdfDocs = lot.documents.filter(doc => doc.doc_type === 'pdf-document');
                 const kmzDocs = lot.documents.filter(doc => doc.doc_type === 'kmz-document');
 
-                // // Add PDF documents
-                // if (pdfDocs.length > 0) {
-                //     sidebarHtml += `<div class="doc-group">
-                //         <h4>PDF Ҳужжатлар</h4>`;
 
-                //     pdfDocs.forEach(doc => {
-                //         const fileName = doc.filename || 'Ҳужжат';
-                //         // Fix URL to use the apiBaseUrl
-                //         let pdfUrl = doc.url;
-                //         if (pdfUrl.startsWith('http') && !pdfUrl.includes(window.location.hostname)) {
-                //             const paths = pdfUrl.split('/assets/');
-                //             if (paths.length > 1) {
-                //                 pdfUrl = App.apiBaseUrl + '/assets/data/RENOVATSIYA ISXOD PDF/' + paths[1].split('/').pop();
-                //             }
-                //         }
-
-                //         sidebarHtml += `
-                //             <a href="${pdfUrl}" target="_blank" class="document-link">
-                //                 <i class="fas fa-file-pdf"></i> ${fileName}
-                //             </a>`;
-                //     });
-
-                //     sidebarHtml += `</div>`;
-                // }
 
                 // Add KMZ documents
                 if (kmzDocs.length > 0) {
