@@ -514,12 +514,11 @@
     <header class="app-header">
         <div class="app-logo">
             <i class="fas fa-map-marked-alt fa-2x"></i>
-            <div class="app-title">ИнвестУз - Инвестиция харитаси (Сайт тест режимида ишламоқда)</div>
+            <div class="app-title">ИнвестУз - Инвестиция харитаси</div>
         </div>
         <div class="lang-switcher">
             <button class="lang-btn active">УЗ</button>
             <button class="lang-btn">RU</button>
-            <a class="lang-btn" href="{{ route('login') }}">Login</a>
         </div>
     </header>
 
@@ -574,37 +573,602 @@
             },
             apiBaseUrl: (function() {
                 const hostname = window.location.hostname;
+                const port = window.location.port;
+                const protocol = window.location.protocol;
+
+                // Use the same origin as the current page to avoid CORS issues
                 if (hostname === 'localhost' || hostname === '127.0.0.1') {
-                    return 'http://127.0.0.1:8000';
+                    return `${protocol}//${hostname}${port ? ':' + port : ''}`;
                 } else {
-                    return 'https://development.toshkentinvest.uz';
+                    return `${protocol}//${hostname}${port ? ':' + port : ''}`;
                 }
             })()
         };
 
-        // Enhanced coordinate extraction without CORS issues
+        // Fetch JSON data from local file
+        async function fetchJsonData() {
+            try {
+                console.log('Fetching JSON data from local file...');
+
+                const response = await fetch('/assets/data/443_output.json');
+
+                if (!response.ok) {
+                    console.warn('JSON file not found, skipping JSON data loading');
+                    return false;
+                }
+
+                const data = await response.json();
+                console.log('JSON data response:', data);
+
+                if (!Array.isArray(data) || data.length === 0) {
+                    console.warn('No valid JSON data found');
+                    return false;
+                }
+
+                console.log(`Found ${data.length} items in JSON data`);
+
+                let processedCount = 0;
+
+                for (const item of data) {
+                    if (!item || typeof item !== 'object') {
+                        continue;
+                    }
+
+                    try {
+                        if (addJsonDataMarker(item)) {
+                            processedCount++;
+                        }
+                    } catch (error) {
+                        console.warn('Error processing item:', item['№'], error);
+                    }
+
+                    if (processedCount % 10 === 0) {
+                        await new Promise(resolve => setTimeout(resolve, 10));
+                        updateCounts();
+                    }
+                }
+
+                console.log(`Processed ${processedCount} JSON data markers`);
+
+                updateCounts();
+
+                if (processedCount > 0) {
+                    showToast(`Юкланди ${processedCount} та JSON маълумот`, 'info');
+                    return true;
+                }
+
+                return false;
+            } catch (error) {
+                console.error('Error fetching JSON data:', error);
+                showToast('JSON маълумотларни юклашда хатолик: ' + error.message, 'warning');
+                return false;
+            }
+        }
+
+        // Fetch data from API with improved error handling
+        async function fetchData() {
+            try {
+                const apiUrl = `${App.apiBaseUrl}/api/aktivs`;
+                console.log(`Fetching data from: ${apiUrl}`);
+
+                const response = await fetch(apiUrl, {
+                    method: 'GET',
+                    headers: {
+                        'Accept': 'application/json',
+                        'Content-Type': 'application/json',
+                    },
+                    // Add credentials if needed for same-origin requests
+                    credentials: 'same-origin'
+                });
+
+                if (!response.ok) {
+                    throw new Error(`API request failed with status ${response.status}: ${response.statusText}`);
+                }
+
+                const data = await response.json();
+                console.log('API response:', data);
+
+                let lotsData = [];
+
+                if (data && data.lots && Array.isArray(data.lots)) {
+                    lotsData = data.lots;
+                    console.log(`Found ${lotsData.length} lots in API response`);
+                } else if (data && Array.isArray(data)) {
+                    lotsData = data;
+                    console.log(`Found ${lotsData.length} lots in array response`);
+                } else {
+                    console.warn('Unexpected data format:', data);
+                }
+
+                if (lotsData.length === 0) {
+                    console.warn('No data found in API response');
+                    showToast('Нет данных в API ответе', 'warning');
+                    return false;
+                }
+
+                let processedCount = 0;
+                let processedKmzCount = 0;
+                let idCounter = 1;
+
+                const kmzPromises = [];
+
+                lotsData.forEach(lot => {
+                    if (!lot || typeof lot !== 'object') {
+                        return;
+                    }
+
+                    if (!lot.id) {
+                        lot.id = 'lot-' + idCounter++;
+                    }
+
+                    if (lot.lat && lot.lng) {
+                        if (addMarker(lot)) {
+                            processedCount++;
+                        }
+                    }
+
+                    if (lot.polygons) {
+                        if (addPolygon(lot)) {
+                            processedCount++;
+                        }
+                    }
+
+                    if (lot.documents && Array.isArray(lot.documents)) {
+                        const kmzDocs = lot.documents.filter(doc =>
+                            doc.doc_type === 'kmz-document'
+                        );
+
+                        if (kmzDocs.length > 0) {
+                            const promise = processKmzFile(lot, kmzDocs[0])
+                                .then(success => {
+                                    if (success) {
+                                        processedKmzCount++;
+                                        updateCounts();
+                                    }
+                                })
+                                .catch(error => {
+                                    console.error(`Error processing KMZ for lot ${lot.id}:`, error);
+                                });
+
+                            kmzPromises.push(promise);
+                        }
+                    }
+                });
+
+                updateCounts();
+
+                await Promise.allSettled(kmzPromises);
+
+                if (processedCount > 0 || processedKmzCount > 0) {
+                    showToast(
+                        `Муваффақиятли юкланди: ${processedCount} полигон/маркер ва ${processedKmzCount} KMZ файл`,
+                        'info'
+                    );
+
+                    if (App.markers.length > 0) {
+                        const group = L.featureGroup(App.markers.map(m => m.marker));
+                        App.map.fitBounds(group.getBounds(), {
+                            padding: [50, 50]
+                        });
+                    }
+                    return true;
+                } else {
+                    console.warn('No valid items were processed from API data');
+                    showToast('API маълумотларида ишлатиладиган элементлар топилмади', 'warning');
+                    return false;
+                }
+            } catch (error) {
+                console.error('Error fetching data:', error);
+
+                // Check if it's a CORS error
+                if (error.message.includes('CORS') || error.message.includes('Failed to fetch')) {
+                    showToast('API маълумотларни юклашда CORS хатолиги. Сервер созламаларини текширинг.', 'warning');
+                } else {
+                    showToast('API маълумотларни юклашда хатолик: ' + error.message, 'error');
+                }
+                return false;
+            }
+        }
+
+        // Fetch and process auction data with better error handling
+        async function fetchAuctionData() {
+            try {
+                const auctionApiUrl = 'https://projects.toshkentinvest.uz/api/markersing';
+                console.log(`Fetching auction data from: ${auctionApiUrl}`);
+
+                const response = await fetch(auctionApiUrl, {
+                    method: 'GET',
+                    headers: {
+                        'Accept': 'application/json',
+                    },
+                    // Use no-cors mode if CORS is an issue
+                    mode: 'cors'
+                });
+
+                if (!response.ok) {
+                    throw new Error(`Auction API request failed with status ${response.status}: ${response.statusText}`);
+                }
+
+                const data = await response.json();
+                console.log('Auction API response:', data);
+
+                if (!data || !data.lots || !Array.isArray(data.lots) || data.lots.length === 0) {
+                    console.warn('No auction data found in API response');
+                    return false;
+                }
+
+                console.log(`Found ${data.lots.length} auction lots`);
+
+                let processedCount = 0;
+
+                data.lots.forEach(lot => {
+                    if (!lot || typeof lot !== 'object' || !lot.lat || !lot.lng) {
+                        return;
+                    }
+
+                    const auctionId = 'auction-' + (lot.lot_number || lot.id || processedCount);
+
+                    const auctionIcon = L.divIcon({
+                        html: `<div class="auction-marker" style="background-color: #FF5722; width: 12px; height: 12px; border-radius: 50%; border: 2px solid white;"></div>`,
+                        className: 'auction-marker-container',
+                        iconSize: [16, 16],
+                        iconAnchor: [8, 8]
+                    });
+
+                    const marker = L.marker([parseFloat(lot.lat), parseFloat(lot.lng)], { icon: auctionIcon });
+
+                    const price = lot.start_price ? Number(lot.start_price).toLocaleString('uz-UZ') : 'Белгиланмаган';
+                    const propertyName = lot.property_name || 'Номсиз объект';
+                    const mainImage = lot.main_image || '';
+                    const auctionDate = lot.auction_date || 'Белгиланмаган';
+                    const region = lot.region || '';
+                    const area = lot.area || '';
+                    const address = lot.address || '';
+                    const landArea = lot.land_area || 'Белгиланмаган';
+                    const propertyCategory = lot.property_category || 'Белгиланмаган';
+                    const lotStatus = lot.lot_status || 'Белгиланмаган';
+                    const lotLink = lot.lot_link || '#';
+
+                    const popup = `
+                        <div class="auction-popup">
+                            <h3>${propertyName}</h3>
+                            ${mainImage ? `<div class="auction-image">
+                                <img src="${mainImage}" alt="${propertyName}" style="width:100%; max-height:150px; object-fit:cover;" onerror="this.style.display='none'">
+                            </div>` : ''}
+                            <p><strong>Бошланғич нархи:</strong> ${price} сўм</p>
+                            <p><strong>Аукцион санаси:</strong> ${auctionDate}</p>
+                            <p><strong>Жойлашуви:</strong> ${region}${area ? ', ' + area : ''}${address ? ', ' + address : ''}</p>
+                            <p><strong>Майдони:</strong> ${landArea} га</p>
+                            <p><strong>Тури:</strong> ${propertyCategory}</p>
+                            <p><strong>Ҳолати:</strong> ${lotStatus}</p>
+                            ${lotLink && lotLink !== '#' ? `<a href="${lotLink}" target="_blank" class="auction-link" style="display:block; text-align:center; background:#FF5722; color:white; padding:8px; text-decoration:none; border-radius:4px; margin-top:10px;">
+                                Батафсил маълумот
+                            </a>` : ''}
+                        </div>
+                    `;
+
+                    marker.bindPopup(popup, { maxWidth: 300 });
+
+                    App.auctionMarkers.push({
+                        marker: marker,
+                        data: lot
+                    });
+
+                    App.auctionCluster.addLayer(marker);
+                    App.counts.auction++;
+                    processedCount++;
+                });
+
+                console.log(`Processed ${processedCount} auction markers`);
+                updateCounts();
+
+                return processedCount > 0;
+            } catch (error) {
+                console.error('Error fetching auction data:', error);
+
+                // More specific error handling
+                if (error.message.includes('CORS') || error.message.includes('Failed to fetch')) {
+                    showToast('Аукцион маълумотларни юклашда CORS хатолиги', 'warning');
+                } else {
+                    showToast('Аукцион маълумотларни юклашда хатолик: ' + error.message, 'warning');
+                }
+                return false;
+            }
+        }
+
+        // Toggle auction markers visibility
+        function toggleAuctionMarkers() {
+            if (App.auctionMarkersVisible) {
+                App.map.removeLayer(App.auctionCluster);
+                App.auctionMarkersVisible = false;
+            } else {
+                App.map.addLayer(App.auctionCluster);
+                App.auctionMarkersVisible = true;
+            }
+
+            updateAuctionButtonText();
+            updateCounts();
+        }
+
+        // Toggle JSON data markers visibility
+        function toggleJsonDataMarkers() {
+            if (App.jsonDataVisible) {
+                App.map.removeLayer(App.jsonDataCluster);
+                App.jsonDataVisible = false;
+            } else {
+                App.map.addLayer(App.jsonDataCluster);
+                App.jsonDataVisible = true;
+            }
+
+            updateJsonDataButtonText();
+            updateCounts();
+        }
+
+        // Update the auction toggle button text
+        function updateAuctionButtonText() {
+            const button = document.getElementById('toggle-auction-btn');
+            if (button) {
+                const content = button.querySelector('.control-content');
+
+                if (content) {
+                    content.innerHTML = `
+                        <div style="display: flex; align-items: center; gap: 6px;">
+                            <i class="fas fa-gavel"></i>
+                            <span>${App.auctionMarkersVisible ? 'Аукционларни яшириш' : 'Аукционларни кўрсатиш'}</span>
+                        </div>
+                    `;
+                }
+
+                button.className = App.auctionMarkersVisible ?
+                    'map-control-btn active' : 'map-control-btn';
+            }
+        }
+
+        // Update the JSON data toggle button text
+        function updateJsonDataButtonText() {
+            const button = document.getElementById('toggle-json-btn');
+            if (button) {
+                const content = button.querySelector('.control-content');
+
+                if (content) {
+                    content.innerHTML = `
+                        <div style="display: flex; align-items: center; gap: 6px;">
+                            <i class="fas fa-layer-group"></i>
+                            <span>${App.jsonDataVisible ? 'JSON маълумотларни яшириш' : 'JSON маълумотларни кўрсатиш'}</span>
+                        </div>
+                    `;
+                }
+
+                button.className = App.jsonDataVisible ?
+                    'map-control-btn active' : 'map-control-btn';
+            }
+        }
+
+        // Create map controls with counts
+        function createMapControls() {
+            const controlDiv = document.createElement('div');
+            controlDiv.className = 'map-controls';
+
+            // Create regular data info button (non-toggleable)
+            const regularButton = document.createElement('div');
+            regularButton.id = 'regular-count-btn';
+            regularButton.className = 'map-control-btn';
+            regularButton.style.cursor = 'default';
+            regularButton.innerHTML = `
+                <div class="control-content">
+                    <div style="display: flex; align-items: center; gap: 6px;">
+                        <i class="fas fa-building"></i>
+                        <span>API + KMZ маълумотлар</span>
+                    </div>
+                </div>
+                <span class="count-badge">0</span>
+            `;
+
+            // Create JSON data toggle button
+            const jsonButton = document.createElement('button');
+            jsonButton.id = 'toggle-json-btn';
+            jsonButton.className = 'map-control-btn active';
+            jsonButton.innerHTML = `
+                <div class="control-content">
+                    <div style="display: flex; align-items: center; gap: 6px;">
+                        <i class="fas fa-layer-group"></i>
+                        <span>JSON маълумотларни яшириш</span>
+                    </div>
+                </div>
+                <span class="count-badge">0</span>
+            `;
+            jsonButton.addEventListener('click', toggleJsonDataMarkers);
+
+            // Create auction toggle button
+            const auctionButton = document.createElement('button');
+            auctionButton.id = 'toggle-auction-btn';
+            auctionButton.className = 'map-control-btn';
+            auctionButton.innerHTML = `
+                <div class="control-content">
+                    <div style="display: flex; align-items: center; gap: 6px;">
+                        <i class="fas fa-gavel"></i>
+                        <span>Аукционларни кўрсатиш</span>
+                    </div>
+                </div>
+                <span class="count-badge">0</span>
+            `;
+            auctionButton.addEventListener('click', toggleAuctionMarkers);
+
+            // Create stats panel
+            const statsPanel = document.createElement('div');
+            statsPanel.className = 'stats-panel';
+
+            // Add all elements to control div
+            controlDiv.appendChild(regularButton);
+            controlDiv.appendChild(jsonButton);
+            controlDiv.appendChild(auctionButton);
+            controlDiv.appendChild(statsPanel);
+
+            // Add control to the map container
+            document.getElementById('map').appendChild(controlDiv);
+
+            // Initial update
+            updateCounts();
+        }
+
+        // Setup event listeners
+        function setupEventListeners() {
+            document.addEventListener('click', function(e) {
+                if (e.target.classList.contains('details-btn')) {
+                    const lotId = e.target.getAttribute('data-lot-id');
+                    const itemId = e.target.getAttribute('data-item-id');
+
+                    if (lotId) {
+                        showDetails(lotId);
+                    } else if (itemId) {
+                        showJsonItemDetails(itemId);
+                    }
+                }
+            });
+
+            App.map.on('click', function() {
+                if (window.innerWidth <= 768) {
+                    closeSidebar();
+                }
+            });
+
+            window.addEventListener('resize', function() {
+                App.map.invalidateSize();
+            });
+        }
+
+        // Initialize app with improved error handling
+        async function init() {
+            showLoading();
+
+            try {
+                initMap();
+                setupEventListeners();
+                createMapControls();
+
+                // Execute data fetching with proper error handling
+                const dataPromises = [
+                    fetchData().catch(error => {
+                        console.warn('Regular data fetch failed:', error);
+                        return false;
+                    }),
+                    fetchAuctionData().catch(error => {
+                        console.warn('Auction data fetch failed:', error);
+                        return false;
+                    }),
+                    fetchJsonData().catch(error => {
+                        console.warn('JSON data fetch failed:', error);
+                        return false;
+                    })
+                ];
+
+                const [regularDataResult, auctionDataResult, jsonDataResult] = await Promise.allSettled(dataPromises);
+
+                // Process results
+                const regularSuccess = regularDataResult.status === 'fulfilled' && regularDataResult.value;
+                const auctionSuccess = auctionDataResult.status === 'fulfilled' && auctionDataResult.value;
+                const jsonSuccess = jsonDataResult.status === 'fulfilled' && jsonDataResult.value;
+
+                if (!regularSuccess && App.markers.length === 0 &&
+                    Object.keys(App.polygons).length === 0 &&
+                    Object.keys(App.kmzLayers).length === 0) {
+                    console.warn('No regular API data loaded on map');
+                }
+
+                if (auctionSuccess) {
+                    console.log('Auction data loaded successfully');
+                } else {
+                    console.warn('No auction data loaded');
+                }
+
+                if (jsonSuccess) {
+                    console.log('JSON data loaded successfully');
+                } else {
+                    console.warn('No JSON data loaded');
+                }
+
+                const allMarkers = [];
+
+                if (App.markers.length > 0) {
+                    allMarkers.push(...App.markers.map(m => m.marker));
+                }
+
+                if (App.jsonDataMarkers.length > 0) {
+                    allMarkers.push(...App.jsonDataMarkers.map(m => m.marker));
+                }
+
+                // Fit map bounds to show all markers
+                if (allMarkers.length > 0) {
+                    const group = L.featureGroup(allMarkers);
+                    App.map.fitBounds(group.getBounds(), {
+                        padding: [50, 50]
+                    });
+                } else {
+                    // Default to Tashkent center if no markers
+                    App.map.setView([41.311, 69.279], 11);
+                }
+
+                // Final count update
+                updateCounts();
+
+                // Show summary toast
+                const totalLoaded = App.counts.regular + App.counts.auction + App.counts.jsonData + App.counts.kmz;
+                if (totalLoaded > 0) {
+                    showToast(`Жами юкланди: ${totalLoaded} та маълумот`, 'info');
+                } else {
+                    showToast('Ҳеч қандай маълумот юкланмади. Сервер ишлаётганини текширинг.', 'warning');
+                }
+
+                // Log final status
+                console.log(`Final status: Regular: ${App.counts.regular}, KMZ: ${App.counts.kmz}, JSON: ${App.counts.jsonData}, Auction: ${App.counts.auction}`);
+
+            } catch (error) {
+                console.error('Initialization error:', error);
+                showToast('Харитани ишга туширишда хатолик: ' + error.message, 'error');
+            } finally {
+                hideLoading();
+            }
+        }
+
+        // Start the app when DOM is ready
+        document.addEventListener('DOMContentLoaded', init);
+
+        // Enhanced coordinate extraction from Google Maps and Yandex URLs
         function extractCoordinatesFromUrl(url) {
             if (!url) return null;
 
             try {
-                // Since CORS blocks direct expansion, try to extract from original shortened URL patterns
-                // Some Google Maps shortened URLs contain coordinates in their redirect patterns
-
-                // Try to decode URL first
                 const decodedUrl = decodeURIComponent(url);
 
-                // Pattern 1: Look for coordinates directly in the URL even if shortened
+                // Handle Yandex Maps URLs
+                if (decodedUrl.includes('yandex.uz/maps')) {
+                    const llMatch = decodedUrl.match(/ll=([^&]+)/);
+                    if (llMatch) {
+                        const coords = llMatch[1].split(',');
+                        if (coords.length === 2) {
+                            const lng = parseFloat(coords[0]);
+                            const lat = parseFloat(coords[1]);
+                            // Validate coordinates for Tashkent area
+                            if (lat >= 40 && lat <= 42 && lng >= 68 && lng <= 70) {
+                                return [lat, lng];
+                            }
+                        }
+                    }
+                }
+
+                // Handle Google Maps URLs - Try multiple patterns
+
+                // Pattern 1: Direct coordinates in URL
                 const coordPattern1 = decodedUrl.match(/(-?\d+\.\d+),(-?\d+\.\d+)/);
                 if (coordPattern1) {
                     const lat = parseFloat(coordPattern1[1]);
                     const lng = parseFloat(coordPattern1[2]);
-                    // Basic validation for Tashkent area coordinates
                     if (lat >= 40 && lat <= 42 && lng >= 68 && lng <= 70) {
                         return [lat, lng];
                     }
                 }
 
-                // Pattern 2: Try to extract from any @ symbol patterns
+                // Pattern 2: @ symbol pattern (@lat,lng)
                 const atPattern = decodedUrl.match(/@(-?\d+\.?\d*),(-?\d+\.?\d*)/);
                 if (atPattern) {
                     const lat = parseFloat(atPattern[1]);
@@ -624,7 +1188,7 @@
                     }
                 }
 
-                // Pattern 4: Try to parse any query parameters
+                // Pattern 4: Query parameters
                 try {
                     const urlObj = new URL(decodedUrl);
                     const params = urlObj.searchParams;
@@ -656,10 +1220,8 @@
                     // URL parsing failed, continue with other methods
                 }
 
-                // If we can't extract coordinates from the shortened URL,
-                // we could potentially use a server-side proxy or API to expand URLs
-                // For now, return null and log for debugging
-                console.warn('Could not extract coordinates from URL:', url);
+                // For Google shortened URLs, we'll need to expand them server-side
+                // For now, return null and handle gracefully
                 return null;
 
             } catch (error) {
@@ -838,6 +1400,11 @@
             }
         }
 
+        // Safe get function for object properties
+        function safeGet(obj, key, defaultValue = 'N/A') {
+            return (obj && obj[key] !== undefined && obj[key] !== null && obj[key] !== '') ? obj[key] : defaultValue;
+        }
+
         // Initialize map
         function initMap() {
             App.map = L.map('map', {
@@ -894,11 +1461,11 @@
             marker.itemId = itemId;
 
             const status = getStatusInfo(item);
-            const district = item['Туман'] || '';
-            const address = item['Манзил_(МФЙ,_кўча)'] || '';
-            const area = item['Таклиф_Ер_майдони_(га)'] || '';
-            const floors = item['Таклиф_қавати_ва_ҳудуд'] || '';
-            const activity = item['Таклиф_Фаолият_тури'] || '';
+            const district = safeGet(item, 'Туман');
+            const address = safeGet(item, 'Манзил_(МФЙ,_кўча)');
+            const area = safeGet(item, 'Таклиф_Ер_майдони_(га)');
+            const floors = safeGet(item, 'Таклиф_қавати_ва_ҳудуд');
+            const activity = safeGet(item, 'Таклиф_Фаолият_тури');
 
             const popup = `
                 <div>
@@ -962,33 +1529,34 @@
 
             let sidebarHtml = `
                 <div class="sidebar-header">
-                    <h2>${item['Туман']} - ${item['№']}</h2>
+                    <h2>${safeGet(item, 'Туман')} - ${safeGet(item, '№')}</h2>
                     <button class="sidebar-close-btn">×</button>
                 </div>
                 <div class="sidebar-content">
                     <div class="section-title">Асосий маълумотлар</div>
                     <table class="details-table">
-                        <tr><td>№:</td><td>${item['№'] || 'N/A'}</td></tr>
-                        <tr><td>Туман:</td><td>${item['Туман'] || 'N/A'}</td></tr>
-                        <tr><td>Манзил:</td><td>${item['Манзил_(МФЙ,_кўча)'] || 'N/A'}</td></tr>
+                        <tr><td>№:</td><td>${safeGet(item, '№')}</td></tr>
+                        <tr><td>Туман:</td><td>${safeGet(item, 'Туман')}</td></tr>
+                        <tr><td>Манзил:</td><td>${safeGet(item, 'Манзил_(МФЙ,_кўча)')}</td></tr>
                         <tr><td>Тури:</td><td><span class="badge ${status.class}">${status.text}</span></td></tr>
-                        <tr><td>Майдон:</td><td>${item['Таклиф_Ер_майдони_(га)'] || 'N/A'} га</td></tr>
+                        <tr><td>Майдон:</td><td>${safeGet(item, 'Таклиф_Ер_майдони_(га)')} га</td></tr>
                     </table>
 
                     <div class="section-title">Лойиҳа тафсилотлари</div>
                     <table class="details-table">
-                        <tr><td>Бош режадаги ҳолат:</td><td>${item['Бош_режадаги_ҳолати_ва_қавати'] || 'N/A'}</td></tr>
-                        <tr><td>Таклиф қават:</td><td>${item['Таклиф_қавати_ва_ҳудуд'] || 'N/A'}</td></tr>
-                        <tr><td>Фаолият тури:</td><td>${item['Таклиф_Фаолият_тури'] || 'N/A'}</td></tr>
-                        <tr><td>Филтр фаолияти:</td><td>${item['Таклиф_Фалияти_филтир_учун'] || 'N/A'}</td></tr>
+                        <tr><td>Бош режадаги ҳолат:</td><td>${safeGet(item, 'Бош_режадаги_ҳолати_ва_қавати')}</td></tr>
+                        <tr><td>Таклиф қават:</td><td>${safeGet(item, 'Таклиф_қавати_ва_ҳудуд')}</td></tr>
+                        <tr><td>Фаолият тури:</td><td>${safeGet(item, 'Таклиф_Фаолият_тури')}</td></tr>
+                        <tr><td>Филтр фаолияти:</td><td>${safeGet(item, 'Таклиф_Фалияти_филтир_учун')}</td></tr>
                     </table>
 
                     <div class="section-title">Бош режа ҳолати</div>
                     <table class="details-table">
-                        <tr><td>Киритилганлиги:</td><td>${item['Таклиф_Бош_режага_таклиф_киритилганлиги_(таклиф_берилган_лекин_киритилмаган_бўлас_КИРИТИЛМАГАН_хисобланади)'] || 'N/A'}</td></tr>
+                        <tr><td>Киритилганлиги:</td><td>${safeGet(item, 'Таклиф_Бош_режага_таклиф_киритилганлиги_(таклиф_берилган_лекин_киритилмаган_бўлас_КИРИТИЛМАГАН_хисобланади)')}</td></tr>
                     </table>
             `;
 
+            // Add technical parameters if available
             if (item['Этажность'] || item['Қурилиш_ости_майдони'] || item['Бинонинг_умумий_майдони']) {
                 sidebarHtml += `
                     <div class="section-title">Техник параметрлар</div>
@@ -1002,6 +1570,7 @@
                 `;
             }
 
+            // Add demographic information if available
             if (item['хонадонлар_сони'] || item['Ахоли_сони']) {
                 sidebarHtml += `
                     <div class="section-title">Демографик маълумотлар</div>
@@ -1012,6 +1581,7 @@
                 `;
             }
 
+            // Add map link if available
             if (item['Таклиф_Харита']) {
                 sidebarHtml += `
                     <div class="section-title">Харита</div>
@@ -1129,9 +1699,9 @@
 
             marker.lotId = lot.id;
 
-            const name = lot.name || lot.neighborhood_name || 'Unnamed';
-            const district = lot.district || lot.district_name || '';
-            const area = lot.area || lot.area_hectare || '';
+            const name = safeGet(lot, 'name', safeGet(lot, 'neighborhood_name', 'Unnamed'));
+            const district = safeGet(lot, 'district', safeGet(lot, 'district_name'));
+            const area = safeGet(lot, 'area', safeGet(lot, 'area_hectare'));
             const statusText = lot.status ? formatStatus(lot.status).text : 'Статус не указан';
 
             const popup = `
@@ -1348,7 +1918,7 @@
             }
         }
 
-        // Show details function (simplified version)
+        // Show details function (fixed version)
         function showDetails(lotId) {
             if (!lotId || App.isAnimating) {
                 return;
@@ -1358,6 +1928,7 @@
             let markerEntry = null;
             let polygonEntry = null;
 
+            // Find lot data
             for (let i = 0; i < App.markers.length; i++) {
                 if (App.markers[i].data && App.markers[i].data.id === lotId) {
                     markerEntry = App.markers[i];
@@ -1400,29 +1971,150 @@
                 class: "badge-info"
             };
 
-            const name = lot.name || lot.neighborhood_name || 'Unnamed';
-            const district = lot.district || lot.district_name || 'N/A';
-            const area = lot.area || lot.area_hectare || 'N/A';
+            const name = safeGet(lot, 'name', safeGet(lot, 'neighborhood_name', 'Unnamed'));
+            const district = safeGet(lot, 'district', safeGet(lot, 'district_name'));
+            const area = safeGet(lot, 'area', safeGet(lot, 'area_hectare'));
 
+            // Fixed: Define all variables with safe defaults
+            const strategy = safeGet(lot, 'strategy', safeGet(lot, 'development_strategy'));
+            const decision = safeGet(lot, 'decision', safeGet(lot, 'final_decision'));
+            const cadastre = safeGet(lot, 'cadastre', safeGet(lot, 'cadastre_number'));
+            const floors = safeGet(lot, 'floors', safeGet(lot, 'max_floors'));
+            const kmn = safeGet(lot, 'kmn', safeGet(lot, 'construction_coefficient'));
+            const umn = safeGet(lot, 'umn', safeGet(lot, 'land_use_coefficient'));
+            const residential = safeGet(lot, 'residential_area', safeGet(lot, 'living_area', '0'));
+            const nonResidential = safeGet(lot, 'non_residential_area', safeGet(lot, 'commercial_area', '0'));
+            const totalArea = safeGet(lot, 'total_area', safeGet(lot, 'total_construction_area', '0'));
+            const investor = safeGet(lot, 'investor', safeGet(lot, 'investor_name'));
+            const population = safeGet(lot, 'population', safeGet(lot, 'expected_population'));
+            const household = safeGet(lot, 'households', safeGet(lot, 'household_count'));
+
+            // Create sidebar
             const sidebar = document.createElement('div');
             sidebar.className = 'sidebar';
             sidebar.id = `sidebar-${Date.now()}`;
 
-            sidebar.innerHTML = `
+            // Generate sidebar HTML with our structure - Uzbek Cyrillic
+            let sidebarHtml = `
                 <div class="sidebar-header">
                     <h2>${name}</h2>
                     <button class="sidebar-close-btn">×</button>
                 </div>
-                <div class="sidebar-content">
+                <div class="sidebar-content">`;
+
+            sidebarHtml += `
                     <div class="section-title">Асосий маълумотлар</div>
                     <table class="details-table">
                         <tr><td>Туман:</td><td>${district}</td></tr>
                         <tr><td>Майдон:</td><td>${area} га</td></tr>
                         <tr><td>Ҳолати:</td><td><span class="badge ${status.class}">${status.text}</span></td></tr>
+                        <tr><td>Стратегия:</td><td>${strategy}</td></tr>
+                        <tr><td>Қарор:</td><td>${decision}</td></tr>
                     </table>
-                </div>
-            `;
 
+                    <div class="section-title">Техник параметрлар</div>
+                    <table class="details-table">
+                        <tr><td>Кадастр:</td><td>${cadastre}</td></tr>
+                        <tr><td>Қаватлар:</td><td>${floors}</td></tr>
+                        <tr><td>КМН:</td><td>${kmn}</td></tr>
+                        <tr><td>УМН:</td><td>${umn}</td></tr>
+                    </table>
+
+                    <div class="section-title">Майдонлар</div>
+                    <table class="details-table">
+                        <tr><td>Турар жой:</td><td>${residential} м²</td></tr>
+                        <tr><td>Нотурар жой:</td><td>${nonResidential} м²</td></tr>
+                        <tr><td>Умумий:</td><td>${totalArea} м²</td></tr>
+                    </table>`;
+
+            // Add investor information if available
+            if (investor !== 'N/A' && investor !== '0') {
+                sidebarHtml += `
+                    <div class="section-title">Инвестор</div>
+                    <table class="details-table">
+                        <tr><td>Исм:</td><td>${investor}</td></tr>
+                    </table>
+                `;
+            }
+
+            // Add demographic information if available
+            if (population !== 'N/A' || household !== 'N/A') {
+                sidebarHtml += `
+                    <div class="section-title">Демографик маълумотлар</div>
+                    <table class="details-table">
+                        ${population !== 'N/A' ? `<tr><td>Аҳоли сони:</td><td>${population}</td></tr>` : ''}
+                        ${household !== 'N/A' ? `<tr><td>Хонадонлар сони:</td><td>${household}</td></tr>` : ''}
+                    </table>
+                `;
+            }
+
+            // Add documents if available
+            if (lot.documents && lot.documents.length > 0) {
+                sidebarHtml += `
+                    <div class="section-title">Ҳужжатлар</div>
+                    <div class="documents-list">`;
+
+                // Group documents by type
+                const pdfDocs = lot.documents.filter(doc => doc.doc_type === 'pdf-document');
+                const kmzDocs = lot.documents.filter(doc => doc.doc_type === 'kmz-document');
+
+                // Add PDF documents
+                if (pdfDocs.length > 0) {
+                    sidebarHtml += `<div class="doc-group">
+                        <h4>PDF Ҳужжатлар</h4>`;
+
+                    pdfDocs.forEach(doc => {
+                        const fileName = doc.filename || 'Ҳужжат';
+                        // Fix URL to use the apiBaseUrl
+                        let pdfUrl = doc.url;
+                        if (pdfUrl.startsWith('http') && !pdfUrl.includes(window.location.hostname)) {
+                            const paths = pdfUrl.split('/assets/');
+                            if (paths.length > 1) {
+                                pdfUrl = App.apiBaseUrl + '/assets/data/RENOVATSIYA ISXOD PDF/' + paths[1].split(
+                                    '/').pop();
+                            }
+                        }
+
+                        sidebarHtml += `
+                            <a href="${pdfUrl}" target="_blank" class="document-link">
+                                <i class="fas fa-file-pdf"></i> ${fileName}
+                            </a>`;
+                    });
+
+                    sidebarHtml += `</div>`;
+                }
+
+                // Add KMZ documents
+                if (kmzDocs.length > 0) {
+                    sidebarHtml += `<div class="doc-group">
+                        <h4>KMZ Харита файллари</h4>`;
+
+                    kmzDocs.forEach(doc => {
+                        const fileName = doc.filename || 'KMZ файл';
+                        // Fix URL to use the apiBaseUrl
+                        let kmzUrl = doc.url;
+                        if (kmzUrl.startsWith('http') && !kmzUrl.includes(window.location.hostname)) {
+                            const paths = kmzUrl.split('/assets/');
+                            if (paths.length > 1) {
+                                kmzUrl = App.apiBaseUrl + '/assets/data/BASA_RENOVA/' + paths[1].split('/').pop();
+                            }
+                        }
+
+                        sidebarHtml += `
+                            <a href="${kmzUrl}" download class="document-link">
+                                <i class="fas fa-map"></i> ${fileName}
+                            </a>`;
+                    });
+
+                    sidebarHtml += `</div>`;
+                }
+
+                sidebarHtml += `</div>`;
+            }
+
+            sidebarHtml += `</div>`;
+
+            sidebar.innerHTML = sidebarHtml;
             document.body.appendChild(sidebar);
             App.currentSidebar = sidebar;
 
@@ -1490,485 +2182,6 @@
                 }
             }, 300);
         }
-
-        // Fetch JSON data from local file
-        async function fetchJsonData() {
-            try {
-                console.log('Fetching JSON data from local file...');
-
-                const response = await fetch('/assets/data/443_output.json');
-
-                if (!response.ok) {
-                    throw new Error(`Failed to fetch JSON file: ${response.status}`);
-                }
-
-                const data = await response.json();
-                console.log('JSON data response:', data);
-
-                if (!Array.isArray(data) || data.length === 0) {
-                    console.warn('No valid JSON data found');
-                    return false;
-                }
-
-                console.log(`Found ${data.length} items in JSON data`);
-
-                let processedCount = 0;
-
-                for (const item of data) {
-                    if (!item || typeof item !== 'object') {
-                        continue;
-                    }
-
-                    try {
-                        if (addJsonDataMarker(item)) {
-                            processedCount++;
-                        }
-                    } catch (error) {
-                        console.warn('Error processing item:', item['№'], error);
-                    }
-
-                    if (processedCount % 10 === 0) {
-                        await new Promise(resolve => setTimeout(resolve, 10));
-                        updateCounts();
-                    }
-                }
-
-                console.log(`Processed ${processedCount} JSON data markers`);
-
-                updateCounts();
-
-                if (processedCount > 0) {
-                    showToast(`Юкланди ${processedCount} та JSON маълумот`, 'info');
-                    return true;
-                }
-
-                return false;
-            } catch (error) {
-                console.error('Error fetching JSON data:', error);
-                showToast('JSON маълумотларни юклашда хатолик: ' + error.message, 'warning');
-                return false;
-            }
-        }
-
-        // Fetch data from API
-        async function fetchData() {
-            showLoading();
-
-            try {
-                const apiUrl = `${App.apiBaseUrl}/api/aktivs`;
-                console.log(`Fetching data from: ${apiUrl}`);
-
-                const response = await fetch(apiUrl);
-
-                if (!response.ok) {
-                    throw new Error(`API request failed with status ${response.status}`);
-                }
-
-                const data = await response.json();
-                console.log('API response:', data);
-
-                let lotsData = [];
-
-                if (data && data.lots && Array.isArray(data.lots)) {
-                    lotsData = data.lots;
-                    console.log(`Found ${lotsData.length} lots in API response`);
-                } else if (data && Array.isArray(data)) {
-                    lotsData = data;
-                    console.log(`Found ${lotsData.length} lots in array response`);
-                }
-
-                if (lotsData.length === 0) {
-                    console.warn('No data found in API response');
-                    showToast('No data found in API response', 'warning');
-                    return;
-                }
-
-                let processedCount = 0;
-                let processedKmzCount = 0;
-                let idCounter = 1;
-
-                const kmzPromises = [];
-
-                lotsData.forEach(lot => {
-                    if (!lot || typeof lot !== 'object') {
-                        return;
-                    }
-
-                    if (!lot.id) {
-                        lot.id = 'lot-' + idCounter++;
-                    }
-
-                    if (lot.lat && lot.lng) {
-                        if (addMarker(lot)) {
-                            processedCount++;
-                        }
-                    }
-
-                    if (lot.polygons) {
-                        if (addPolygon(lot)) {
-                            processedCount++;
-                        }
-                    }
-
-                    if (lot.documents && Array.isArray(lot.documents)) {
-                        const kmzDocs = lot.documents.filter(doc =>
-                            doc.doc_type === 'kmz-document'
-                        );
-
-                        if (kmzDocs.length > 0) {
-                            const promise = processKmzFile(lot, kmzDocs[0])
-                                .then(success => {
-                                    if (success) {
-                                        processedKmzCount++;
-                                        updateCounts();
-                                    }
-                                })
-                                .catch(error => {
-                                    console.error(`Error processing KMZ for lot ${lot.id}:`, error);
-                                });
-
-                            kmzPromises.push(promise);
-                        }
-                    }
-                });
-
-                updateCounts();
-
-                await Promise.allSettled(kmzPromises);
-
-                if (processedCount > 0 || processedKmzCount > 0) {
-                    showToast(
-                        `Successfully loaded ${processedCount} polygons/markers and ${processedKmzCount} KMZ files`,
-                        'info'
-                    );
-
-                    if (App.markers.length > 0) {
-                        const group = L.featureGroup(App.markers.map(m => m.marker));
-                        App.map.fitBounds(group.getBounds(), {
-                            padding: [50, 50]
-                        });
-                    }
-                } else {
-                    console.warn('No valid items were processed from API data');
-                    showToast('No valid items found in data', 'warning');
-                }
-            } catch (error) {
-                console.error('Error fetching data:', error);
-                showToast('Error loading data: ' + error.message, 'error');
-            } finally {
-                hideLoading();
-            }
-        }
-
-        // Fetch and process auction data
-        async function fetchAuctionData() {
-            try {
-                const auctionApiUrl = 'https://projects.toshkentinvest.uz/api/markersing';
-                console.log(`Fetching auction data from: ${auctionApiUrl}`);
-
-                const response = await fetch(auctionApiUrl);
-                if (!response.ok) {
-                    throw new Error(`Auction API request failed with status ${response.status}`);
-                }
-
-                const data = await response.json();
-                console.log('Auction API response:', data);
-
-                if (!data || !data.lots || !Array.isArray(data.lots) || data.lots.length === 0) {
-                    console.warn('No auction data found in API response');
-                    return false;
-                }
-
-                console.log(`Found ${data.lots.length} auction lots`);
-
-                let processedCount = 0;
-
-                data.lots.forEach(lot => {
-                    if (!lot || typeof lot !== 'object' || !lot.lat || !lot.lng) {
-                        return;
-                    }
-
-                    const auctionId = 'auction-' + lot.lot_number;
-
-                    const auctionIcon = L.divIcon({
-                        html: `<div class="auction-marker" style="background-color: #FF5722; width: 12px; height: 12px; border-radius: 50%; border: 2px solid white;"></div>`,
-                        className: 'auction-marker-container',
-                        iconSize: [16, 16],
-                        iconAnchor: [8, 8]
-                    });
-
-                    const marker = L.marker([lot.lat, lot.lng], { icon: auctionIcon });
-
-                    const price = Number(lot.start_price).toLocaleString('uz-UZ');
-                    const popup = `
-                        <div class="auction-popup">
-                            <h3>${lot.property_name}</h3>
-                            <div class="auction-image">
-                                <img src="${lot.main_image}" alt="${lot.property_name}" style="width:100%; max-height:150px; object-fit:cover;">
-                            </div>
-                            <p><strong>Бошланғич нархи:</strong> ${price} сўм</p>
-                            <p><strong>Аукцион санаси:</strong> ${lot.auction_date}</p>
-                            <p><strong>Жойлашуви:</strong> ${lot.region}, ${lot.area}, ${lot.address}</p>
-                            <p><strong>Майдони:</strong> ${lot.land_area} га</p>
-                            <p><strong>Тури:</strong> ${lot.property_category}</p>
-                            <p><strong>Ҳолати:</strong> ${lot.lot_status}</p>
-                            <a href="${lot.lot_link}" target="_blank" class="auction-link" style="display:block; text-align:center; background:#FF5722; color:white; padding:8px; text-decoration:none; border-radius:4px; margin-top:10px;">
-                                Батафсил маълумот
-                            </a>
-                        </div>
-                    `;
-
-                    marker.bindPopup(popup, { maxWidth: 300 });
-
-                    App.auctionMarkers.push({
-                        marker: marker,
-                        data: lot
-                    });
-
-                    App.auctionCluster.addLayer(marker);
-                    App.counts.auction++;
-                    processedCount++;
-                });
-
-                console.log(`Processed ${processedCount} auction markers`);
-                updateCounts();
-
-                return processedCount > 0;
-            } catch (error) {
-                console.error('Error fetching auction data:', error);
-                return false;
-            }
-        }
-
-        // Toggle auction markers visibility
-        function toggleAuctionMarkers() {
-            if (App.auctionMarkersVisible) {
-                App.map.removeLayer(App.auctionCluster);
-                App.auctionMarkersVisible = false;
-            } else {
-                App.map.addLayer(App.auctionCluster);
-                App.auctionMarkersVisible = true;
-            }
-
-            updateAuctionButtonText();
-            updateCounts();
-        }
-
-        // Toggle JSON data markers visibility
-        function toggleJsonDataMarkers() {
-            if (App.jsonDataVisible) {
-                App.map.removeLayer(App.jsonDataCluster);
-                App.jsonDataVisible = false;
-            } else {
-                App.map.addLayer(App.jsonDataCluster);
-                App.jsonDataVisible = true;
-            }
-
-            updateJsonDataButtonText();
-            updateCounts();
-        }
-
-        // Update the auction toggle button text
-        function updateAuctionButtonText() {
-            const button = document.getElementById('toggle-auction-btn');
-            if (button) {
-                const content = button.querySelector('.control-content');
-                const badge = button.querySelector('.count-badge');
-
-                if (content) {
-                    content.innerHTML = `
-                        <div style="display: flex; align-items: center; gap: 6px;">
-                            <i class="fas fa-gavel"></i>
-                            <span>${App.auctionMarkersVisible ? 'Аукционларни яшириш' : 'Аукционларни кўрсатиш'}</span>
-                        </div>
-                    `;
-                }
-
-                button.className = App.auctionMarkersVisible ?
-                    'map-control-btn active' : 'map-control-btn';
-            }
-        }
-
-        // Update the JSON data toggle button text
-        function updateJsonDataButtonText() {
-            const button = document.getElementById('toggle-json-btn');
-            if (button) {
-                const content = button.querySelector('.control-content');
-
-                if (content) {
-                    content.innerHTML = `
-                        <div style="display: flex; align-items: center; gap: 6px;">
-                            <i class="fas fa-layer-group"></i>
-                            <span>${App.jsonDataVisible ? 'JSON маълумотларни яшириш' : 'JSON маълумотларни кўрсатиш'}</span>
-                        </div>
-                    `;
-                }
-
-                button.className = App.jsonDataVisible ?
-                    'map-control-btn active' : 'map-control-btn';
-            }
-        }
-
-        // Create map controls with counts
-        function createMapControls() {
-            const controlDiv = document.createElement('div');
-            controlDiv.className = 'map-controls';
-
-            // Create regular data info button (non-toggleable)
-            const regularButton = document.createElement('div');
-            regularButton.id = 'regular-count-btn';
-            regularButton.className = 'map-control-btn';
-            regularButton.style.cursor = 'default';
-            regularButton.innerHTML = `
-                <div class="control-content">
-                    <div style="display: flex; align-items: center; gap: 6px;">
-                        <i class="fas fa-building"></i>
-                        <span>API + KMZ маълумотлар</span>
-                    </div>
-                </div>
-                <span class="count-badge">0</span>
-            `;
-
-            // Create JSON data toggle button
-            const jsonButton = document.createElement('button');
-            jsonButton.id = 'toggle-json-btn';
-            jsonButton.className = 'map-control-btn active';
-            jsonButton.innerHTML = `
-                <div class="control-content">
-                    <div style="display: flex; align-items: center; gap: 6px;">
-                        <i class="fas fa-layer-group"></i>
-                        <span>JSON маълумотларни яшириш</span>
-                    </div>
-                </div>
-                <span class="count-badge">0</span>
-            `;
-            jsonButton.addEventListener('click', toggleJsonDataMarkers);
-
-            // Create auction toggle button
-            const auctionButton = document.createElement('button');
-            auctionButton.id = 'toggle-auction-btn';
-            auctionButton.className = 'map-control-btn';
-            auctionButton.innerHTML = `
-                <div class="control-content">
-                    <div style="display: flex; align-items: center; gap: 6px;">
-                        <i class="fas fa-gavel"></i>
-                        <span>Аукционларни кўрсатиш</span>
-                    </div>
-                </div>
-                <span class="count-badge">0</span>
-            `;
-            auctionButton.addEventListener('click', toggleAuctionMarkers);
-
-            // Create stats panel
-            const statsPanel = document.createElement('div');
-            statsPanel.className = 'stats-panel';
-
-            // Add all elements to control div
-            controlDiv.appendChild(regularButton);
-            controlDiv.appendChild(jsonButton);
-            controlDiv.appendChild(auctionButton);
-            controlDiv.appendChild(statsPanel);
-
-            // Add control to the map container
-            document.getElementById('map').appendChild(controlDiv);
-
-            // Initial update
-            updateCounts();
-        }
-
-        // Setup event listeners
-        function setupEventListeners() {
-            document.addEventListener('click', function(e) {
-                if (e.target.classList.contains('details-btn')) {
-                    const lotId = e.target.getAttribute('data-lot-id');
-                    const itemId = e.target.getAttribute('data-item-id');
-
-                    if (lotId) {
-                        showDetails(lotId);
-                    } else if (itemId) {
-                        showJsonItemDetails(itemId);
-                    }
-                }
-            });
-
-            App.map.on('click', function() {
-                if (window.innerWidth <= 768) {
-                    closeSidebar();
-                }
-            });
-
-            window.addEventListener('resize', function() {
-                App.map.invalidateSize();
-            });
-        }
-
-        // Initialize app
-        async function init() {
-            showLoading();
-
-            try {
-                initMap();
-                setupEventListeners();
-                createMapControls();
-
-                const [regularDataResult, auctionDataResult, jsonDataResult] = await Promise.all([
-                    fetchData(),
-                    fetchAuctionData(),
-                    fetchJsonData()
-                ]);
-
-                if (App.markers.length === 0 &&
-                    Object.keys(App.polygons).length === 0 &&
-                    Object.keys(App.kmzLayers).length === 0) {
-                    console.warn('No regular data loaded on map');
-                }
-
-                if (auctionDataResult) {
-                    console.log('Auction data loaded successfully');
-                } else {
-                    console.warn('No auction data loaded');
-                }
-
-                if (jsonDataResult) {
-                    console.log('JSON data loaded successfully');
-                } else {
-                    console.warn('No JSON data loaded');
-                }
-
-                const allMarkers = [];
-
-                if (App.markers.length > 0) {
-                    allMarkers.push(...App.markers.map(m => m.marker));
-                }
-
-                if (App.jsonDataMarkers.length > 0) {
-                    allMarkers.push(...App.jsonDataMarkers.map(m => m.marker));
-                }
-
-                if (allMarkers.length > 0) {
-                    const group = L.featureGroup(allMarkers);
-                    App.map.fitBounds(group.getBounds(), {
-                        padding: [50, 50]
-                    });
-                }
-
-                // Final count update
-                updateCounts();
-
-                // Show summary toast
-                const totalLoaded = App.counts.regular + App.counts.auction + App.counts.jsonData + App.counts.kmz;
-                showToast(`Жами юкланди: ${totalLoaded} та маълумот`, 'info');
-
-            } catch (error) {
-                console.error('Initialization error:', error);
-                showToast('Error initializing map: ' + error.message, 'error');
-            } finally {
-                hideLoading();
-            }
-        }
-
-        // Start the app when DOM is ready
-        document.addEventListener('DOMContentLoaded', init);
     </script>
 </body>
 
