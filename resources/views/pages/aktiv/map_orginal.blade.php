@@ -688,6 +688,7 @@
 
                 let processedCount = 0;
                 let processedKmzCount = 0;
+                let lotsWithoutCoordinates = 0;
                 let idCounter = 1;
 
                 const kmzPromises = [];
@@ -701,60 +702,97 @@
                         lot.id = 'lot-' + idCounter++;
                     }
 
-                    if (lot.lat && lot.lng) {
+                    // Track lots without coordinates
+                    if (!lot.lat || !lot.lng || lot.lat === null || lot.lng === null) {
+                        lotsWithoutCoordinates++;
+                        console.log(`Lot ${lot.id} (${lot.neighborhood_name}) has no coordinates, will try KMZ`);
+                    }
+
+                    // Try to add marker if coordinates exist
+                    if (lot.lat && lot.lng && lot.lat !== null && lot.lng !== null) {
                         if (addMarker(lot)) {
                             processedCount++;
                         }
                     }
 
-                    if (lot.polygons) {
+                    // Try to add polygon if polygon data exists
+                    if (lot.polygons && lot.polygons.length > 0) {
                         if (addPolygon(lot)) {
                             processedCount++;
                         }
                     }
 
+                    // Process KMZ files - these can provide coordinates even when lat/lng are null
                     if (lot.documents && Array.isArray(lot.documents)) {
                         const kmzDocs = lot.documents.filter(doc =>
                             doc.doc_type === 'kmz-document'
                         );
 
                         if (kmzDocs.length > 0) {
-                            const promise = processKmzFile(lot, kmzDocs[0])
-                                .then(success => {
-                                    if (success) {
-                                        processedKmzCount++;
-                                        updateCounts();
-                                    }
-                                })
-                                .catch(error => {
-                                    console.error(`Error processing KMZ for lot ${lot.id}:`, error);
-                                });
+                            kmzDocs.forEach(kmzDoc => {
+                                const promise = processKmzFile(lot, kmzDoc)
+                                    .then(success => {
+                                        if (success) {
+                                            processedKmzCount++;
+                                            updateCounts();
+                                        }
+                                    })
+                                    .catch(error => {
+                                        console.error(`Error processing KMZ for lot ${lot.id}:`, error);
+                                    });
 
-                            kmzPromises.push(promise);
+                                kmzPromises.push(promise);
+                            });
                         }
                     }
                 });
 
                 updateCounts();
 
+                // Wait for all KMZ files to be processed
                 await Promise.allSettled(kmzPromises);
+
+                // Show results
+                console.log(`Processing summary:`);
+                console.log(`- Total lots: ${lotsData.length}`);
+                console.log(`- Lots without coordinates: ${lotsWithoutCoordinates}`);
+                console.log(`- Processed markers/polygons: ${processedCount}`);
+                console.log(`- Processed KMZ files: ${processedKmzCount}`);
 
                 if (processedCount > 0 || processedKmzCount > 0) {
                     showToast(
-                        `Муваффақиятли юкланди: ${processedCount} полигон/маркер ва ${processedKmzCount} KMZ файл`,
+                        `API: ${processedCount} маркер/полигон, ${processedKmzCount} KMZ файл`,
                         'info'
                     );
 
+                    // Fit bounds to show all markers and KMZ layers
+                    const allLayers = [];
+
                     if (App.markers.length > 0) {
-                        const group = L.featureGroup(App.markers.map(m => m.marker));
+                        allLayers.push(...App.markers.map(m => m.marker));
+                    }
+
+                    Object.values(App.kmzLayers).forEach(kmzLayer => {
+                        if (kmzLayer.getBounds) {
+                            allLayers.push(kmzLayer);
+                        }
+                    });
+
+                    if (allLayers.length > 0) {
+                        const group = L.featureGroup(allLayers);
                         App.map.fitBounds(group.getBounds(), {
                             padding: [50, 50]
                         });
                     }
+
                     return true;
                 } else {
                     console.warn('No valid items were processed from API data');
-                    showToast('API маълумотларида ишлатиладиган элементлар топилмади', 'warning');
+                    if (lotsWithoutCoordinates > 0) {
+                        showToast(`${lotsData.length} та лот топилди, лекин ${lotsWithoutCoordinates} тасида координаталар йўқ`, 'warning');
+                    } else {
+                        showToast('API маълумотларида ишлатиладиган элементлар топилмади', 'warning');
+                    }
                     return false;
                 }
             } catch (error) {
@@ -1685,51 +1723,56 @@
             return coordinates;
         }
 
-        // Add marker to map
+        // Add marker to map - improved to handle missing coordinates
         function addMarker(lot) {
-            if (!lot || !lot.lat || !lot.lng) {
+            if (!lot) {
                 return false;
             }
 
-            const marker = L.marker([lot.lat, lot.lng]);
+            // Only create point markers if we have coordinates
+            if (lot.lat && lot.lng && lot.lat !== null && lot.lng !== null) {
+                const marker = L.marker([parseFloat(lot.lat), parseFloat(lot.lng)]);
 
-            if (!lot.id) {
-                lot.id = 'lot-' + Math.random().toString(36).substr(2, 9);
+                if (!lot.id) {
+                    lot.id = 'lot-' + Math.random().toString(36).substr(2, 9);
+                }
+
+                marker.lotId = lot.id;
+
+                const name = safeGet(lot, 'neighborhood_name', safeGet(lot, 'name', 'Unnamed'));
+                const district = safeGet(lot, 'district_name', safeGet(lot, 'district'));
+                const area = safeGet(lot, 'area_hectare', safeGet(lot, 'area'));
+                const statusText = lot.status ? formatStatus(lot.status).text : 'Статус не указан';
+
+                const popup = `
+                    <div>
+                        <h3>${name}</h3>
+                        <p>${district}</p>
+                        <p>Майдон: ${area} га</p>
+                        <p>${statusText}</p>
+                        <button class="details-btn" data-lot-id="${lot.id}">Тафсилотлар</button>
+                    </div>
+                `;
+
+                marker.bindPopup(popup);
+
+                marker.on('click', function(e) {
+                    showDetails(this.lotId);
+                    L.DomEvent.stopPropagation(e);
+                });
+
+                App.markerCluster.addLayer(marker);
+
+                App.markers.push({
+                    marker: marker,
+                    data: lot
+                });
+
+                App.counts.regular++;
+                return true;
             }
 
-            marker.lotId = lot.id;
-
-            const name = safeGet(lot, 'name', safeGet(lot, 'neighborhood_name', 'Unnamed'));
-            const district = safeGet(lot, 'district', safeGet(lot, 'district_name'));
-            const area = safeGet(lot, 'area', safeGet(lot, 'area_hectare'));
-            const statusText = lot.status ? formatStatus(lot.status).text : 'Статус не указан';
-
-            const popup = `
-                <div>
-                    <h3>${name}</h3>
-                    <p>${district}</p>
-                    <p>Майдон: ${area} га</p>
-                    <p>${statusText}</p>
-                    <button class="details-btn" data-lot-id="${lot.id}">Тафсилотлар</button>
-                </div>
-            `;
-
-            marker.bindPopup(popup);
-
-            marker.on('click', function(e) {
-                showDetails(this.lotId);
-                L.DomEvent.stopPropagation(e);
-            });
-
-            App.markerCluster.addLayer(marker);
-
-            App.markers.push({
-                marker: marker,
-                data: lot
-            });
-
-            App.counts.regular++;
-            return true;
+            return false;
         }
 
         // Add polygon to map
@@ -1918,7 +1961,7 @@
             }
         }
 
-        // Show details function (fixed version)
+        // Show details function - improved to handle API data structure
         function showDetails(lotId) {
             if (!lotId || App.isAnimating) {
                 return;
@@ -1971,30 +2014,33 @@
                 class: "badge-info"
             };
 
-            const name = safeGet(lot, 'name', safeGet(lot, 'neighborhood_name', 'Unnamed'));
-            const district = safeGet(lot, 'district', safeGet(lot, 'district_name'));
-            const area = safeGet(lot, 'area', safeGet(lot, 'area_hectare'));
+            // Use API data structure field names
+            const name = safeGet(lot, 'neighborhood_name', safeGet(lot, 'name', 'Unnamed'));
+            const district = safeGet(lot, 'district_name', safeGet(lot, 'district'));
+            const area = safeGet(lot, 'area_hectare', safeGet(lot, 'area'));
 
-            // Fixed: Define all variables with safe defaults
-            const strategy = safeGet(lot, 'strategy', safeGet(lot, 'development_strategy'));
-            const decision = safeGet(lot, 'decision', safeGet(lot, 'final_decision'));
-            const cadastre = safeGet(lot, 'cadastre', safeGet(lot, 'cadastre_number'));
-            const floors = safeGet(lot, 'floors', safeGet(lot, 'max_floors'));
-            const kmn = safeGet(lot, 'kmn', safeGet(lot, 'construction_coefficient'));
-            const umn = safeGet(lot, 'umn', safeGet(lot, 'land_use_coefficient'));
-            const residential = safeGet(lot, 'residential_area', safeGet(lot, 'living_area', '0'));
-            const nonResidential = safeGet(lot, 'non_residential_area', safeGet(lot, 'commercial_area', '0'));
-            const totalArea = safeGet(lot, 'total_area', safeGet(lot, 'total_construction_area', '0'));
-            const investor = safeGet(lot, 'investor', safeGet(lot, 'investor_name'));
-            const population = safeGet(lot, 'population', safeGet(lot, 'expected_population'));
-            const household = safeGet(lot, 'households', safeGet(lot, 'household_count'));
+            // API specific fields
+            const totalBuildingArea = safeGet(lot, 'total_building_area');
+            const residentialArea = safeGet(lot, 'residential_area');
+            const nonResidentialArea = safeGet(lot, 'non_residential_area');
+            const umnCoefficient = safeGet(lot, 'umn_coefficient');
+            const qmnPercentage = safeGet(lot, 'qmn_percentage');
+            const designatedFloors = safeGet(lot, 'designated_floors');
+            const proposedFloors = safeGet(lot, 'proposed_floors');
+            const decisionNumber = safeGet(lot, 'decision_number');
+            const cadastreCertificate = safeGet(lot, 'cadastre_certificate');
+            const areaStrategy = safeGet(lot, 'area_strategy');
+            const investor = safeGet(lot, 'investor');
+            const population = safeGet(lot, 'population');
+            const householdCount = safeGet(lot, 'household_count');
+            const additionalInformation = safeGet(lot, 'additional_information');
 
             // Create sidebar
             const sidebar = document.createElement('div');
             sidebar.className = 'sidebar';
             sidebar.id = `sidebar-${Date.now()}`;
 
-            // Generate sidebar HTML with our structure - Uzbek Cyrillic
+            // Generate sidebar HTML with API data structure
             let sidebarHtml = `
                 <div class="sidebar-header">
                     <h2>${name}</h2>
@@ -2008,45 +2054,121 @@
                         <tr><td>Туман:</td><td>${district}</td></tr>
                         <tr><td>Майдон:</td><td>${area} га</td></tr>
                         <tr><td>Ҳолати:</td><td><span class="badge ${status.class}">${status.text}</span></td></tr>
-                        <tr><td>Стратегия:</td><td>${strategy}</td></tr>
-                        <tr><td>Қарор:</td><td>${decision}</td></tr>
+                        <tr><td>Инвестор:</td><td>${investor}</td></tr>
+                        <tr><td>Қарор рақами:</td><td>${decisionNumber}</td></tr>
+                        <tr><td>Стратегия муддати:</td><td>${areaStrategy}</td></tr>
                     </table>
 
                     <div class="section-title">Техник параметрлар</div>
                     <table class="details-table">
-                        <tr><td>Кадастр:</td><td>${cadastre}</td></tr>
-                        <tr><td>Қаватлар:</td><td>${floors}</td></tr>
-                        <tr><td>КМН:</td><td>${kmn}</td></tr>
-                        <tr><td>УМН:</td><td>${umn}</td></tr>
+                        <tr><td>Кадастр ҳужжати:</td><td>${cadastreCertificate}</td></tr>
+                        <tr><td>Мавжуд қаватлар:</td><td>${designatedFloors}</td></tr>
+                        <tr><td>Таклиф қилинган қаватлар:</td><td>${proposedFloors}</td></tr>
+                        <tr><td>УМН коэффициенти:</td><td>${umnCoefficient}</td></tr>
+                        <tr><td>ҚМН фоизи:</td><td>${qmnPercentage}%</td></tr>
                     </table>
 
-                    <div class="section-title">Майдонлар</div>
+                    <div class="section-title">Қурилиш майдонлари</div>
                     <table class="details-table">
-                        <tr><td>Турар жой:</td><td>${residential} м²</td></tr>
-                        <tr><td>Нотурар жой:</td><td>${nonResidential} м²</td></tr>
-                        <tr><td>Умумий:</td><td>${totalArea} м²</td></tr>
+                        <tr><td>Умумий майдон:</td><td>${totalBuildingArea} м²</td></tr>
+                        <tr><td>Турар жой майдони:</td><td>${residentialArea} м²</td></tr>
+                        <tr><td>Нотурар жой майдони:</td><td>${nonResidentialArea || '0'} м²</td></tr>
                     </table>`;
 
-            // Add investor information if available
-            if (investor !== 'N/A' && investor !== '0') {
-                sidebarHtml += `
-                    <div class="section-title">Инвестор</div>
-                    <table class="details-table">
-                        <tr><td>Исм:</td><td>${investor}</td></tr>
-                    </table>
-                `;
-            }
-
             // Add demographic information if available
-            if (population !== 'N/A' || household !== 'N/A') {
+            if (population !== 'N/A' || householdCount !== 'N/A') {
                 sidebarHtml += `
                     <div class="section-title">Демографик маълумотлар</div>
                     <table class="details-table">
                         ${population !== 'N/A' ? `<tr><td>Аҳоли сони:</td><td>${population}</td></tr>` : ''}
-                        ${household !== 'N/A' ? `<tr><td>Хонадонлар сони:</td><td>${household}</td></tr>` : ''}
+                        ${householdCount !== 'N/A' ? `<tr><td>Хонадонлар сони:</td><td>${householdCount}</td></tr>` : ''}
                     </table>
                 `;
             }
+
+            // Add additional information if available
+            if (additionalInformation !== 'N/A') {
+                sidebarHtml += `
+                    <div class="section-title">Қўшимча маълумотлар</div>
+                    <div class="additional-info">${additionalInformation}</div>
+                `;
+            }
+
+            // Add documents if available
+            if (lot.documents && lot.documents.length > 0) {
+                sidebarHtml += `
+                    <div class="section-title">Ҳужжатлар</div>
+                    <div class="documents-list">`;
+
+                // Group documents by type
+                const pdfDocs = lot.documents.filter(doc => doc.doc_type === 'pdf-document');
+                const kmzDocs = lot.documents.filter(doc => doc.doc_type === 'kmz-document');
+
+                // Add PDF documents
+                if (pdfDocs.length > 0) {
+                    sidebarHtml += `<div class="doc-group">
+                        <h4>PDF Ҳужжатлар</h4>`;
+
+                    pdfDocs.forEach(doc => {
+                        const fileName = doc.filename || 'Ҳужжат';
+                        const pdfUrl = doc.url;
+
+                        sidebarHtml += `
+                            <a href="${pdfUrl}" target="_blank" class="document-link">
+                                <i class="fas fa-file-pdf"></i> ${fileName}
+                            </a>`;
+                    });
+
+                    sidebarHtml += `</div>`;
+                }
+
+                // Add KMZ documents
+                if (kmzDocs.length > 0) {
+                    sidebarHtml += `<div class="doc-group">
+                        <h4>KMZ Харита файллари</h4>`;
+
+                    kmzDocs.forEach(doc => {
+                        const fileName = doc.filename || 'KMZ файл';
+                        const kmzUrl = doc.url;
+
+                        sidebarHtml += `
+                            <a href="${kmzUrl}" download class="document-link">
+                                <i class="fas fa-map"></i> ${fileName}
+                            </a>`;
+                    });
+
+                    sidebarHtml += `</div>`;
+                }
+
+                sidebarHtml += `</div>`;
+            }
+
+            sidebarHtml += `</div>`;
+
+            sidebar.innerHTML = sidebarHtml;
+            document.body.appendChild(sidebar);
+            App.currentSidebar = sidebar;
+
+            const closeBtn = sidebar.querySelector('.sidebar-close-btn');
+            if (closeBtn) {
+                closeBtn.addEventListener('click', function() {
+                    closeSidebar();
+                });
+            }
+
+            requestAnimationFrame(() => {
+                sidebar.classList.add('open');
+                setTimeout(() => {
+                    App.isAnimating = false;
+                }, 300);
+            });
+
+        //     showToast('Маълумотлар юкланди');
+        // }оли сони:</td><td>${population}</td></tr>` : ''}
+        //                 ${household !== 'N/A' ? `<tr><td>Хонадонлар сони:</td><td>${household}</td></tr>` : ''}
+        //             </table>
+        //         `;
+        //     }
 
             // Add documents if available
             if (lot.documents && lot.documents.length > 0) {
@@ -2118,7 +2240,7 @@
             document.body.appendChild(sidebar);
             App.currentSidebar = sidebar;
 
-            const closeBtn = sidebar.querySelector('.sidebar-close-btn');
+            // const closeBtn = sidebar.querySelector('.sidebar-close-btn');
             if (closeBtn) {
                 closeBtn.addEventListener('click', function() {
                     closeSidebar();
