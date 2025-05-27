@@ -389,6 +389,55 @@
             min-width: 200px;
         }
 
+        /* Map style controls */
+        .map-style-controls {
+            position: absolute;
+            top: 80px;
+            left: 10px;
+            z-index: 1000;
+            background: white;
+            border-radius: 4px;
+            box-shadow: 0 1px 5px rgba(0,0,0,0.4);
+            padding: 8px;
+            min-width: 150px;
+        }
+
+        .style-control-title {
+            font-size: 12px;
+            font-weight: 600;
+            color: #666;
+            margin-bottom: 6px;
+            text-align: center;
+        }
+
+        .style-btn {
+            padding: 6px 10px;
+            background: white;
+            border: 1px solid #ccc;
+            border-radius: 4px;
+            cursor: pointer;
+            font-size: 12px;
+            display: block;
+            width: 100%;
+            margin-bottom: 4px;
+            transition: all 0.2s;
+            text-align: center;
+        }
+
+        .style-btn:last-child {
+            margin-bottom: 0;
+        }
+
+        .style-btn:hover {
+            background: #f4f4f4;
+        }
+
+        .style-btn.active {
+            background: #1E3685;
+            color: white;
+            border-color: #1E3685;
+        }
+
         .map-control-btn {
             padding: 8px 12px;
             background: white;
@@ -570,6 +619,13 @@
                 auction: 0,
                 jsonData: 0,
                 kmz: 0
+            },
+            mapLayers: {
+                osm: null,
+                satellite: null,
+                hybridBase: null,
+                hybridLabels: null,
+                currentLayer: 'osm'
             },
             apiBaseUrl: (function() {
                 const hostname = window.location.hostname;
@@ -1127,7 +1183,85 @@
             }
         }
 
-        // Create map controls with counts
+        // Create map style controls
+        function createMapStyleControls() {
+            const styleControlDiv = document.createElement('div');
+            styleControlDiv.className = 'map-style-controls';
+
+            const title = document.createElement('div');
+            title.className = 'style-control-title';
+            title.textContent = 'Харита турлари';
+
+            const osmBtn = document.createElement('button');
+            osmBtn.className = 'style-btn active';
+            osmBtn.textContent = 'Стандарт';
+            osmBtn.onclick = function() { changeMapStyle('osm'); };
+
+            const satelliteBtn = document.createElement('button');
+            satelliteBtn.className = 'style-btn';
+            satelliteBtn.textContent = 'Сунъий йўлдош';
+            satelliteBtn.onclick = function() { changeMapStyle('satellite'); };
+
+            const hybridBtn = document.createElement('button');
+            hybridBtn.className = 'style-btn';
+            hybridBtn.textContent = 'Гибрид';
+            hybridBtn.onclick = function() { changeMapStyle('hybrid'); };
+
+            styleControlDiv.appendChild(title);
+            styleControlDiv.appendChild(osmBtn);
+            styleControlDiv.appendChild(satelliteBtn);
+            styleControlDiv.appendChild(hybridBtn);
+
+            document.getElementById('map').appendChild(styleControlDiv);
+        }
+
+        // Change map style
+        function changeMapStyle(styleType) {
+            console.log('Changing map style to:', styleType);
+
+            // Remove current layers
+            if (App.mapLayers.currentLayer === 'osm' && App.mapLayers.osm) {
+                App.map.removeLayer(App.mapLayers.osm);
+            } else if (App.mapLayers.currentLayer === 'satellite' && App.mapLayers.satellite) {
+                App.map.removeLayer(App.mapLayers.satellite);
+            } else if (App.mapLayers.currentLayer === 'hybrid') {
+                if (App.mapLayers.hybridBase) App.map.removeLayer(App.mapLayers.hybridBase);
+                if (App.mapLayers.hybridLabels) App.map.removeLayer(App.mapLayers.hybridLabels);
+            }
+
+            // Add new layer
+            if (styleType === 'osm') {
+                App.map.addLayer(App.mapLayers.osm);
+            } else if (styleType === 'satellite') {
+                App.map.addLayer(App.mapLayers.satellite);
+            } else if (styleType === 'hybrid') {
+                App.map.addLayer(App.mapLayers.hybridBase);
+                App.map.addLayer(App.mapLayers.hybridLabels);
+            }
+
+            App.mapLayers.currentLayer = styleType;
+
+            // Update button states
+            document.querySelectorAll('.style-btn').forEach(btn => {
+                btn.classList.remove('active');
+            });
+
+            const buttonTexts = {
+                'osm': 'Стандарт',
+                'satellite': 'Сунъий йўлдош',
+                'hybrid': 'Гибрид'
+            };
+
+            document.querySelectorAll('.style-btn').forEach(btn => {
+                if (btn.textContent === buttonTexts[styleType]) {
+                    btn.classList.add('active');
+                }
+            });
+
+            console.log('Map style changed to:', styleType);
+        }
+
+        // Create map controls - This was the missing function!
         function createMapControls() {
             const controlDiv = document.createElement('div');
             controlDiv.className = 'map-controls';
@@ -1227,6 +1361,7 @@
             try {
                 initMap();
                 setupEventListeners();
+                createMapStyleControls();
                 createMapControls();
 
                 // Execute data fetching with proper error handling
@@ -1500,9 +1635,27 @@
                 maxZoom: 18
             });
 
-            L.tileLayer('https://{s}.tile.openstreetmap.org/{z}/{x}/{y}.png', {
+            // Initialize map layers
+            App.mapLayers.osm = L.tileLayer('https://{s}.tile.openstreetmap.org/{z}/{x}/{y}.png', {
                 attribution: '© OpenStreetMap contributors'
-            }).addTo(App.map);
+            });
+
+            App.mapLayers.satellite = L.tileLayer('https://server.arcgisonline.com/ArcGIS/rest/services/World_Imagery/MapServer/tile/{z}/{y}/{x}', {
+                attribution: '© Esri, Maxar, Earthstar Geographics, CNES/Airbus DS, USDA FSA, USGS, Aerogrid, IGN, IGP, and the GIS User Community'
+            });
+
+            // Create hybrid layer - satellite base with labels overlay
+            App.mapLayers.hybridBase = L.tileLayer('https://server.arcgisonline.com/ArcGIS/rest/services/World_Imagery/MapServer/tile/{z}/{y}/{x}', {
+                attribution: '© Esri, Maxar, Earthstar Geographics, CNES/Airbus DS, USDA FSA, USGS, Aerogrid, IGN, IGP, and the GIS User Community'
+            });
+
+            App.mapLayers.hybridLabels = L.tileLayer('https://server.arcgisonline.com/ArcGIS/rest/services/Reference/World_Boundaries_and_Places/MapServer/tile/{z}/{y}/{x}', {
+                attribution: ''
+            });
+
+            // Add default layer (OSM)
+            App.mapLayers.osm.addTo(App.map);
+            App.mapLayers.currentLayer = 'osm';
 
             App.markerCluster = L.markerClusterGroup({
                 chunkedLoading: true,
