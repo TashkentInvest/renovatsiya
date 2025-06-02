@@ -3,7 +3,7 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>InvestUz - Interactive Investment Map</title>
+    <title>ИнвестУз - Интерактив харита</title>
 
     <!-- Leaflet CSS -->
     <link rel="stylesheet" href="https://unpkg.com/leaflet@1.9.4/dist/leaflet.css" />
@@ -14,6 +14,31 @@
     <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css" />
 
     <style>
+        /* Government Style Variables */
+        :root {
+            --primary-blue: #1e3a8a;
+            --secondary-blue: #3b82f6;
+            --accent-gold: #f59e0b;
+            --success-green: #10b981;
+            --warning-orange: #f97316;
+            --error-red: #ef4444;
+            --white: #ffffff;
+            --gray-50: #f9fafb;
+            --gray-100: #f3f4f6;
+            --gray-200: #e5e7eb;
+            --gray-300: #d1d5db;
+            --gray-400: #9ca3af;
+            --gray-500: #6b7280;
+            --gray-600: #4b5563;
+            --gray-700: #374151;
+            --gray-800: #1f2937;
+            --gray-900: #111827;
+            --shadow: 0 10px 15px -3px rgba(0, 0, 0, 0.1), 0 4px 6px -2px rgba(0, 0, 0, 0.05);
+            --shadow-lg: 0 25px 50px -12px rgba(0, 0, 0, 0.25);
+            --border-radius: 8px;
+            --transition: all 0.3s cubic-bezier(0.4, 0, 0.2, 1);
+        }
+
         * {
             margin: 0;
             padding: 0;
@@ -21,71 +46,109 @@
         }
 
         body {
-            font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
-            background: #f5f5f5;
+            font-family: 'Inter', 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
+            background: var(--gray-50);
             overflow: hidden;
+            color: var(--gray-900);
         }
 
-        .app-container {
-            height: 100vh;
-            display: flex;
-            flex-direction: column;
-        }
-
-        /* Header */
+        /* Government Header with Uzbek Flag Colors */
         .app-header {
-            background: linear-gradient(135deg, #1e3c72, #2a5298);
-            color: white;
-            padding: 0 20px;
-            height: 60px;
+            background: linear-gradient(135deg, var(--primary-blue) 0%, var(--secondary-blue) 100%);
+            color: var(--white);
+            padding: 0 24px;
+            height: 70px;
             display: flex;
             align-items: center;
             justify-content: space-between;
-            box-shadow: 0 2px 10px rgba(0,0,0,0.1);
+            box-shadow: var(--shadow);
             z-index: 1000;
+            position: relative;
+        }
+
+        .uzbek-flag-stripe {
+            position: absolute;
+            bottom: 0;
+            left: 0;
+            right: 0;
+            height: 4px;
+            background: linear-gradient(90deg,
+                #0099cc 0%, #0099cc 33.33%,
+                #ffffff 33.33%, #ffffff 66.66%,
+                #1eb53a 66.66%, #1eb53a 100%);
         }
 
         .app-logo {
             display: flex;
             align-items: center;
-            gap: 12px;
+            gap: 16px;
+        }
+
+        .logo-icon {
+            width: 48px;
+            height: 48px;
+            background: linear-gradient(135deg, var(--accent-gold), #fbbf24);
+            border-radius: 12px;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            box-shadow: 0 4px 8px rgba(0, 0, 0, 0.1);
+        }
+
+        .logo-icon i {
+            font-size: 24px;
+            color: var(--white);
         }
 
         .app-title {
-            font-size: 20px;
-            font-weight: 600;
+            font-size: 24px;
+            font-weight: 700;
+            letter-spacing: -0.025em;
+        }
+
+        .app-subtitle {
+            font-size: 14px;
+            opacity: 0.9;
+            font-weight: 400;
         }
 
         .header-controls {
             display: flex;
             align-items: center;
-            gap: 15px;
+            gap: 20px;
         }
 
         .lang-switcher {
             display: flex;
-            background: rgba(255,255,255,0.1);
-            border-radius: 20px;
+            background: rgba(255, 255, 255, 0.1);
+            border-radius: 25px;
             overflow: hidden;
+            backdrop-filter: blur(10px);
         }
 
         .lang-btn {
             padding: 8px 16px;
             background: transparent;
             border: none;
-            color: white;
+            color: var(--white);
             cursor: pointer;
-            transition: all 0.3s;
+            transition: var(--transition);
             font-size: 14px;
+            font-weight: 500;
         }
 
         .lang-btn.active {
-            background: rgba(255,255,255,0.2);
+            background: rgba(255, 255, 255, 0.2);
+            backdrop-filter: blur(10px);
         }
 
-        /* Main Content */
+        .lang-btn:hover {
+            background: rgba(255, 255, 255, 0.15);
+        }
+
+        /* Main Layout */
         .main-content {
-            flex: 1;
+            height: calc(100vh - 70px);
             position: relative;
             display: flex;
         }
@@ -100,149 +163,220 @@
             height: 100%;
         }
 
-        /* Control Panels */
+        /* Enhanced Control Panels */
         .control-panel {
             position: absolute;
-            background: white;
-            border-radius: 12px;
-            box-shadow: 0 4px 20px rgba(0,0,0,0.15);
+            background: var(--white);
+            border-radius: var(--border-radius);
+            box-shadow: var(--shadow-lg);
             z-index: 1000;
             max-height: 80vh;
             overflow-y: auto;
+            backdrop-filter: blur(10px);
+            border: 1px solid var(--gray-200);
         }
 
         .layer-controls {
             top: 20px;
             right: 20px;
-            width: 280px;
-            padding: 20px;
+            width: 320px;
+            padding: 24px;
         }
 
         .map-style-controls {
-            top: 20px;
+            top: 90px;
             left: 20px;
             width: 200px;
-            padding: 15px;
+            padding: 20px;
         }
 
         .geojson-controls {
             bottom: 20px;
-            right: 20px;
-            width: 300px;
-            padding: 20px;
+            left: 20px;
+            width: 340px;
+            padding: 24px;
         }
 
         .control-title {
-            font-size: 16px;
+            font-size: 18px;
             font-weight: 600;
-            margin-bottom: 15px;
-            color: #333;
+            margin-bottom: 20px;
+            color: var(--gray-900);
             display: flex;
             align-items: center;
-            gap: 8px;
+            gap: 10px;
+            padding-bottom: 12px;
+            border-bottom: 2px solid var(--gray-100);
         }
 
-        /* Layer Toggle Buttons */
+        .control-title i {
+            color: var(--primary-blue);
+        }
+
+        /* Enhanced Layer Buttons */
         .layer-button {
             width: 100%;
-            padding: 12px 15px;
-            background: white;
-            border: 2px solid #e1e5e9;
-            border-radius: 8px;
+            padding: 16px 20px;
+            background: var(--white);
+            border: 2px solid var(--gray-200);
+            border-radius: var(--border-radius);
             cursor: pointer;
-            transition: all 0.3s;
-            margin-bottom: 10px;
+            transition: var(--transition);
+            margin-bottom: 12px;
             display: flex;
             align-items: center;
             justify-content: space-between;
             font-size: 14px;
+            font-weight: 500;
+            position: relative;
+            overflow: hidden;
+        }
+
+        .layer-button::before {
+            content: '';
+            position: absolute;
+            top: 0;
+            left: -100%;
+            width: 100%;
+            height: 100%;
+            background: linear-gradient(90deg, transparent, rgba(59, 130, 246, 0.1), transparent);
+            transition: left 0.5s;
+        }
+
+        .layer-button:hover::before {
+            left: 100%;
         }
 
         .layer-button:hover {
-            border-color: #4f46e5;
-            background: #f8fafc;
+            border-color: var(--secondary-blue);
+            background: var(--gray-50);
+            transform: translateY(-2px);
+            box-shadow: var(--shadow);
         }
 
         .layer-button.active {
-            background: #4f46e5;
-            color: white;
-            border-color: #4f46e5;
+            background: linear-gradient(135deg, var(--primary-blue), var(--secondary-blue));
+            color: var(--white);
+            border-color: var(--primary-blue);
+            transform: translateY(-1px);
+            box-shadow: var(--shadow);
         }
 
         .layer-button-content {
             display: flex;
             align-items: center;
-            gap: 10px;
+            gap: 12px;
+        }
+
+        .layer-icon {
+            width: 20px;
+            height: 20px;
+            display: flex;
+            align-items: center;
+            justify-content: center;
         }
 
         .count-badge {
-            background: #ef4444;
-            color: white;
-            padding: 4px 8px;
+            background: linear-gradient(135deg, var(--error-red), #dc2626);
+            color: var(--white);
+            padding: 4px 10px;
             border-radius: 12px;
-            font-size: 12px;
+            font-size: 11px;
             font-weight: 600;
-            min-width: 20px;
+            min-width: 24px;
             text-align: center;
+            box-shadow: 0 2px 4px rgba(239, 68, 68, 0.3);
         }
 
         .layer-button.active .count-badge {
-            background: rgba(255,255,255,0.3);
+            background: rgba(255, 255, 255, 0.2);
+            backdrop-filter: blur(5px);
+            box-shadow: 0 2px 4px rgba(0, 0, 0, 0.1);
         }
 
-        /* Map Style Buttons */
+        /* Map Style Controls */
         .style-button {
             width: 100%;
-            padding: 10px 15px;
-            background: white;
-            border: 2px solid #e1e5e9;
-            border-radius: 8px;
+            padding: 12px 16px;
+            background: var(--white);
+            border: 2px solid var(--gray-200);
+            border-radius: var(--border-radius);
             cursor: pointer;
-            transition: all 0.3s;
-            margin-bottom: 8px;
+            transition: var(--transition);
+            margin-bottom: 10px;
             font-size: 14px;
+            font-weight: 500;
             text-align: center;
+            position: relative;
+            overflow: hidden;
+        }
+
+        .style-button::before {
+            content: '';
+            position: absolute;
+            top: 0;
+            left: -100%;
+            width: 100%;
+            height: 100%;
+            background: linear-gradient(90deg, transparent, rgba(245, 158, 11, 0.1), transparent);
+            transition: left 0.5s;
+        }
+
+        .style-button:hover::before {
+            left: 100%;
         }
 
         .style-button:hover {
-            border-color: #4f46e5;
+            border-color: var(--accent-gold);
+            transform: translateY(-1px);
+            box-shadow: var(--shadow);
         }
 
         .style-button.active {
-            background: #4f46e5;
-            color: white;
-            border-color: #4f46e5;
+            background: linear-gradient(135deg, var(--accent-gold), #f59e0b);
+            color: var(--white);
+            border-color: var(--accent-gold);
+            box-shadow: var(--shadow);
         }
 
         /* GeoJSON Controls */
         .file-input-group {
-            margin-bottom: 15px;
+            margin-bottom: 20px;
         }
 
         .file-input {
             width: 100%;
-            padding: 10px;
-            border: 2px solid #e1e5e9;
-            border-radius: 8px;
+            padding: 12px 16px;
+            border: 2px solid var(--gray-200);
+            border-radius: var(--border-radius);
             font-size: 14px;
-            margin-bottom: 10px;
+            margin-bottom: 12px;
+            transition: var(--transition);
+            background: var(--white);
+        }
+
+        .file-input:focus {
+            outline: none;
+            border-color: var(--secondary-blue);
+            box-shadow: 0 0 0 3px rgba(59, 130, 246, 0.1);
         }
 
         .button-group {
             display: flex;
-            gap: 10px;
+            gap: 12px;
         }
 
         .primary-btn {
             flex: 1;
-            padding: 10px 15px;
-            background: #4f46e5;
-            color: white;
+            padding: 12px 16px;
+            background: linear-gradient(135deg, var(--secondary-blue), var(--primary-blue));
+            color: var(--white);
             border: none;
-            border-radius: 8px;
+            border-radius: var(--border-radius);
             cursor: pointer;
-            transition: all 0.3s;
+            transition: var(--transition);
             font-size: 14px;
+            font-weight: 500;
             display: flex;
             align-items: center;
             justify-content: center;
@@ -250,19 +384,21 @@
         }
 
         .primary-btn:hover {
-            background: #4338ca;
+            transform: translateY(-2px);
+            box-shadow: var(--shadow);
         }
 
         .secondary-btn {
             flex: 1;
-            padding: 10px 15px;
-            background: white;
-            color: #ef4444;
-            border: 2px solid #ef4444;
-            border-radius: 8px;
+            padding: 12px 16px;
+            background: var(--white);
+            color: var(--error-red);
+            border: 2px solid var(--error-red);
+            border-radius: var(--border-radius);
             cursor: pointer;
-            transition: all 0.3s;
+            transition: var(--transition);
             font-size: 14px;
+            font-weight: 500;
             display: flex;
             align-items: center;
             justify-content: center;
@@ -270,84 +406,132 @@
         }
 
         .secondary-btn:hover {
-            background: #ef4444;
-            color: white;
+            background: var(--error-red);
+            color: var(--white);
+            transform: translateY(-2px);
+            box-shadow: var(--shadow);
         }
 
         .status-text {
             font-size: 12px;
-            color: #666;
-            background: #f8fafc;
-            padding: 8px;
-            border-radius: 6px;
-            margin-top: 10px;
+            color: var(--gray-600);
+            background: var(--gray-50);
+            padding: 10px;
+            border-radius: var(--border-radius);
+            margin-top: 12px;
+            border-left: 4px solid var(--secondary-blue);
         }
 
-        /* Layer List */
-        .layer-list {
-            max-height: 200px;
-            overflow-y: auto;
-            margin-top: 15px;
+        /* Enhanced Legend */
+        .legend {
+            background: var(--white);
+            border-radius: var(--border-radius);
+            padding: 20px;
+            margin-top: 20px;
+            border: 1px solid var(--gray-200);
+            box-shadow: 0 2px 4px rgba(0, 0, 0, 0.05);
         }
 
-        .layer-item {
+        .legend-title {
+            font-size: 16px;
+            font-weight: 600;
+            margin-bottom: 16px;
+            color: var(--gray-900);
             display: flex;
             align-items: center;
-            justify-content: space-between;
-            padding: 8px 12px;
-            background: #f8fafc;
-            border-radius: 6px;
+            gap: 8px;
+        }
+
+        .legend-item {
+            display: flex;
+            align-items: center;
+            gap: 12px;
             margin-bottom: 8px;
+            font-size: 13px;
+            padding: 8px;
+            border-radius: var(--border-radius);
+            transition: var(--transition);
+        }
+
+        .legend-item:hover {
+            background: var(--gray-50);
+        }
+
+        .legend-color {
+            width: 20px;
+            height: 20px;
+            border-radius: 4px;
+            border: 2px solid var(--white);
+            box-shadow: 0 2px 4px rgba(0, 0, 0, 0.1);
+        }
+
+        /* Enhanced Statistics Panel */
+        .stats-panel {
+            background: linear-gradient(135deg, var(--gray-50), var(--white));
+            border-radius: var(--border-radius);
+            padding: 20px;
+            margin-top: 20px;
+            border: 1px solid var(--gray-200);
+        }
+
+        .stats-title {
+            font-size: 16px;
+            font-weight: 600;
+            margin-bottom: 16px;
+            color: var(--gray-900);
+            display: flex;
+            align-items: center;
+            gap: 8px;
+        }
+
+        .stats-grid {
+            display: grid;
+            grid-template-columns: 1fr 1fr;
+            gap: 12px;
             font-size: 13px;
         }
 
-        .layer-name {
-            flex: 1;
-            overflow: hidden;
-            text-overflow: ellipsis;
-            white-space: nowrap;
-        }
-
-        .layer-actions {
+        .stats-item {
             display: flex;
-            gap: 5px;
+            justify-content: space-between;
+            align-items: center;
+            padding: 8px 12px;
+            background: var(--white);
+            border-radius: var(--border-radius);
+            border: 1px solid var(--gray-200);
+            transition: var(--transition);
         }
 
-        .action-btn {
-            padding: 4px 8px;
-            border: none;
+        .stats-item:hover {
+            box-shadow: 0 2px 4px rgba(0, 0, 0, 0.05);
+        }
+
+        .stats-label {
+            color: var(--gray-600);
+            font-weight: 500;
+        }
+
+        .stats-value {
+            font-weight: 600;
+            color: var(--gray-900);
+            background: var(--gray-50);
+            padding: 2px 8px;
             border-radius: 4px;
-            cursor: pointer;
-            font-size: 11px;
-            transition: all 0.2s;
         }
 
-        .toggle-btn {
-            background: #10b981;
-            color: white;
-        }
-
-        .toggle-btn.hidden {
-            background: #ef4444;
-        }
-
-        .remove-btn {
-            background: #ef4444;
-            color: white;
-        }
-
-        /* Sidebar */
+        /* Enhanced Sidebar */
         .sidebar {
             position: fixed;
-            top: 60px;
-            right: -400px;
-            width: 380px;
-            height: calc(100vh - 60px);
-            background: white;
-            box-shadow: -4px 0 20px rgba(0,0,0,0.15);
+            top: 70px;
+            right: -420px;
+            width: 400px;
+            height: calc(100vh - 70px);
+            background: var(--white);
+            box-shadow: var(--shadow-lg);
             z-index: 1001;
-            transition: right 0.3s ease;
+            transition: right 0.4s cubic-bezier(0.4, 0, 0.2, 1);
             overflow-y: auto;
+            border-left: 1px solid var(--gray-200);
         }
 
         .sidebar.open {
@@ -355,53 +539,62 @@
         }
 
         .sidebar-header {
-            padding: 20px;
-            background: #f8fafc;
-            border-bottom: 1px solid #e1e5e9;
+            padding: 24px;
+            background: linear-gradient(135deg, var(--primary-blue), var(--secondary-blue));
+            color: var(--white);
+            border-bottom: 1px solid var(--gray-200);
             display: flex;
             justify-content: space-between;
             align-items: center;
+            position: sticky;
+            top: 0;
+            z-index: 10;
         }
 
         .sidebar-title {
-            font-size: 18px;
+            font-size: 20px;
             font-weight: 600;
-            color: #333;
-            max-width: 300px;
+            max-width: 320px;
             overflow: hidden;
             text-overflow: ellipsis;
+            line-height: 1.3;
         }
 
         .close-btn {
-            background: none;
+            background: rgba(255, 255, 255, 0.1);
             border: none;
-            font-size: 24px;
+            font-size: 20px;
             cursor: pointer;
-            color: #666;
-            padding: 5px;
-            border-radius: 4px;
-            transition: all 0.2s;
+            color: var(--white);
+            padding: 8px;
+            border-radius: var(--border-radius);
+            transition: var(--transition);
+            backdrop-filter: blur(10px);
         }
 
         .close-btn:hover {
-            background: #e1e5e9;
+            background: rgba(255, 255, 255, 0.2);
+            transform: rotate(90deg);
         }
 
         .sidebar-content {
-            padding: 20px;
+            padding: 24px;
         }
 
         .section {
-            margin-bottom: 25px;
+            margin-bottom: 32px;
         }
 
         .section-title {
-            font-size: 16px;
+            font-size: 18px;
             font-weight: 600;
-            margin-bottom: 10px;
-            color: #333;
+            margin-bottom: 16px;
+            color: var(--gray-900);
             padding-bottom: 8px;
-            border-bottom: 2px solid #e1e5e9;
+            border-bottom: 2px solid var(--gray-100);
+            display: flex;
+            align-items: center;
+            gap: 8px;
         }
 
         .info-table {
@@ -410,71 +603,116 @@
         }
 
         .info-table td {
-            padding: 8px 0;
+            padding: 12px 0;
             font-size: 14px;
-            border-bottom: 1px solid #f3f4f6;
+            border-bottom: 1px solid var(--gray-100);
+            vertical-align: top;
         }
 
         .info-table td:first-child {
             font-weight: 600;
-            color: #666;
+            color: var(--gray-600);
             width: 40%;
+            padding-right: 16px;
         }
 
         .info-table td:last-child {
-            color: #333;
+            color: var(--gray-900);
         }
 
-        /* Badges */
+        /* Enhanced Badges */
         .badge {
             display: inline-block;
-            padding: 4px 10px;
-            border-radius: 12px;
+            padding: 6px 12px;
+            border-radius: 20px;
             font-size: 12px;
             font-weight: 600;
+            text-transform: uppercase;
+            letter-spacing: 0.025em;
         }
 
         .badge-renovation {
-            background: #f3e8ff;
+            background: linear-gradient(135deg, #f3e8ff, #e9d5ff);
             color: #7c3aed;
+            border: 1px solid #c4b5fd;
         }
 
         .badge-investment {
-            background: #dbeafe;
+            background: linear-gradient(135deg, #dbeafe, #bfdbfe);
             color: #2563eb;
+            border: 1px solid #93c5fd;
         }
 
         .badge-auction {
-            background: #fed7aa;
+            background: linear-gradient(135deg, #fed7aa, #fdba74);
             color: #ea580c;
+            border: 1px solid #fb923c;
         }
 
         .badge-sold {
-            background: #dcfce7;
+            background: linear-gradient(135deg, #dcfce7, #bbf7d0);
             color: #16a34a;
+            border: 1px solid #86efac;
         }
 
-        /* Loading */
+        .badge-conservation {
+            background: linear-gradient(135deg, #e0f2fe, #b3e5fc);
+            color: #0277bd;
+            border: 1px solid #4fc3f7;
+        }
+
+        .badge-reconstruction {
+            background: linear-gradient(135deg, #fff3e0, #ffe0b2);
+            color: #f57c00;
+            border: 1px solid #ffb74d;
+        }
+
+        .badge-new-construction {
+            background: linear-gradient(135deg, #f3e5f5, #e1bee7);
+            color: #8e24aa;
+            border: 1px solid #ce93d8;
+        }
+
+        /* Enhanced Loading */
         .loading-overlay {
             position: fixed;
             top: 0;
             left: 0;
             width: 100%;
             height: 100%;
-            background: rgba(255,255,255,0.9);
+            background: rgba(255, 255, 255, 0.95);
             display: flex;
+            flex-direction: column;
             align-items: center;
             justify-content: center;
             z-index: 2000;
+            backdrop-filter: blur(5px);
+        }
+
+        .loading-content {
+            text-align: center;
         }
 
         .loading-spinner {
-            width: 50px;
-            height: 50px;
-            border: 4px solid #e1e5e9;
-            border-top: 4px solid #4f46e5;
+            width: 60px;
+            height: 60px;
+            border: 4px solid var(--gray-200);
+            border-top: 4px solid var(--secondary-blue);
             border-radius: 50%;
             animation: spin 1s linear infinite;
+            margin-bottom: 20px;
+        }
+
+        .loading-text {
+            font-size: 18px;
+            font-weight: 500;
+            color: var(--gray-700);
+            margin-bottom: 8px;
+        }
+
+        .loading-subtext {
+            font-size: 14px;
+            color: var(--gray-500);
         }
 
         @keyframes spin {
@@ -482,39 +720,54 @@
             100% { transform: rotate(360deg); }
         }
 
-        /* Toast */
+        /* Enhanced Toast */
         .toast-container {
             position: fixed;
             bottom: 20px;
             left: 50%;
             transform: translateX(-50%);
             z-index: 2001;
+            display: flex;
+            flex-direction: column;
+            gap: 12px;
         }
 
         .toast {
-            padding: 12px 20px;
-            border-radius: 8px;
+            padding: 16px 24px;
+            border-radius: var(--border-radius);
             margin-bottom: 10px;
-            color: white;
+            color: var(--white);
             font-size: 14px;
-            box-shadow: 0 4px 12px rgba(0,0,0,0.15);
-            animation: slideUp 0.3s ease;
+            font-weight: 500;
+            box-shadow: var(--shadow-lg);
+            animation: slideUp 0.4s cubic-bezier(0.4, 0, 0.2, 1);
+            backdrop-filter: blur(10px);
+            border: 1px solid rgba(255, 255, 255, 0.1);
+            display: flex;
+            align-items: center;
+            gap: 12px;
+            cursor: pointer;
+            transition: var(--transition);
+        }
+
+        .toast:hover {
+            transform: translateY(-2px);
         }
 
         .toast.info {
-            background: #4f46e5;
+            background: linear-gradient(135deg, var(--secondary-blue), var(--primary-blue));
         }
 
         .toast.success {
-            background: #10b981;
+            background: linear-gradient(135deg, var(--success-green), #059669);
         }
 
         .toast.warning {
-            background: #f59e0b;
+            background: linear-gradient(135deg, var(--warning-orange), var(--accent-gold));
         }
 
         .toast.error {
-            background: #ef4444;
+            background: linear-gradient(135deg, var(--error-red), #dc2626);
         }
 
         @keyframes slideUp {
@@ -528,55 +781,62 @@
             }
         }
 
-        /* Statistics Panel */
-        .stats-panel {
-            background: #f8fafc;
-            border-radius: 8px;
-            padding: 15px;
-            margin-top: 15px;
-        }
-
-        .stats-grid {
-            display: grid;
-            grid-template-columns: 1fr 1fr;
-            gap: 10px;
-            font-size: 13px;
-        }
-
-        .stats-item {
-            display: flex;
-            justify-content: space-between;
+        /* Drag and Drop */
+        .drag-overlay {
+            position: absolute;
+            top: 0;
+            left: 0;
+            width: 100%;
+            height: 100%;
+            background: linear-gradient(135deg, rgba(59, 130, 246, 0.1), rgba(30, 58, 138, 0.1));
+            border: 3px dashed var(--secondary-blue);
+            display: none;
             align-items: center;
-        }
-
-        .stats-label {
-            color: #666;
-        }
-
-        .stats-value {
+            justify-content: center;
+            z-index: 1500;
+            font-size: 24px;
+            color: var(--secondary-blue);
             font-weight: 600;
-            color: #333;
+            backdrop-filter: blur(5px);
+            border-radius: var(--border-radius);
+            margin: 20px;
         }
 
-        /* Popup Customization */
+        .drag-overlay.active {
+            display: flex;
+        }
+
+        .drag-content {
+            text-align: center;
+            padding: 40px;
+            background: var(--white);
+            border-radius: var(--border-radius);
+            box-shadow: var(--shadow-lg);
+        }
+
+        /* Enhanced Popup Styles */
         .leaflet-popup-content {
-            margin: 15px;
+            margin: 16px 20px;
             font-size: 14px;
+            line-height: 1.5;
         }
 
         .popup-header {
-            font-size: 16px;
+            font-size: 18px;
             font-weight: 600;
-            margin-bottom: 10px;
-            color: #333;
+            margin-bottom: 12px;
+            color: var(--gray-900);
+            border-bottom: 2px solid var(--gray-100);
+            padding-bottom: 8px;
         }
 
         .popup-image {
             width: 100%;
             max-height: 150px;
             object-fit: cover;
-            border-radius: 6px;
-            margin-bottom: 10px;
+            border-radius: var(--border-radius);
+            margin-bottom: 12px;
+            box-shadow: 0 2px 8px rgba(0, 0, 0, 0.1);
         }
 
         .popup-details {
@@ -585,66 +845,126 @@
         }
 
         .popup-details p {
-            margin: 5px 0;
+            margin: 6px 0;
         }
 
         .popup-details strong {
-            color: #333;
-        }
-
-        .details-btn {
-            margin-top: 10px;
-            padding: 8px 15px;
-            background: #4f46e5;
-            color: white;
-            border: none;
-            border-radius: 6px;
-            cursor: pointer;
-            font-size: 13px;
-            transition: all 0.2s;
-        }
-
-        .details-btn:hover {
-            background: #4338ca;
-        }
-
-        /* Drag and Drop */
-        .drag-overlay {
-            position: absolute;
-            top: 0;
-            left: 0;
-            width: 100%;
-            height: 100%;
-            background: rgba(79, 70, 229, 0.1);
-            border: 3px dashed #4f46e5;
-            display: none;
-            align-items: center;
-            justify-content: center;
-            z-index: 1500;
-            font-size: 18px;
-            color: #4f46e5;
+            color: var(--gray-700);
             font-weight: 600;
         }
 
-        .drag-overlay.active {
-            display: flex;
+        .details-btn {
+            margin-top: 12px;
+            padding: 10px 16px;
+            background: linear-gradient(135deg, var(--secondary-blue), var(--primary-blue));
+            color: var(--white);
+            border: none;
+            border-radius: var(--border-radius);
+            cursor: pointer;
+            font-size: 13px;
+            font-weight: 500;
+            transition: var(--transition);
+            width: 100%;
         }
 
-        /* Responsive */
+        .details-btn:hover {
+            transform: translateY(-1px);
+            box-shadow: var(--shadow);
+        }
+
+        /* Layer List */
+        .layer-list {
+            max-height: 250px;
+            overflow-y: auto;
+            margin-top: 20px;
+        }
+
+        .layer-item {
+            display: flex;
+            align-items: center;
+            justify-content: space-between;
+            padding: 12px 16px;
+            background: var(--gray-50);
+            border-radius: var(--border-radius);
+            margin-bottom: 10px;
+            font-size: 13px;
+            border: 1px solid var(--gray-200);
+            transition: var(--transition);
+        }
+
+        .layer-item:hover {
+            background: var(--white);
+            box-shadow: 0 2px 4px rgba(0, 0, 0, 0.05);
+        }
+
+        .layer-name {
+            flex: 1;
+            overflow: hidden;
+            text-overflow: ellipsis;
+            white-space: nowrap;
+            font-weight: 500;
+            color: var(--gray-900);
+        }
+
+        .layer-actions {
+            display: flex;
+            gap: 8px;
+        }
+
+        .action-btn {
+            padding: 6px 10px;
+            border: none;
+            border-radius: var(--border-radius);
+            cursor: pointer;
+            font-size: 11px;
+            font-weight: 500;
+            transition: var(--transition);
+        }
+
+        .toggle-btn {
+            background: var(--success-green);
+            color: var(--white);
+        }
+
+        .toggle-btn.hidden {
+            background: var(--gray-400);
+        }
+
+        .toggle-btn:hover {
+            transform: translateY(-1px);
+        }
+
+        .remove-btn {
+            background: var(--error-red);
+            color: var(--white);
+        }
+
+        .remove-btn:hover {
+            transform: translateY(-1px);
+            background: #dc2626;
+        }
+
+        /* Responsive Design */
         @media (max-width: 768px) {
             .app-title {
-                font-size: 16px;
+                font-size: 18px;
+            }
+
+            .app-subtitle {
+                display: none;
             }
 
             .layer-controls,
             .geojson-controls {
-                width: 260px;
+                width: 300px;
                 right: 10px;
+                padding: 20px;
             }
 
             .map-style-controls {
                 width: 180px;
                 left: 10px;
+                padding: 16px;
             }
 
             .sidebar {
@@ -655,38 +975,24 @@
             .control-panel {
                 max-height: 60vh;
             }
-        }
 
-        @media (max-width: 480px) {
-            .app-header {
-                padding: 0 15px;
-            }
-
-            .layer-controls,
-            .geojson-controls,
-            .map-style-controls {
-                position: fixed;
-                bottom: 20px;
-                top: auto;
-                left: 10px;
-                right: 10px;
-                width: auto;
-                max-height: 40vh;
+            .stats-grid {
+                grid-template-columns: 1fr;
             }
         }
 
-        /* Custom Marker Styles */
+        /* Custom marker styles */
         .custom-marker {
             background: none !important;
             border: none !important;
         }
 
         .marker-icon {
-            width: 14px;
-            height: 14px;
+            width: 16px;
+            height: 16px;
             border-radius: 50%;
-            border: 2px solid white;
-            box-shadow: 0 2px 4px rgba(0,0,0,0.3);
+            border: 3px solid var(--white);
+            box-shadow: 0 2px 8px rgba(0, 0, 0, 0.3);
         }
 
         .marker-renovation {
@@ -708,6 +1014,49 @@
         .marker-regular {
             background: #059669;
         }
+
+        .marker-kmz {
+            background: #f59e0b;
+        }
+
+        .marker-conservation {
+            background: #0277bd;
+        }
+
+        .marker-reconstruction {
+            background: #f57c00;
+        }
+
+        .marker-new-construction {
+            background: #8e24aa;
+        }
+
+        /* Custom scrollbar */
+        .control-panel::-webkit-scrollbar,
+        .sidebar::-webkit-scrollbar,
+        .layer-list::-webkit-scrollbar {
+            width: 6px;
+        }
+
+        .control-panel::-webkit-scrollbar-track,
+        .sidebar::-webkit-scrollbar-track,
+        .layer-list::-webkit-scrollbar-track {
+            background: var(--gray-100);
+            border-radius: 3px;
+        }
+
+        .control-panel::-webkit-scrollbar-thumb,
+        .sidebar::-webkit-scrollbar-thumb,
+        .layer-list::-webkit-scrollbar-thumb {
+            background: var(--gray-300);
+            border-radius: 3px;
+        }
+
+        .control-panel::-webkit-scrollbar-thumb:hover,
+        .sidebar::-webkit-scrollbar-thumb:hover,
+        .layer-list::-webkit-scrollbar-thumb:hover {
+            background: var(--gray-400);
+        }
     </style>
 </head>
 <body>
@@ -717,6 +1066,7 @@
     <script src="https://unpkg.com/leaflet@1.9.4/dist/leaflet.js"></script>
     <script src="https://unpkg.com/leaflet.markercluster@1.4.1/dist/leaflet.markercluster.js"></script>
     <script src="https://unpkg.com/jszip@3.10.1/dist/jszip.min.js"></script>
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/togeojson/0.16.0/togeojson.min.js"></script>
     <script src="https://cdnjs.cloudflare.com/ajax/libs/proj4js/2.8.0/proj4.min.js"></script>
     <script src="https://unpkg.com/react@18/umd/react.development.js"></script>
     <script src="https://unpkg.com/react-dom@18/umd/react-dom.development.js"></script>
@@ -724,32 +1074,127 @@
 
     <script type="text/babel">
         const { useState, useEffect, useRef, useCallback, useMemo } = React;
+        const { createRoot } = ReactDOM;
 
-        // Constants
+        // Enhanced Uzbek Cyrillic translations
+        const TEXTS = {
+            appTitle: 'ИнвестУз - Интерактив харита',
+            appSubtitle: 'Ўзбекистон Республикаси Инвестициялар вазирлиги',
+            mapLayers: 'Харита қатламлари',
+            mapStyle: 'Харита услуби',
+            geojsonManager: 'GeoJSON бошқарув',
+            apiData: 'API маълумотлар',
+            jsonData: 'JSON маълумотлар',
+            auctions: 'Аукционлар',
+            soldProperties: 'Сотилган мулклар',
+            kmzData: 'KMZ маълумотлар',
+            geojsonLayers: 'GeoJSON қатламлари',
+            strategyLayers: 'Стратегия қатламлари',
+            standard: 'Стандарт',
+            satellite: 'Сунъий йўлдош',
+            hybrid: 'Гибрид',
+            load: 'Юклаш',
+            clearAll: 'Ҳаммасини тозалаш',
+            hide: 'Яшириш',
+            show: 'Кўрсатиш',
+            remove: '✕',
+            total: 'Жами',
+            visible: 'Кўринадиган',
+            objectDetails: 'Объект тафсилотлари',
+            basicInfo: 'Асосий маълумотлар',
+            name: 'Ном',
+            type: 'Тури',
+            location: 'Жойлашув',
+            district: 'Туман',
+            area: 'Майдон',
+            price: 'Нарх',
+            image: 'Расм',
+            viewDetails: 'Тафсилотларни кўриш',
+            loadingData: 'Маълумотлар юкланмоқда...',
+            loadingSubtext: 'Серверлардан маълумотлар олинмоқда',
+            errorLoading: 'Юклашда хатолик',
+            successLoaded: 'Муваффақиятли юкланди',
+            dropFiles: 'Файлларни бу ерга ташланг',
+            legend: 'Шартли белгилар',
+            conservation: 'Консервация',
+            reconstruction: 'Реконструкция',
+            newConstruction: 'Янги қурилиш',
+            statistics: 'Статистика',
+            renovation: 'Реновация',
+            investment: 'Инвестиция',
+            auction: 'Аукцион',
+            sold: 'Сотилган',
+            strategy: 'Стратегия',
+            function: 'Функция',
+            floors: 'Қаватлар',
+            globalId: 'Глобал ID',
+            mahalla: 'Маҳалла',
+            region: 'Вилоят',
+            seismicZone: 'Сейсмик зона',
+            buildingArea: 'Қурилиш майдони',
+            areaRatio: 'Майдон нисбати',
+            createdDate: 'Яратилган сана',
+            lastEdited: 'Охирги таҳрир',
+            technicalParams: 'Техник параметрлар',
+            administrativeInfo: 'Маъмурий маълумот',
+            buildingInfo: 'Қурилиш маълумотлари'
+        };
+
+        // Enhanced API endpoints
         const API_ENDPOINTS = {
             aktivs: '/api/aktivs',
             auction: 'https://projects.toshkentinvest.uz/api/markersing',
             sold: 'https://projects.toshkentinvest.uz/api/sotilgan',
-            jsonData: '/assets/data/443_output.json'
+            jsonData: '/assets/data/443_output.json',
+            geoJsonStrategy: '/tashkent_master_plan.geojson'
         };
 
+        // Enhanced map styles
         const MAP_STYLES = {
             osm: {
-                name: 'Standard',
+                name: TEXTS.standard,
                 url: 'https://{s}.tile.openstreetmap.org/{z}/{x}/{y}.png',
                 attribution: '© OpenStreetMap contributors'
             },
             satellite: {
-                name: 'Satellite',
+                name: TEXTS.satellite,
                 url: 'https://server.arcgisonline.com/ArcGIS/rest/services/World_Imagery/MapServer/tile/{z}/{y}/{x}',
                 attribution: '© Esri, Maxar, Earthstar Geographics'
             },
             hybrid: {
-                name: 'Hybrid',
+                name: TEXTS.hybrid,
                 baseUrl: 'https://server.arcgisonline.com/ArcGIS/rest/services/World_Imagery/MapServer/tile/{z}/{y}/{x}',
                 labelUrl: 'https://server.arcgisonline.com/ArcGIS/rest/services/Reference/World_Boundaries_and_Places/MapServer/tile/{z}/{y}/{x}',
                 attribution: '© Esri, Maxar, Earthstar Geographics'
             }
+        };
+
+        // Enhanced strategy colors with government color scheme
+        const STRATEGY_COLORS = {
+            'Konservatsiya': '#0277bd',
+            'Rekonstruktsiya': '#f57c00',
+            'Yangi_qurilish': '#8e24aa',
+            'Rekonstruksiya': '#f57c00',
+            'Новое строительство': '#8e24aa',
+            'Реконструкция': '#f57c00',
+            'Консервация': '#0277bd',
+            'Aholi_yashash_joyi': '#2563eb',
+            'Savdo_xizmat': '#059669',
+            'Sanoat': '#dc2626',
+            'Madaniy_tarixiy': '#7c3aed',
+            'default': '#6b7280'
+        };
+
+        // Enhanced function colors
+        const FUNCTION_COLORS = {
+            'Aholi_yashash_joyi': '#2563eb',
+            'Savdo_xizmat': '#059669',
+            'Sanoat': '#dc2626',
+            'Madaniy_tarixiy': '#7c3aed',
+            'Rekreatsiya': '#10b981',
+            'Transport': '#f59e0b',
+            'Kommunal': '#6b7280',
+            'default': '#8e24aa'
         };
 
         // Utility Functions
@@ -780,6 +1225,7 @@
             return [coords[1], coords[0]];
         };
 
+        // Enhanced coordinate extraction
         const extractCoordinatesFromUrl = (url) => {
             if (!url) return null;
 
@@ -827,188 +1273,442 @@
             }
         };
 
-        const createMarkerIcon = (type, size = 14) => {
+        // Enhanced marker creation
+        const createMarkerIcon = (type, size = 16) => {
             const colors = {
                 renovation: '#7c3aed',
                 investment: '#2563eb',
                 auction: '#ea580c',
                 sold: '#dc2626',
-                regular: '#059669'
+                regular: '#059669',
+                kmz: '#f59e0b',
+                conservation: '#0277bd',
+                reconstruction: '#f57c00',
+                'new-construction': '#8e24aa'
             };
 
             return L.divIcon({
-                html: `<div class="marker-icon marker-${type}" style="width:${size}px;height:${size}px;background:${colors[type]}"></div>`,
+                html: `<div class="marker-icon marker-${type}" style="width:${size}px;height:${size}px;background:${colors[type] || colors.regular}"></div>`,
                 className: 'custom-marker',
-                iconSize: [size + 4, size + 4],
-                iconAnchor: [(size + 4) / 2, (size + 4) / 2]
+                iconSize: [size + 6, size + 6],
+                iconAnchor: [(size + 6) / 2, (size + 6) / 2]
             });
+        };
+
+        // Enhanced KMZ processing
+        const processKMZFile = async (fileUrl) => {
+            try {
+                const response = await fetch(fileUrl);
+                const arrayBuffer = await response.arrayBuffer();
+
+                const zip = new JSZip();
+                const contents = await zip.loadAsync(arrayBuffer);
+
+                const kmlFile = Object.keys(contents.files).find(filename =>
+                    filename.toLowerCase().endsWith('.kml')
+                );
+
+                if (!kmlFile) {
+                    throw new Error('No KML file found in KMZ');
+                }
+
+                const kmlContent = await contents.files[kmlFile].async('string');
+                const parser = new DOMParser();
+                const kmlDoc = parser.parseFromString(kmlContent, 'text/xml');
+
+                const geoJSON = toGeoJSON.kml(kmlDoc);
+                return geoJSON;
+            } catch (error) {
+                console.error('Error processing KMZ:', error);
+                throw error;
+            }
+        };
+
+        // Enhanced strategy color function
+        const getStrategyColor = (properties) => {
+            if (!properties) return STRATEGY_COLORS.default;
+
+            // Check strategy first
+            const strategy = properties.strategiya || properties.strategy || properties.type;
+            if (strategy) {
+                const normalizedStrategy = strategy.toString().toLowerCase();
+
+                for (const [key, color] of Object.entries(STRATEGY_COLORS)) {
+                    if (key.toLowerCase() === normalizedStrategy) {
+                        return color;
+                    }
+                }
+
+                if (normalizedStrategy.includes('konservat') || normalizedStrategy.includes('консерв')) {
+                    return STRATEGY_COLORS['Konservatsiya'];
+                }
+                if (normalizedStrategy.includes('rekonstrukt') || normalizedStrategy.includes('реконструк')) {
+                    return STRATEGY_COLORS['Rekonstruktsiya'];
+                }
+                if (normalizedStrategy.includes('yangi') || normalizedStrategy.includes('новое') || normalizedStrategy.includes('строитель')) {
+                    return STRATEGY_COLORS['Yangi_qurilish'];
+                }
+            }
+
+            // Check function if no strategy
+            const func = properties.funksiya || properties.function;
+            if (func) {
+                return FUNCTION_COLORS[func] || FUNCTION_COLORS.default;
+            }
+
+            return STRATEGY_COLORS.default;
+        };
+
+        // Enhanced format functions
+        const formatDate = (timestamp) => {
+            if (!timestamp) return 'N/A';
+            try {
+                const date = new Date(timestamp);
+                return date.toLocaleDateString('uz-UZ');
+            } catch {
+                return 'N/A';
+            }
+        };
+
+        const formatArea = (area) => {
+            if (!area) return 'N/A';
+            if (area > 10000) {
+                return `${(area / 10000).toFixed(2)} га`;
+            }
+            return `${area.toFixed(2)} м²`;
+        };
+
+        const formatStrategy = (strategy) => {
+            const strategies = {
+                'Konservatsiya': TEXTS.conservation,
+                'Rekonstruktsiya': TEXTS.reconstruction,
+                'Yangi_qurilish': TEXTS.newConstruction,
+                'Rekonstruksiya': TEXTS.reconstruction
+            };
+            return strategies[strategy] || strategy || 'N/A';
+        };
+
+        const formatFunction = (func) => {
+            const functions = {
+                'Aholi_yashash_joyi': 'Аҳоли яшаш жойи',
+                'Savdo_xizmat': 'Савдо-хизмат',
+                'Sanoat': 'Саноат',
+                'Madaniy_tarixiy': 'Маданий-тарихий',
+                'Rekreatsiya': 'Рекреация',
+                'Transport': 'Транспорт',
+                'Kommunal': 'Коммунал'
+            };
+            return functions[func] || func || 'N/A';
         };
 
         // Toast Component
         const Toast = ({ toasts, removeToast }) => (
-            <div className="toast-container">
-                {toasts.map(toast => (
-                    <div
-                        key={toast.id}
-                        className={`toast ${toast.type}`}
-                        onClick={() => removeToast(toast.id)}
-                    >
-                        {toast.message}
-                    </div>
-                ))}
-            </div>
+            React.createElement('div', { className: 'toast-container' },
+                toasts.map(toast =>
+                    React.createElement('div', {
+                        key: toast.id,
+                        className: `toast ${toast.type}`,
+                        onClick: () => removeToast(toast.id)
+                    },
+                        React.createElement('i', {
+                            className: `fas ${
+                                toast.type === 'success' ? 'fa-check-circle' :
+                                toast.type === 'error' ? 'fa-exclamation-circle' :
+                                toast.type === 'warning' ? 'fa-exclamation-triangle' :
+                                'fa-info-circle'
+                            }`
+                        }),
+                        React.createElement('span', null, toast.message)
+                    )
+                )
+            )
         );
 
-        // Loading Component
+        // Enhanced Loading Component
         const Loading = ({ show }) => (
-            show ? (
-                <div className="loading-overlay">
-                    <div className="loading-spinner"></div>
-                </div>
+            show ? React.createElement('div', { className: 'loading-overlay' },
+                React.createElement('div', { className: 'loading-content' },
+                    React.createElement('div', { className: 'loading-spinner' }),
+                    React.createElement('div', { className: 'loading-text' }, TEXTS.loadingData),
+                    React.createElement('div', { className: 'loading-subtext' }, TEXTS.loadingSubtext)
+                )
             ) : null
         );
 
-        // Sidebar Component
-        const Sidebar = ({ isOpen, onClose, item }) => (
-            <div className={`sidebar ${isOpen ? 'open' : ''}`}>
-                <div className="sidebar-header">
-                    <h2 className="sidebar-title">
-                        {item?.property_name || item?.['Объект_номи'] || 'Object Details'}
-                    </h2>
-                    <button className="close-btn" onClick={onClose}>
-                        <i className="fas fa-times"></i>
-                    </button>
-                </div>
-                <div className="sidebar-content">
-                    {item && (
-                        <>
-                            <div className="section">
-                                <h3 className="section-title">Basic Information</h3>
-                                <table className="info-table">
-                                    <tbody>
-                                        <tr>
-                                            <td>Name:</td>
-                                            <td>{item.property_name || item['Объект_номи'] || 'N/A'}</td>
-                                        </tr>
-                                        <tr>
-                                            <td>Type:</td>
-                                            <td>
-                                                <span className="badge badge-investment">
-                                                    {item.type || item['Таклиф_тури_(Реновация,_Инвестиция,_Аукцион)'] || 'Unknown'}
-                                                </span>
-                                            </td>
-                                        </tr>
-                                        <tr>
-                                            <td>Location:</td>
-                                            <td>{item.address || item['Манзил_(МФЙ,_кўча)'] || 'N/A'}</td>
-                                        </tr>
-                                        <tr>
-                                            <td>District:</td>
-                                            <td>{item.district || item['Туман'] || 'N/A'}</td>
-                                        </tr>
-                                        {item.land_area && (
-                                            <tr>
-                                                <td>Land Area:</td>
-                                                <td>{item.land_area} га</td>
-                                            </tr>
-                                        )}
-                                        {item.start_price && (
-                                            <tr>
-                                                <td>Start Price:</td>
-                                                <td>{Number(item.start_price).toLocaleString('uz-UZ')} сум</td>
-                                            </tr>
-                                        )}
-                                    </tbody>
-                                </table>
-                            </div>
+        // Enhanced Legend Component
+        const Legend = () => (
+            React.createElement('div', { className: 'legend' },
+                React.createElement('div', { className: 'legend-title' },
+                    React.createElement('i', { className: 'fas fa-palette' }),
+                    TEXTS.legend
+                ),
+                React.createElement('div', { className: 'legend-item' },
+                    React.createElement('div', {
+                        className: 'legend-color',
+                        style: { backgroundColor: STRATEGY_COLORS['Konservatsiya'] }
+                    }),
+                    React.createElement('span', null, TEXTS.conservation)
+                ),
+                React.createElement('div', { className: 'legend-item' },
+                    React.createElement('div', {
+                        className: 'legend-color',
+                        style: { backgroundColor: STRATEGY_COLORS['Rekonstruktsiya'] }
+                    }),
+                    React.createElement('span', null, TEXTS.reconstruction)
+                ),
+                React.createElement('div', { className: 'legend-item' },
+                    React.createElement('div', {
+                        className: 'legend-color',
+                        style: { backgroundColor: STRATEGY_COLORS['Yangi_qurilish'] }
+                    }),
+                    React.createElement('span', null, TEXTS.newConstruction)
+                ),
+                React.createElement('div', { className: 'legend-item' },
+                    React.createElement('div', {
+                        className: 'legend-color',
+                        style: { backgroundColor: FUNCTION_COLORS['Aholi_yashash_joyi'] }
+                    }),
+                    React.createElement('span', null, 'Аҳоли яшаш жойи')
+                ),
+                React.createElement('div', { className: 'legend-item' },
+                    React.createElement('div', {
+                        className: 'legend-color',
+                        style: { backgroundColor: FUNCTION_COLORS['Savdo_xizmat'] }
+                    }),
+                    React.createElement('span', null, 'Савдо-хизмат')
+                )
+            )
+        );
 
-                            {item.main_image && (
-                                <div className="section">
-                                    <h3 className="section-title">Image</h3>
-                                    <img
-                                        src={item.main_image}
-                                        alt={item.property_name || 'Property'}
-                                        style={{ width: "100%", maxHeight: "200px", objectFit: "cover", borderRadius: "8px" }}
-                                        onError={(e) => e.target.style.display = 'none'}
-                                    />
-                                </div>
-                            )}
-                        </>
-                    )}
-                </div>
-            </div>
+        // Enhanced Sidebar Component
+        const Sidebar = ({ isOpen, onClose, item }) => (
+            React.createElement('div', { className: `sidebar ${isOpen ? 'open' : ''}` },
+                React.createElement('div', { className: 'sidebar-header' },
+                    React.createElement('div', null,
+                        React.createElement('h2', { className: 'sidebar-title' },
+                            item?.property_name ||
+                            item?.mahalla_nomi ||
+                            item?.funksiya ||
+                            item?.['Объект_номи'] ||
+                            TEXTS.objectDetails
+                        ),
+                        item?.district && React.createElement('div', { className: 'app-subtitle' }, item.district)
+                    ),
+                    React.createElement('button', { className: 'close-btn', onClick: onClose },
+                        React.createElement('i', { className: 'fas fa-times' })
+                    )
+                ),
+                React.createElement('div', { className: 'sidebar-content' },
+                    item && React.createElement('div', null,
+                        // Basic Information Section
+                        React.createElement('div', { className: 'section' },
+                            React.createElement('h3', { className: 'section-title' },
+                                React.createElement('i', { className: 'fas fa-info-circle' }),
+                                TEXTS.basicInfo
+                            ),
+                            React.createElement('table', { className: 'info-table' },
+                                React.createElement('tbody', null,
+                                    // Name
+                                    React.createElement('tr', null,
+                                        React.createElement('td', null, TEXTS.name + ':'),
+                                        React.createElement('td', null,
+                                            item.property_name ||
+                                            item.mahalla_nomi ||
+                                            item['Объект_номи'] ||
+                                            item.funksiya ||
+                                            'N/A'
+                                        )
+                                    ),
+                                    // Strategy/Type
+                                    React.createElement('tr', null,
+                                        React.createElement('td', null, TEXTS.strategy + ':'),
+                                        React.createElement('td', null,
+                                            React.createElement('span', {
+                                                className: `badge badge-${
+                                                    item.strategiya === 'Konservatsiya' ? 'conservation' :
+                                                    item.strategiya === 'Rekonstruktsiya' ? 'reconstruction' :
+                                                    item.strategiya === 'Yangi_qurilish' ? 'new-construction' :
+                                                    'investment'
+                                                }`
+                                            }, formatStrategy(item.strategiya) || formatStrategy(item.type) || 'N/A')
+                                        )
+                                    ),
+                                    // Function
+                                    item.funksiya && React.createElement('tr', null,
+                                        React.createElement('td', null, TEXTS.function + ':'),
+                                        React.createElement('td', null, formatFunction(item.funksiya))
+                                    ),
+                                    // District/Region
+                                    React.createElement('tr', null,
+                                        React.createElement('td', null, TEXTS.district + ':'),
+                                        React.createElement('td', null,
+                                            item.district ||
+                                            item.region_name ||
+                                            item['Туман'] ||
+                                            'N/A'
+                                        )
+                                    ),
+                                    // Mahalla
+                                    item.mahalla_nomi && React.createElement('tr', null,
+                                        React.createElement('td', null, TEXTS.mahalla + ':'),
+                                        React.createElement('td', null, item.mahalla_nomi)
+                                    ),
+                                    // Area
+                                    React.createElement('tr', null,
+                                        React.createElement('td', null, TEXTS.area + ':'),
+                                        React.createElement('td', null,
+                                            item.maydoni ? formatArea(item.maydoni * 10000) :
+                                            item.land_area ? `${item.land_area} га` :
+                                            item['SHAPE__Area'] ? formatArea(item['SHAPE__Area']) :
+                                            'N/A'
+                                        )
+                                    ),
+                                    // Floors
+                                    item.qavatlilik && React.createElement('tr', null,
+                                        React.createElement('td', null, TEXTS.floors + ':'),
+                                        React.createElement('td', null, item.qavatlilik)
+                                    ),
+                                    // Price
+                                    (item.start_price || item.sold_price) && React.createElement('tr', null,
+                                        React.createElement('td', null, TEXTS.price + ':'),
+                                        React.createElement('td', null,
+                                            `${Number(item.start_price || item.sold_price).toLocaleString('uz-UZ')} сум`
+                                        )
+                                    )
+                                )
+                            )
+                        ),
+
+                        // Technical Parameters Section (for GeoJSON data)
+                        item.code && React.createElement('div', { className: 'section' },
+                            React.createElement('h3', { className: 'section-title' },
+                                React.createElement('i', { className: 'fas fa-cogs' }),
+                                TEXTS.technicalParams
+                            ),
+                            React.createElement('table', { className: 'info-table' },
+                                React.createElement('tbody', null,
+                                    item.code && React.createElement('tr', null,
+                                        React.createElement('td', null, 'Код:'),
+                                        React.createElement('td', null, item.code)
+                                    ),
+                                    item.globalid && React.createElement('tr', null,
+                                        React.createElement('td', null, TEXTS.globalId + ':'),
+                                        React.createElement('td', null, item.globalid)
+                                    ),
+                                    item.seysmologik_zonasi && React.createElement('tr', null,
+                                        React.createElement('td', null, TEXTS.seismicZone + ':'),
+                                        React.createElement('td', null, item.seysmologik_zonasi)
+                                    ),
+                                    item.qurilish_maydonining_yer_maydon && React.createElement('tr', null,
+                                        React.createElement('td', null, TEXTS.buildingArea + ':'),
+                                        React.createElement('td', null, `${item.qurilish_maydonining_yer_maydon}%`)
+                                    ),
+                                    item.umumiy_maydonning_yer_maydoniga && React.createElement('tr', null,
+                                        React.createElement('td', null, TEXTS.areaRatio + ':'),
+                                        React.createElement('td', null, item.umumiy_maydonning_yer_maydoniga)
+                                    )
+                                )
+                            )
+                        ),
+
+                        // Administrative Information Section
+                        (item.created_date || item.last_edited_date || item.created_user) && React.createElement('div', { className: 'section' },
+                            React.createElement('h3', { className: 'section-title' },
+                                React.createElement('i', { className: 'fas fa-user-shield' }),
+                                TEXTS.administrativeInfo
+                            ),
+                            React.createElement('table', { className: 'info-table' },
+                                React.createElement('tbody', null,
+                                    item.created_date && React.createElement('tr', null,
+                                        React.createElement('td', null, TEXTS.createdDate + ':'),
+                                        React.createElement('td', null, formatDate(item.created_date))
+                                    ),
+                                    item.last_edited_date && React.createElement('tr', null,
+                                        React.createElement('td', null, TEXTS.lastEdited + ':'),
+                                        React.createElement('td', null, formatDate(item.last_edited_date))
+                                    ),
+                                    item.created_user && React.createElement('tr', null,
+                                        React.createElement('td', null, 'Яратувчи:'),
+                                        React.createElement('td', null, item.created_user)
+                                    ),
+                                    item.last_edited_user && React.createElement('tr', null,
+                                        React.createElement('td', null, 'Таҳрирчи:'),
+                                        React.createElement('td', null, item.last_edited_user)
+                                    )
+                                )
+                            )
+                        ),
+
+                        // Image Section
+                        item.main_image && React.createElement('div', { className: 'section' },
+                            React.createElement('h3', { className: 'section-title' },
+                                React.createElement('i', { className: 'fas fa-image' }),
+                                TEXTS.image
+                            ),
+                            React.createElement('img', {
+                                src: item.main_image,
+                                alt: item.property_name || 'Property',
+                                style: {
+                                    width: '100%',
+                                    maxHeight: '200px',
+                                    objectFit: 'cover',
+                                    borderRadius: 'var(--border-radius)',
+                                    boxShadow: 'var(--shadow)'
+                                },
+                                onError: (e) => e.target.style.display = 'none'
+                            })
+                        )
+                    )
+                )
+            )
         );
 
         // Layer Controls Component
         const LayerControls = ({ layers, onToggle, counts }) => (
-            <div className="control-panel layer-controls">
-                <h3 className="control-title">
-                    <i className="fas fa-layer-group"></i>
-                    Map Layers
-                </h3>
+            React.createElement('div', { className: 'control-panel layer-controls' },
+                React.createElement('h3', { className: 'control-title' },
+                    React.createElement('i', { className: 'fas fa-layer-group' }),
+                    TEXTS.mapLayers
+                ),
 
-                {Object.entries(layers).map(([key, layer]) => (
-                    <button
-                        key={key}
-                        className={`layer-button ${layer.visible ? 'active' : ''}`}
-                        onClick={() => onToggle(key)}
-                    >
-                        <div className="layer-button-content">
-                            <i className={layer.icon}></i>
-                            <span>{layer.name}</span>
-                        </div>
-                        <span className="count-badge">{counts[key] || 0}</span>
-                    </button>
-                ))}
+                Object.entries(layers).map(([key, layer]) =>
+                    React.createElement('button', {
+                        key: key,
+                        className: `layer-button ${layer.visible ? 'active' : ''}`,
+                        onClick: () => onToggle(key)
+                    },
+                        React.createElement('div', { className: 'layer-button-content' },
+                            React.createElement('div', { className: 'layer-icon' },
+                                React.createElement('i', { className: layer.icon })
+                            ),
+                            React.createElement('span', null, layer.name)
+                        ),
+                        React.createElement('span', { className: 'count-badge' }, counts[key] || 0)
+                    )
+                ),
 
-                <div className="stats-panel">
-                    <div className="control-title" style={{ marginBottom: '10px', fontSize: '14px' }}>
-                        Statistics
-                    </div>
-                    <div className="stats-grid">
-                        <div className="stats-item">
-                            <span className="stats-label">Total:</span>
-                            <span className="stats-value">
-                                {Object.values(counts).reduce((a, b) => a + b, 0)}
-                            </span>
-                        </div>
-                        <div className="stats-item">
-                            <span className="stats-label">Visible:</span>
-                            <span className="stats-value">
-                                {Object.entries(layers).reduce((sum, [key, layer]) =>
-                                    sum + (layer.visible ? (counts[key] || 0) : 0), 0
-                                )}
-                            </span>
-                        </div>
-                        {Object.entries(counts).map(([key, count]) => (
-                            <div key={key} className="stats-item">
-                                <span className="stats-label">{layers[key]?.name}:</span>
-                                <span className="stats-value">{count}</span>
-                            </div>
-                        ))}
-                    </div>
-                </div>
-            </div>
+
+
+                React.createElement(Legend)
+            )
         );
 
         // Map Style Controls Component
         const MapStyleControls = ({ currentStyle, onStyleChange }) => (
-            <div className="control-panel map-style-controls">
-                <h3 className="control-title">
-                    <i className="fas fa-map"></i>
-                    Map Style
-                </h3>
+            React.createElement('div', { className: 'control-panel map-style-controls' },
+                React.createElement('h3', { className: 'control-title' },
+                    React.createElement('i', { className: 'fas fa-map' }),
+                    TEXTS.mapStyle
+                ),
 
-                {Object.entries(MAP_STYLES).map(([key, style]) => (
-                    <button
-                        key={key}
-                        className={`style-button ${currentStyle === key ? 'active' : ''}`}
-                        onClick={() => onStyleChange(key)}
-                    >
-                        {style.name}
-                    </button>
-                ))}
-            </div>
+                Object.entries(MAP_STYLES).map(([key, style]) =>
+                    React.createElement('button', {
+                        key: key,
+                        className: `style-button ${currentStyle === key ? 'active' : ''}`,
+                        onClick: () => onStyleChange(key)
+                    }, style.name)
+                )
+            )
         );
 
         // GeoJSON Controls Component
@@ -1022,62 +1722,52 @@
             filepath,
             setFilepath
         }) => (
-            <div className="control-panel geojson-controls">
-                <h3 className="control-title">
-                    <i className="fas fa-file-code"></i>
-                    GeoJSON Manager
-                </h3>
+            React.createElement('div', { className: 'control-panel geojson-controls' },
+                React.createElement('h3', { className: 'control-title' },
+                    React.createElement('i', { className: 'fas fa-file-code' }),
+                    TEXTS.geojsonManager
+                ),
 
-                <div className="file-input-group">
-                    <input
-                        type="text"
-                        className="file-input"
-                        placeholder="/path/to/file.geojson"
-                        value={filepath}
-                        onChange={(e) => setFilepath(e.target.value)}
-                    />
-                    <div className="button-group">
-                        <button className="primary-btn" onClick={onLoad}>
-                            <i className="fas fa-upload"></i>
-                            Load
-                        </button>
-                        <button className="secondary-btn" onClick={onClear}>
-                            <i className="fas fa-trash"></i>
-                            Clear All
-                        </button>
-                    </div>
-                </div>
+                React.createElement('div', { className: 'file-input-group' },
+                    React.createElement('input', {
+                        type: 'text',
+                        className: 'file-input',
+                        placeholder: '/path/to/file.geojson',
+                        value: filepath,
+                        onChange: (e) => setFilepath(e.target.value)
+                    }),
+                    React.createElement('div', { className: 'button-group' },
+                        React.createElement('button', { className: 'primary-btn', onClick: onLoad },
+                            React.createElement('i', { className: 'fas fa-upload' }),
+                            TEXTS.load
+                        ),
+                        React.createElement('button', { className: 'secondary-btn', onClick: onClear },
+                            React.createElement('i', { className: 'fas fa-trash' }),
+                            TEXTS.clearAll
+                        )
+                    )
+                ),
 
-                {status && (
-                    <div className="status-text">{status}</div>
-                )}
+                status && React.createElement('div', { className: 'status-text' }, status),
 
-                {geoJsonLayers.size > 0 && (
-                    <div className="layer-list">
-                        {Array.from(geoJsonLayers.entries()).map(([layerId, layerData]) => (
-                            <div key={layerId} className="layer-item">
-                                <span className="layer-name" title={layerId}>
-                                    {layerId}
-                                </span>
-                                <div className="layer-actions">
-                                    <button
-                                        className={`action-btn toggle-btn ${layerData.visible ? '' : 'hidden'}`}
-                                        onClick={() => onToggle(layerId)}
-                                    >
-                                        {layerData.visible ? 'Hide' : 'Show'}
-                                    </button>
-                                    <button
-                                        className="action-btn remove-btn"
-                                        onClick={() => onRemove(layerId)}
-                                    >
-                                        ✕
-                                    </button>
-                                </div>
-                            </div>
-                        ))}
-                    </div>
-                )}
-            </div>
+                geoJsonLayers.size > 0 && React.createElement('div', { className: 'layer-list' },
+                    Array.from(geoJsonLayers.entries()).map(([layerId, layerData]) =>
+                        React.createElement('div', { key: layerId, className: 'layer-item' },
+                            React.createElement('span', { className: 'layer-name', title: layerId }, layerId),
+                            React.createElement('div', { className: 'layer-actions' },
+                                React.createElement('button', {
+                                    className: `action-btn toggle-btn ${layerData.visible ? '' : 'hidden'}`,
+                                    onClick: () => onToggle(layerId)
+                                }, layerData.visible ? TEXTS.hide : TEXTS.show),
+                                React.createElement('button', {
+                                    className: 'action-btn remove-btn',
+                                    onClick: () => onRemove(layerId)
+                                }, TEXTS.remove)
+                            )
+                        )
+                    )
+                )
+            )
         );
 
         // Main App Component
@@ -1089,16 +1779,17 @@
             const [selectedItem, setSelectedItem] = useState(null);
             const [currentMapStyle, setCurrentMapStyle] = useState('osm');
             const [geoJsonFilepath, setGeoJsonFilepath] = useState('/tashkent_master_plan.geojson');
-            const [geoJsonStatus, setGeoJsonStatus] = useState('Ready to load GeoJSON files...');
+            const [geoJsonStatus, setGeoJsonStatus] = useState('GeoJSON файллари учун тайёр...');
             const [dragActive, setDragActive] = useState(false);
 
-            // Layer state
+            // Enhanced layer state
             const [layers, setLayers] = useState({
-                regular: { name: 'API Data', icon: 'fas fa-building', visible: true },
-                jsonData: { name: 'JSON Data', icon: 'fas fa-layer-group', visible: true },
-                auction: { name: 'Auctions', icon: 'fas fa-gavel', visible: false },
-                sold: { name: 'Sold Properties', icon: 'fas fa-check-circle', visible: true },
-                geojson: { name: 'GeoJSON Layers', icon: 'fas fa-map', visible: true }
+                // regular: { name: TEXTS.apiData, icon: 'fas fa-building', visible: true },
+                jsonData: { name: TEXTS.jsonData, icon: 'fas fa-layer-group', visible: true },
+                auction: { name: TEXTS.auctions, icon: 'fas fa-gavel', visible: false },
+                sold: { name: TEXTS.soldProperties, icon: 'fas fa-check-circle', visible: true },
+                kmz: { name: TEXTS.kmzData, icon: 'fas fa-file-archive', visible: true },
+                // geojson: { name: TEXTS.strategyLayers, icon: 'fas fa-map', visible: true }
             });
 
             const [counts, setCounts] = useState({
@@ -1106,6 +1797,7 @@
                 jsonData: 0,
                 auction: 0,
                 sold: 0,
+                kmz: 0,
                 geojson: 0
             });
 
@@ -1121,7 +1813,7 @@
                 setToasts(prev => [...prev, { id, message, type }]);
                 setTimeout(() => {
                     setToasts(prev => prev.filter(toast => toast.id !== id));
-                }, 3000);
+                }, 5000);
             }, []);
 
             const removeToast = useCallback((id) => {
@@ -1136,38 +1828,58 @@
                     center: [41.311, 69.279],
                     zoom: 11,
                     minZoom: 10,
-                    maxZoom: 18
+                    maxZoom: 18,
+                    preferCanvas: true
                 });
 
-                // Initialize layer groups
+                // Initialize enhanced layer groups
                 const groups = {
                     regular: L.markerClusterGroup({
                         chunkedLoading: true,
-                        maxClusterRadius: 50,
+                        maxClusterRadius: 40,
                         spiderfyOnMaxZoom: true,
                         showCoverageOnHover: false,
-                        disableClusteringAtZoom: 16
+                        disableClusteringAtZoom: 15,
+                        iconCreateFunction: function(cluster) {
+                            const count = cluster.getChildCount();
+                            let size = 'small';
+                            if (count > 100) size = 'large';
+                            else if (count > 10) size = 'medium';
+
+                            return L.divIcon({
+                                html: `<div class="cluster-${size}">${count}</div>`,
+                                className: 'marker-cluster marker-cluster-regular',
+                                iconSize: L.point(40, 40)
+                            });
+                        }
                     }),
                     jsonData: L.markerClusterGroup({
                         chunkedLoading: true,
-                        maxClusterRadius: 50,
+                        maxClusterRadius: 40,
                         spiderfyOnMaxZoom: true,
                         showCoverageOnHover: false,
-                        disableClusteringAtZoom: 16
+                        disableClusteringAtZoom: 15
                     }),
                     auction: L.markerClusterGroup({
                         chunkedLoading: true,
-                        maxClusterRadius: 50,
+                        maxClusterRadius: 40,
                         spiderfyOnMaxZoom: true,
                         showCoverageOnHover: false,
-                        disableClusteringAtZoom: 16
+                        disableClusteringAtZoom: 15
                     }),
                     sold: L.markerClusterGroup({
                         chunkedLoading: true,
-                        maxClusterRadius: 50,
+                        maxClusterRadius: 40,
                         spiderfyOnMaxZoom: true,
                         showCoverageOnHover: false,
-                        disableClusteringAtZoom: 16
+                        disableClusteringAtZoom: 15
+                    }),
+                    kmz: L.markerClusterGroup({
+                        chunkedLoading: true,
+                        maxClusterRadius: 40,
+                        spiderfyOnMaxZoom: true,
+                        showCoverageOnHover: false,
+                        disableClusteringAtZoom: 15
                     })
                 };
 
@@ -1192,7 +1904,7 @@
                 initProj4();
             }, [layers]);
 
-            // Data Fetching Functions
+            // Enhanced Data Fetching Functions
             const fetchRegularData = useCallback(async () => {
                 try {
                     const response = await fetch(API_ENDPOINTS.aktivs);
@@ -1202,44 +1914,156 @@
                     const lots = data.lots || data || [];
 
                     let processed = 0;
+                    let kmzProcessed = 0;
                     const group = layerGroupsRef.current.regular;
+                    const kmzGroup = layerGroupsRef.current.kmz;
 
-                    lots.forEach((lot, index) => {
-                        if (!lot.lat || !lot.lng) return;
+                    for (const lot of lots) {
+                        if (!lot) continue;
 
-                        const marker = L.marker([parseFloat(lot.lat), parseFloat(lot.lng)], {
-                            icon: createMarkerIcon('regular')
-                        });
+                        // Add regular marker if coordinates exist
+                        if (lot.lat && lot.lng) {
+                            const marker = L.marker([parseFloat(lot.lat), parseFloat(lot.lng)], {
+                                icon: createMarkerIcon('regular')
+                            });
 
-                        const popup = `
-                            <div class="popup-header">${lot.property_name || 'Investment Property'}</div>
-                            ${lot.main_image ? `<img src="${lot.main_image}" class="popup-image" onerror="this.style.display='none'">` : ''}
-                            <div class="popup-details">
-                                <p><strong>District:</strong> ${lot.district || 'N/A'}</p>
-                                <p><strong>Address:</strong> ${lot.address || 'N/A'}</p>
-                                ${lot.land_area ? `<p><strong>Area:</strong> ${lot.land_area} га</p>` : ''}
-                                ${lot.start_price ? `<p><strong>Price:</strong> ${Number(lot.start_price).toLocaleString('uz-UZ')} сум</p>` : ''}
-                            </div>
-                            <button class="details-btn" onclick="window.showDetails('${lot.id || index}', 'regular')">
-                                View Details
-                            </button>
-                        `;
+                            const popup = `
+                                <div class="popup-header">${lot.property_name || 'Инвестиция мулки'}</div>
+                                ${lot.main_image ? `<img src="${lot.main_image}" class="popup-image" onerror="this.style.display='none'">` : ''}
+                                <div class="popup-details">
+                                    <p><strong>${TEXTS.district}:</strong> ${lot.district || 'N/A'}</p>
+                                    <p><strong>${TEXTS.location}:</strong> ${lot.address || 'N/A'}</p>
+                                    ${lot.land_area ? `<p><strong>${TEXTS.area}:</strong> ${lot.land_area} га</p>` : ''}
+                                    ${lot.start_price ? `<p><strong>${TEXTS.price}:</strong> ${Number(lot.start_price).toLocaleString('uz-UZ')} сум</p>` : ''}
+                                </div>
+                                <button class="details-btn" onclick="window.showDetails('${lot.id || processed}', 'regular')">
+                                    ${TEXTS.viewDetails}
+                                </button>
+                            `;
 
-                        marker.bindPopup(popup, { maxWidth: 300 });
-                        marker.lotData = lot;
-                        group.addLayer(marker);
-                        processed++;
-                    });
+                            marker.bindPopup(popup, { maxWidth: 300 });
+                            marker.lotData = lot;
+                            group.addLayer(marker);
+                            processed++;
+                        }
 
-                    setCounts(prev => ({ ...prev, regular: processed }));
-                    addToast(`Loaded ${processed} investment properties`, 'success');
-                    return processed > 0;
+                        // Process KMZ files if available
+                        if (lot.documents && Array.isArray(lot.documents)) {
+                            const kmzDocs = lot.documents.filter(doc =>
+                                doc.doc_type === 'kmz-document' && doc.file_path
+                            );
+
+                            for (const kmzDoc of kmzDocs) {
+                                try {
+                                    const geoJSON = await processKMZFile(kmzDoc.file_path);
+
+                                    if (geoJSON && geoJSON.features) {
+                                        geoJSON.features.forEach(feature => {
+                                            const layer = createKMZLayer(feature, lot);
+                                            if (layer) {
+                                                kmzGroup.addLayer(layer);
+                                                kmzProcessed++;
+                                            }
+                                        });
+                                    }
+                                } catch (error) {
+                                    console.warn(`Failed to process KMZ for lot ${lot.id}:`, error);
+                                }
+                            }
+                        }
+                    }
+
+                    setCounts(prev => ({
+                        ...prev,
+                        regular: processed,
+                        kmz: kmzProcessed
+                    }));
+
+                    if (processed > 0 || kmzProcessed > 0) {
+                        addToast(`${TEXTS.successLoaded}: ${processed} маркер, ${kmzProcessed} KMZ`, 'success');
+                    }
+
+                    return processed > 0 || kmzProcessed > 0;
                 } catch (error) {
                     console.error('Error fetching regular data:', error);
-                    addToast('Failed to load investment data', 'error');
+                    addToast(`${TEXTS.errorLoading}: API маълумотлар`, 'error');
                     return false;
                 }
             }, [addToast]);
+
+            const createKMZLayer = useCallback((feature, lotData) => {
+                if (!feature.geometry || !feature.geometry.coordinates) return null;
+
+                const geomType = feature.geometry.type;
+
+                try {
+                    let layer = null;
+
+                    switch (geomType) {
+                        case 'Point':
+                            const coords = convertCoordinates(feature.geometry.coordinates);
+                            if (!coords) return null;
+                            layer = L.marker(coords, { icon: createMarkerIcon('kmz') });
+                            break;
+
+                        case 'Polygon':
+                            const rings = feature.geometry.coordinates.map(ring =>
+                                ring.map(coord => convertCoordinates(coord)).filter(Boolean)
+                            ).filter(ring => ring.length > 0);
+
+                            if (rings.length === 0) return null;
+
+                            layer = L.polygon(rings, {
+                                fillColor: '#f59e0b',
+                                weight: 2,
+                                opacity: 0.8,
+                                color: '#ffffff',
+                                fillOpacity: 0.6
+                            });
+                            break;
+
+                        case 'LineString':
+                            const latLngs = feature.geometry.coordinates
+                                .map(coord => convertCoordinates(coord))
+                                .filter(Boolean);
+
+                            if (latLngs.length === 0) return null;
+
+                            layer = L.polyline(latLngs, {
+                                color: '#f59e0b',
+                                weight: 3,
+                                opacity: 0.8
+                            });
+                            break;
+
+                        default:
+                            return null;
+                    }
+
+                    if (layer) {
+                        const popup = `
+                            <div class="popup-header">KMZ: ${lotData.property_name || 'Объект'}</div>
+                            <div class="popup-details">
+                                <p><strong>Тур:</strong> <span class="badge badge-renovation">KMZ маълумот</span></p>
+                                <p><strong>${TEXTS.district}:</strong> ${lotData.district || 'N/A'}</p>
+                                <p><strong>${TEXTS.location}:</strong> ${lotData.address || 'N/A'}</p>
+                                ${feature.properties?.name ? `<p><strong>KMZ номи:</strong> ${feature.properties.name}</p>` : ''}
+                            </div>
+                            <button class="details-btn" onclick="window.showDetails('${lotData.id}', 'kmz')">
+                                ${TEXTS.viewDetails}
+                            </button>
+                        `;
+
+                        layer.bindPopup(popup, { maxWidth: 300 });
+                        layer.kmzData = { ...lotData, kmzFeature: feature };
+                    }
+
+                    return layer;
+                } catch (error) {
+                    console.warn('Error creating KMZ layer:', error);
+                    return null;
+                }
+            }, []);
 
             const fetchJsonData = useCallback(async () => {
                 try {
@@ -1266,14 +2090,14 @@
                         });
 
                         const popup = `
-                            <div class="popup-header">${item['Объект_номи'] || 'JSON Object'}</div>
+                            <div class="popup-header">${item['Объект_номи'] || 'JSON объект'}</div>
                             <div class="popup-details">
-                                <p><strong>Type:</strong> <span class="badge badge-${markerType}">${type || 'Unknown'}</span></p>
-                                <p><strong>District:</strong> ${item['Туман'] || 'N/A'}</p>
-                                <p><strong>Address:</strong> ${item['Манзил_(МФЙ,_кўча)'] || 'N/A'}</p>
+                                <p><strong>Тур:</strong> <span class="badge badge-${markerType}">${type || 'Номаълум'}</span></p>
+                                <p><strong>${TEXTS.district}:</strong> ${item['Туман'] || 'N/A'}</p>
+                                <p><strong>${TEXTS.location}:</strong> ${item['Манзил_(МФЙ,_кўча)'] || 'N/A'}</p>
                             </div>
                             <button class="details-btn" onclick="window.showDetails('${index}', 'jsonData')">
-                                View Details
+                                ${TEXTS.viewDetails}
                             </button>
                         `;
 
@@ -1284,7 +2108,9 @@
                     });
 
                     setCounts(prev => ({ ...prev, jsonData: processed }));
-                    addToast(`Loaded ${processed} JSON objects`, 'success');
+                    if (processed > 0) {
+                        addToast(`${TEXTS.successLoaded}: ${processed} JSON объект`, 'success');
+                    }
                     return processed > 0;
                 } catch (error) {
                     console.error('Error fetching JSON data:', error);
@@ -1311,17 +2137,17 @@
                         });
 
                         const popup = `
-                            <div class="popup-header">${lot.property_name || 'Auction Property'}</div>
+                            <div class="popup-header">${lot.property_name || 'Аукцион мулки'}</div>
                             ${lot.main_image ? `<img src="${lot.main_image}" class="popup-image" onerror="this.style.display='none'">` : ''}
                             <div class="popup-details">
-                                <p><strong>Start Price:</strong> ${lot.start_price ? Number(lot.start_price).toLocaleString('uz-UZ') + ' сум' : 'N/A'}</p>
-                                <p><strong>Auction Date:</strong> ${lot.auction_date || 'N/A'}</p>
-                                <p><strong>Location:</strong> ${lot.region || ''} ${lot.area || ''} ${lot.address || ''}</p>
-                                <p><strong>Area:</strong> ${lot.land_area || 'N/A'} га</p>
-                                <p><strong>Status:</strong> <span class="badge badge-auction">Auction</span></p>
+                                <p><strong>Бошланғич нарх:</strong> ${lot.start_price ? Number(lot.start_price).toLocaleString('uz-UZ') + ' сум' : 'N/A'}</p>
+                                <p><strong>Аукцион санаси:</strong> ${lot.auction_date || 'N/A'}</p>
+                                <p><strong>${TEXTS.location}:</strong> ${lot.region || ''} ${lot.area || ''} ${lot.address || ''}</p>
+                                <p><strong>${TEXTS.area}:</strong> ${lot.land_area || 'N/A'} га</p>
+                                <p><strong>Ҳолат:</strong> <span class="badge badge-auction">Аукцион</span></p>
                             </div>
                             <button class="details-btn" onclick="window.showDetails('${index}', 'auction')">
-                                View Details
+                                ${TEXTS.viewDetails}
                             </button>
                         `;
 
@@ -1332,7 +2158,9 @@
                     });
 
                     setCounts(prev => ({ ...prev, auction: processed }));
-                    addToast(`Loaded ${processed} auction properties`, 'success');
+                    if (processed > 0) {
+                        addToast(`${TEXTS.successLoaded}: ${processed} аукцион мулки`, 'success');
+                    }
                     return processed > 0;
                 } catch (error) {
                     console.error('Error fetching auction data:', error);
@@ -1359,18 +2187,18 @@
                         });
 
                         const popup = `
-                            <div class="popup-header">🏆 ${lot.property_name || 'Sold Property'}</div>
+                            <div class="popup-header">🏆 ${lot.property_name || 'Сотилган мулк'}</div>
                             ${lot.main_image ? `<img src="${lot.main_image}" class="popup-image" onerror="this.style.display='none'">` : ''}
                             <div class="popup-details">
-                                <p><strong>Sold Price:</strong> ${lot.sold_price ? Number(lot.sold_price).toLocaleString('uz-UZ') + ' сум' : 'N/A'}</p>
-                                <p><strong>Start Price:</strong> ${lot.start_price ? Number(lot.start_price).toLocaleString('uz-UZ') + ' сум' : 'N/A'}</p>
-                                <p><strong>Winner:</strong> ${lot.winner_name || 'N/A'}</p>
-                                <p><strong>Auction Date:</strong> ${lot.auction_date || 'N/A'}</p>
-                                <p><strong>Location:</strong> ${lot.region || ''} ${lot.area || ''} ${lot.address || ''}</p>
-                                <p><strong>Status:</strong> <span class="badge badge-sold">✅ Sold</span></p>
+                                <p><strong>Сотилди:</strong> ${lot.sold_price ? Number(lot.sold_price).toLocaleString('uz-UZ') + ' сум' : 'N/A'}</p>
+                                <p><strong>Бошланғич нарх:</strong> ${lot.start_price ? Number(lot.start_price).toLocaleString('uz-UZ') + ' сум' : 'N/A'}</p>
+                                <p><strong>Ғолиб:</strong> ${lot.winner_name || 'N/A'}</p>
+                                <p><strong>Аукцион санаси:</strong> ${lot.auction_date || 'N/A'}</p>
+                                <p><strong>${TEXTS.location}:</strong> ${lot.region || ''} ${lot.area || ''} ${lot.address || ''}</p>
+                                <p><strong>Ҳолат:</strong> <span class="badge badge-sold">✅ Сотилган</span></p>
                             </div>
                             <button class="details-btn" onclick="window.showDetails('${index}', 'sold')">
-                                View Details
+                                ${TEXTS.viewDetails}
                             </button>
                         `;
 
@@ -1381,7 +2209,9 @@
                     });
 
                     setCounts(prev => ({ ...prev, sold: processed }));
-                    addToast(`Loaded ${processed} sold properties`, 'success');
+                    if (processed > 0) {
+                        addToast(`${TEXTS.successLoaded}: ${processed} сотилган мулк`, 'success');
+                    }
                     return processed > 0;
                 } catch (error) {
                     console.error('Error fetching sold data:', error);
@@ -1440,21 +2270,21 @@
                 setCurrentMapStyle(styleKey);
             }, []);
 
-            // GeoJSON Functions
+            // Enhanced GeoJSON Functions
             const loadGeoJSON = useCallback(async (filepath) => {
                 if (!filepath.trim()) {
-                    addToast('Please enter a file path', 'error');
+                    addToast('Файл йўлини киритинг', 'error');
                     return;
                 }
 
                 try {
-                    setGeoJsonStatus('Loading GeoJSON...');
+                    setGeoJsonStatus('GeoJSON юкланмоқда...');
                     const response = await fetch(filepath);
                     if (!response.ok) throw new Error(`HTTP ${response.status}: ${response.statusText}`);
 
                     const data = await response.json();
                     if (!data.features || !Array.isArray(data.features)) {
-                        throw new Error('Invalid GeoJSON format');
+                        throw new Error('Нотўғри GeoJSON формати');
                     }
 
                     const layerId = filepath.split('/').pop().replace(/\.[^/.]+$/, '');
@@ -1467,23 +2297,26 @@
                     }
 
                     const featureGroup = L.featureGroup();
+                    let featuresProcessed = 0;
 
-                    // Process features
+                    // Process features with enhanced styling
                     data.features.forEach(feature => {
                         const layer = createGeoJSONLayer(feature);
                         if (layer) {
                             addGeoJSONPopup(layer, feature.properties);
                             featureGroup.addLayer(layer);
+                            featuresProcessed++;
                         }
                     });
 
                     geoJsonLayersRef.current.set(layerId, {
                         group: featureGroup,
-                        visible: true
+                        visible: true,
+                        count: featuresProcessed
                     });
 
                     mapInstanceRef.current.addLayer(featureGroup);
-                    setCounts(prev => ({ ...prev, geojson: prev.geojson + 1 }));
+                    setCounts(prev => ({ ...prev, geojson: prev.geojson + featuresProcessed }));
 
                     // Fit bounds if this is the first layer
                     if (geoJsonLayersRef.current.size === 1) {
@@ -1494,21 +2327,23 @@
                         }
                     }
 
-                    setGeoJsonStatus(`${data.features.length} objects loaded`);
-                    addToast('GeoJSON loaded successfully', 'success');
+                    setGeoJsonStatus(`${featuresProcessed} объект юкланди`);
+                    addToast(`GeoJSON муваффақиятли юкланди: ${featuresProcessed} объект`, 'success');
 
                 } catch (error) {
                     console.error('Error loading GeoJSON:', error);
-                    setGeoJsonStatus(`Error: ${error.message}`);
-                    addToast(`Failed to load GeoJSON: ${error.message}`, 'error');
+                    setGeoJsonStatus(`Хатолик: ${error.message}`);
+                    addToast(`GeoJSON юклашда хатолик: ${error.message}`, 'error');
                 }
             }, [addToast]);
+
 
             const createGeoJSONLayer = useCallback((feature) => {
                 if (!feature.geometry || !feature.geometry.coordinates) return null;
 
                 const geomType = feature.geometry.type;
                 const coords = feature.geometry.coordinates;
+                const properties = feature.properties || {};
 
                 try {
                     switch (geomType) {
@@ -1517,7 +2352,7 @@
                             if (!latLng) return null;
                             return L.circleMarker(latLng, {
                                 radius: 6,
-                                fillColor: '#ff7f0e',
+                                fillColor: getStrategyColor(properties),
                                 color: '#fff',
                                 weight: 2,
                                 opacity: 1,
@@ -1528,7 +2363,7 @@
                             const latLngs = coords.map(coord => convertCoordinates(coord)).filter(Boolean);
                             if (latLngs.length === 0) return null;
                             return L.polyline(latLngs, {
-                                color: '#1f77b4',
+                                color: getStrategyColor(properties),
                                 weight: 3,
                                 opacity: 0.8
                             });
@@ -1540,7 +2375,7 @@
                             if (rings.length === 0) return null;
 
                             const polygon = L.polygon(rings, {
-                                fillColor: '#ff7f0e',
+                                fillColor: getStrategyColor(properties),
                                 weight: 1.5,
                                 opacity: 0.8,
                                 color: '#ffffff',
@@ -1557,7 +2392,7 @@
                             if (multiLatLngs.length === 0) return null;
 
                             const multiPolygon = L.polygon(multiLatLngs, {
-                                fillColor: '#ff7f0e',
+                                fillColor: getStrategyColor(properties),
                                 weight: 1.5,
                                 opacity: 0.8,
                                 color: '#ffffff',
@@ -1582,14 +2417,30 @@
                     ['name', 'title', 'id', 'funksiya', 'function', 'property_name'].includes(key.toLowerCase())
                 ) || Object.keys(properties)[0];
 
-                const title = properties[titleKey] || 'GeoJSON Object';
+                const title = properties[titleKey] || 'GeoJSON объект';
+                const strategy = properties.strategiya || properties.strategy || 'Номаълум';
 
                 layer.bindPopup(() => {
-                    let content = `<div class="popup-header">${title}</div><div class="popup-details">`;
+                    let content = `
+                        <div class="popup-header">${title}</div>
+                        <div class="popup-details">
+                            <p><strong>Стратегия:</strong>
+                                <span class="badge badge-${
+                                    strategy === 'Konservatsiya' ? 'conservation' :
+                                    strategy === 'Rekonstruktsiya' ? 'reconstruction' :
+                                    strategy === 'Yangi_qurilish' ? 'new-construction' :
+                                    'investment'
+                                }">${strategy}</span>
+                            </p>
+                    `;
 
-                    Object.entries(properties).slice(0, 8).forEach(([key, value]) => {
-                        if (value !== null && value !== '') {
+                    // Add other important properties
+                    const importantKeys = ['district', 'region_name', 'mahalla_nomi', 'funksiya', 'maydoni'];
+                    importantKeys.forEach(key => {
+                        if (properties[key]) {
                             const displayKey = key.replace(/_/g, ' ').replace(/\b\w/g, l => l.toUpperCase());
+                            let value = properties[key];
+                            if (key === 'maydoni') value += ' га';
                             content += `<p><strong>${displayKey}:</strong> ${value}</p>`;
                         }
                     });
@@ -1626,7 +2477,7 @@
                 mapInstanceRef.current.removeLayer(layerData.group);
                 geoJsonLayersRef.current.delete(layerId);
                 setCounts(prev => ({ ...prev, geojson: Math.max(0, prev.geojson - 1) }));
-                addToast(`${layerId} layer removed`, 'info');
+                addToast(`${layerId} қатлам ўчирилди`, 'info');
             }, [addToast]);
 
             const clearAllGeoJSON = useCallback(() => {
@@ -1635,8 +2486,8 @@
                 });
                 geoJsonLayersRef.current.clear();
                 setCounts(prev => ({ ...prev, geojson: 0 }));
-                setGeoJsonStatus('All GeoJSON layers cleared');
-                addToast('All GeoJSON layers cleared', 'info');
+                setGeoJsonStatus('Барча GeoJSON қатламлари тозаланди');
+                addToast('Барча GeoJSON қатламлари тозаланди', 'info');
             }, [addToast]);
 
             // Global functions for popup buttons
@@ -1655,6 +2506,8 @@
                             item = layer.auctionData;
                         } else if (layer.soldData) {
                             item = layer.soldData;
+                        } else if (layer.kmzData) {
+                            item = layer.kmzData;
                         }
                     });
                 }
@@ -1694,14 +2547,17 @@
                     file.name.toLowerCase().endsWith('.json')
                 );
 
+                const kmzFile = files.find(file =>
+                    file.name.toLowerCase().endsWith('.kmz')
+                );
+
                 if (geoJsonFile) {
                     try {
                         const text = await geoJsonFile.text();
                         const data = JSON.parse(text);
 
-                        // Process the GeoJSON data similar to loadGeoJSON
                         if (!data.features || !Array.isArray(data.features)) {
-                            throw new Error('Invalid GeoJSON format');
+                            throw new Error('Нотўғри GeoJSON формати');
                         }
 
                         const layerId = geoJsonFile.name.replace(/\.[^/.]+$/, '');
@@ -1724,14 +2580,39 @@
                         mapInstanceRef.current.addLayer(featureGroup);
                         setCounts(prev => ({ ...prev, geojson: prev.geojson + 1 }));
 
-                        addToast(`${geoJsonFile.name} loaded successfully`, 'success');
+                        addToast(`${geoJsonFile.name} муваффақиятли юкланди`, 'success');
                     } catch (error) {
-                        addToast(`Failed to load ${geoJsonFile.name}: ${error.message}`, 'error');
+                        addToast(`${geoJsonFile.name} юклашда хатолик: ${error.message}`, 'error');
+                    }
+                } else if (kmzFile) {
+                    try {
+                        const geoJSON = await processKMZFile(URL.createObjectURL(kmzFile));
+
+                        if (geoJSON && geoJSON.features) {
+                            const kmzGroup = layerGroupsRef.current.kmz;
+                            let processed = 0;
+
+                            geoJSON.features.forEach(feature => {
+                                const layer = createKMZLayer(feature, {
+                                    property_name: kmzFile.name,
+                                    id: `dropped-${Date.now()}`
+                                });
+                                if (layer) {
+                                    kmzGroup.addLayer(layer);
+                                    processed++;
+                                }
+                            });
+
+                            setCounts(prev => ({ ...prev, kmz: prev.kmz + processed }));
+                            addToast(`${kmzFile.name} юкланди: ${processed} объект`, 'success');
+                        }
+                    } catch (error) {
+                        addToast(`${kmzFile.name} юклашда хатолик: ${error.message}`, 'error');
                     }
                 } else {
-                    addToast('Only GeoJSON (.geojson, .json) files are supported', 'error');
+                    addToast('Фақат GeoJSON (.geojson, .json) ва KMZ файллари қўллаб-қувватланади', 'error');
                 }
-            }, [createGeoJSONLayer, addGeoJSONPopup, addToast]);
+            }, [createGeoJSONLayer, addGeoJSONPopup, createKMZLayer, addToast]);
 
             // Data Loading Effect
             useEffect(() => {
@@ -1781,14 +2662,14 @@
                             }
 
                             const totalLoaded = Object.values(counts).reduce((a, b) => a + b, 0);
-                            addToast(`Successfully loaded ${totalLoaded} data points`, 'success');
+                            addToast(`Жами юкланди: ${totalLoaded} маълумот`, 'success');
                         } else {
-                            addToast('No data could be loaded. Please check server connectivity.', 'warning');
+                            addToast('Ҳеч қандай маълумот юкланмади. Серверни текширинг.', 'warning');
                             mapInstanceRef.current.setView([41.311, 69.279], 11);
                         }
                     } catch (error) {
                         console.error('Error during data loading:', error);
-                        addToast('Error during initialization', 'error');
+                        addToast('Ишга туширишда хатолик', 'error');
                         mapInstanceRef.current.setView([41.311, 69.279], 11);
                     } finally {
                         setLoading(false);
@@ -1813,31 +2694,31 @@
 
             // Memoized components
             const memoizedLayerControls = useMemo(() => (
-                <LayerControls
-                    layers={layers}
-                    onToggle={toggleLayer}
-                    counts={counts}
-                />
+                React.createElement(LayerControls, {
+                    layers: layers,
+                    onToggle: toggleLayer,
+                    counts: counts
+                })
             ), [layers, counts, toggleLayer]);
 
             const memoizedMapStyleControls = useMemo(() => (
-                <MapStyleControls
-                    currentStyle={currentMapStyle}
-                    onStyleChange={changeMapStyle}
-                />
+                React.createElement(MapStyleControls, {
+                    currentStyle: currentMapStyle,
+                    onStyleChange: changeMapStyle
+                })
             ), [currentMapStyle, changeMapStyle]);
 
             const memoizedGeoJSONControls = useMemo(() => (
-                <GeoJSONControls
-                    geoJsonLayers={geoJsonLayersRef.current}
-                    onLoad={() => loadGeoJSON(geoJsonFilepath)}
-                    onToggle={toggleGeoJSONLayer}
-                    onRemove={removeGeoJSONLayer}
-                    onClear={clearAllGeoJSON}
-                    status={geoJsonStatus}
-                    filepath={geoJsonFilepath}
-                    setFilepath={setGeoJsonFilepath}
-                />
+                React.createElement(GeoJSONControls, {
+                    geoJsonLayers: geoJsonLayersRef.current,
+                    onLoad: () => loadGeoJSON(geoJsonFilepath),
+                    onToggle: toggleGeoJSONLayer,
+                    onRemove: removeGeoJSONLayer,
+                    onClear: clearAllGeoJSON,
+                    status: geoJsonStatus,
+                    filepath: geoJsonFilepath,
+                    setFilepath: setGeoJsonFilepath
+                })
             ), [
                 geoJsonFilepath,
                 geoJsonStatus,
@@ -1847,69 +2728,68 @@
                 clearAllGeoJSON
             ]);
 
-            return (
-                <div className="app-container">
-                    {/* Header */}
-                    <header className="app-header">
-                        <div className="app-logo">
-                            <i className="fas fa-map-marked-alt fa-2x"></i>
-                            <div className="app-title">InvestUz - Investment Map</div>
-                        </div>
-                        <div className="header-controls">
-                            <div className="lang-switcher">
-                                <button className="lang-btn active">UZ</button>
-                                <button className="lang-btn">RU</button>
-                                <button className="lang-btn">EN</button>
-                            </div>
-                        </div>
-                    </header>
+            return React.createElement('div', { className: 'app-container' },
+                // Header
+                React.createElement('header', { className: 'app-header' },
+                    React.createElement('div', { className: 'app-logo' },
+                        React.createElement('i', { className: 'fas fa-map-marked-alt fa-2x' }),
+                        React.createElement('div', { className: 'app-title' }, TEXTS.appTitle)
+                    ),
+                    React.createElement('div', { className: 'header-controls' },
+                        React.createElement('div', { className: 'lang-switcher' },
+                            React.createElement('button', { className: 'lang-btn active' }, 'УЗ'),
+                            React.createElement('button', { className: 'lang-btn' }, 'RU'),
+                            React.createElement('button', { className: 'lang-btn' }, 'EN')
+                        )
+                    )
+                ),
 
-                    {/* Main Content */}
-                    <div className="main-content">
-                        <div className="map-container">
-                            {/* Map */}
-                            <div
-                                ref={mapRef}
-                                id="map"
-                                onDragEnter={handleDragEnter}
-                                onDragLeave={handleDragLeave}
-                                onDragOver={handleDragOver}
-                                onDrop={handleDrop}
-                            />
+                // Main Content
+                React.createElement('div', { className: 'main-content' },
+                    React.createElement('div', { className: 'map-container' },
+                        // Map
+                        React.createElement('div', {
+                            ref: mapRef,
+                            id: 'map',
+                            onDragEnter: handleDragEnter,
+                            onDragLeave: handleDragLeave,
+                            onDragOver: handleDragOver,
+                            onDrop: handleDrop
+                        }),
 
-                            {/* Drag Overlay */}
-                            <div className={`drag-overlay ${dragActive ? 'active' : ''}`}>
-                                <div>
-                                    <i className="fas fa-upload fa-3x" style={{ marginBottom: '20px' }}></i>
-                                    <div>Drop GeoJSON files here to load them</div>
-                                </div>
-                            </div>
+                        // Drag Overlay
+                        React.createElement('div', { className: `drag-overlay ${dragActive ? 'active' : ''}` },
+                            React.createElement('div', null,
+                                React.createElement('i', { className: 'fas fa-upload fa-3x', style: { marginBottom: '20px' } }),
+                                React.createElement('div', null, TEXTS.dropFiles)
+                            )
+                        ),
 
-                            {/* Control Panels */}
-                            {memoizedMapStyleControls}
-                            {memoizedLayerControls}
-                            {memoizedGeoJSONControls}
-                        </div>
+                        // Control Panels
+                        memoizedMapStyleControls,
+                        memoizedLayerControls,
+                        memoizedGeoJSONControls
+                    ),
 
-                        {/* Sidebar */}
-                        <Sidebar
-                            isOpen={sidebarOpen}
-                            onClose={() => setSidebarOpen(false)}
-                            item={selectedItem}
-                        />
-                    </div>
+                    // Sidebar
+                    React.createElement(Sidebar, {
+                        isOpen: sidebarOpen,
+                        onClose: () => setSidebarOpen(false),
+                        item: selectedItem
+                    })
+                ),
 
-                    {/* Loading Overlay */}
-                    <Loading show={loading} />
+                // Loading Overlay
+                React.createElement(Loading, { show: loading }),
 
-                    {/* Toast Notifications */}
-                    <Toast toasts={toasts} removeToast={removeToast} />
-                </div>
+                // Toast Notifications
+                React.createElement(Toast, { toasts: toasts, removeToast: removeToast })
             );
         };
 
-        // Render the app
-        ReactDOM.render(<InvestUzMap />, document.getElementById('root'));
+        // Render the app using React 18's createRoot
+        const root = createRoot(document.getElementById('root'));
+        root.render(React.createElement(InvestUzMap));
     </script>
 </body>
 </html>
