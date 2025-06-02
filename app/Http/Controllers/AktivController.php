@@ -605,10 +605,10 @@ class AktivController extends Controller
         // dd('dsa');
         // Check if the user is a Super Admin
         if (auth()->user()) {
-            return view('pages.aktiv.map_orginal_old_which_work');
+            return view('pages.aktiv.map_orginal_taklif');
         }
 
-        return view('pages.aktiv.map_orginal_taklif');
+        return view('pages.aktiv.map_orginal_old_which_work');
 
         // $userRole = auth()->user()->roles->first()->name;
 
