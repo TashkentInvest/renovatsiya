@@ -36,6 +36,7 @@ Route::get('/', [AktivController::class, 'myMap'])->name('aktivs.myMap');
 
     Route::group(['middleware' => ['auth', 'checkUserRole']], function () {
     Route::get('/my-taklif-map', [AktivController::class, 'myTaklifMap'])->name('myTaklifMap');
+    Route::get('/invest', [AktivController::class, 'myTaklifMap_which_work'])->name('myTaklifMap_which_work');
 
     Route::get('aktivs', [AktivController::class, 'index'])->name('aktivs.index');
     Route::get('/aktivs/{aktiv}/get-data', [AktivController::class, 'getData'])->name('aktivs.getData');

@@ -630,6 +630,17 @@ class AktivController extends Controller
         }
     }
 
+ public function myTaklifMap_which_work()
+    {
+        $userRole = auth()->user()->roles->first()->name;
+
+        if ($userRole == 'Super Admin') {
+            return view('pages.aktiv.map_orginal_old_which_work');
+        } else {
+            abort(403, 'Unauthorized access.');
+        }
+    }
+
     // map code with source data
 
 
