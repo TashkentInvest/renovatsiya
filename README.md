@@ -25,3 +25,5 @@ php artisan db:seed --class=RenovatsiyaSeeder
 Аҳоли сони	
 Хонадон сони	
 Қўшимча маълумот	
+
+https://claude.ai/chat/bfcc6c90-934b-4dde-8727-778f9a39f026
