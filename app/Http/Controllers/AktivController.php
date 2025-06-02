@@ -635,7 +635,7 @@ class AktivController extends Controller
         $userRole = auth()->user()->roles->first()->name;
 
         if ($userRole == 'Super Admin') {
-            return view('pages.aktiv.map_orginal_taklif');
+            return view('pages.aktiv.react_map');
         } else {
             abort(403, 'Unauthorized access.');
         }
