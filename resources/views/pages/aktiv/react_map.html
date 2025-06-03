@@ -399,6 +399,7 @@
                 margin-bottom: 12px;
                 transition: var(--transition);
                 background: var(--white);
+display: none !important;
             }
 
             .file-input:focus {
@@ -1669,7 +1670,7 @@
                             },
                         }),
                         React.createElement("span", null, TEXTS.redLines)
-                    ),
+                    )
                     // React.createElement(
                     //     "div",
                     //     { className: "legend-item" },
@@ -2211,7 +2212,6 @@
                         icon: "fas fa-file-archive",
                         visible: true,
                     },
-
                 });
 
                 const [counts, setCounts] = useState({
@@ -2360,42 +2360,43 @@
                             }
 
                             // Process KMZ files
-                            if (lot.documents && Array.isArray(lot.documents)) {
-                                const kmzDocs = lot.documents.filter(
-                                    (doc) =>
-                                        doc.doc_type === "kmz-document" &&
-                                        doc.url
-                                );
-                                for (const kmzDoc of kmzDocs) {
-                                    try {
-                                        const geoJSON = await processKMZFile(
-                                            kmzDoc.url
-                                        );
-                                        if (geoJSON && geoJSON.features) {
-                                            geoJSON.features.forEach(
-                                                (feature) => {
-                                                    const layer =
-                                                        createKMZLayer(
-                                                            feature,
-                                                            lot
-                                                        );
-                                                    if (layer) {
-                                                        kmzGroup.addLayer(
-                                                            layer
-                                                        );
-                                                        kmzProcessed++;
-                                                    }
-                                                }
-                                            );
-                                        }
-                                    } catch (error) {
-                                        console.warn(
-                                            `Failed to process KMZ for lot ${lot.id}:`,
-                                            error
-                                        );
-                                    }
-                                }
-                            }
+                           if (lot.documents && Array.isArray(lot.documents)) {
+    const kmzDocs = lot.documents.filter(
+        (doc) =>
+            doc.doc_type === "kmz-document" &&
+            doc.url
+    );
+    for (const kmzDoc of kmzDocs) {
+        console.log(kmzDoc.url);
+        try {
+            const geoJSON = await processKMZFile(
+                kmzDoc.url
+            );
+            if (geoJSON && geoJSON.features) {
+                geoJSON.features.forEach(
+                    (feature) => {
+                        const layer =
+                            createKMZLayer(
+                                feature,
+                                lot
+                            );
+                        if (layer) {
+                            kmzGroup.addLayer(
+                                layer
+                            );
+                            kmzProcessed++;
+                        }
+                    }
+                );
+            }
+        } catch (error) {
+            console.warn(
+                `Failed to process KMZ for lot ${lot.id}:`,
+                error
+            );
+        }
+    }
+}
                         }
 
                         setCounts((prev) => ({
