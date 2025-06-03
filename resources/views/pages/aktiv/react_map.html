@@ -1232,12 +1232,12 @@
 
             // Enhanced API endpoints with your specific URLs
             const API_ENDPOINTS = {
-                aktivs: "http://127.0.0.1:8000/api/aktivs",
+                aktivs: "https://development.toshkentinvest.uz/api/aktivs",
                 auction: "https://projects.toshkentinvest.uz/api/markersing",
                 sold: "https://projects.toshkentinvest.uz/api/sotilgan",
-                jsonData: "http://127.0.0.1:8000/assets/data/443_output.json",
+                jsonData: "https://development.toshkentinvest.uz/assets/data/443_output.json",
                 geoJsonStrategy:
-                    "http://127.0.0.1:8000/tashkent_master_plan.geojson",
+                    "https://development.toshkentinvest.uz/tashkent_master_plan.geojson",
             };
 
             // Enhanced map styles
@@ -1474,7 +1474,7 @@
                     if (fileUrl.includes("http://localhost/")) {
                         correctedUrl = fileUrl.replace(
                             "http://localhost/",
-                            "http://127.0.0.1:8000/"
+                            "https://development.toshkentinvest.uz/"
                         );
                     }
 
@@ -2522,7 +2522,7 @@
                 const [selectedItem, setSelectedItem] = useState(null);
                 const [currentMapStyle, setCurrentMapStyle] = useState("osm");
                 const [geoJsonFilepath, setGeoJsonFilepath] = useState(
-                    "http://127.0.0.1:8000/tashkent_master_plan.geojson"
+                    "https://development.toshkentinvest.uz/tashkent_master_plan.geojson"
                 );
                 const [geoJsonStatus, setGeoJsonStatus] = useState(
                     "GeoJSON файллари учун тайёр..."
