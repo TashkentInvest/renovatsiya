@@ -1232,12 +1232,12 @@
 
             // Enhanced API endpoints with your specific URLs
             const API_ENDPOINTS = {
-                aktivs: "https://development.toshkentinvest.uz/api/aktivs",
+                aktivs: "http://127.0.0.1:8000/api/aktivs",
                 auction: "https://projects.toshkentinvest.uz/api/markersing",
                 sold: "https://projects.toshkentinvest.uz/api/sotilgan",
-                jsonData: "https://development.toshkentinvest.uz/assets/data/443_output.json",
+                jsonData: "http://127.0.0.1:8000/assets/data/443_output.json",
                 geoJsonStrategy:
-                    "https://development.toshkentinvest.uz/tashkent_master_plan.geojson",
+                    "http://127.0.0.1:8000/tashkent_master_plan.geojson",
             };
 
             // Enhanced map styles
@@ -1324,122 +1324,173 @@
             };
 
             // Enhanced coordinate extraction
-           const extractCoordinatesFromUrl = (url) => {
-    if (!url) return null;
+            const extractCoordinatesFromUrl = (url) => {
+                if (!url) return null;
 
-    try {
-        const decodedUrl = decodeURIComponent(url);
-        console.log('Processing URL:', decodedUrl);
+                try {
+                    const decodedUrl = decodeURIComponent(url);
+                    console.log("Processing URL:", decodedUrl);
 
-        // Handle Yandex Maps URLs
-        if (decodedUrl.includes('yandex.uz/maps') || decodedUrl.includes('yandex.com/maps')) {
-            const llMatch = decodedUrl.match(/ll=([^&]+)/);
-            if (llMatch) {
-                const coords = llMatch[1].split('%2C').join(',').split(',');
-                if (coords.length === 2) {
-                    const lng = parseFloat(coords[0]);
-                    const lat = parseFloat(coords[1]);
-                    if (lat >= 39 && lat <= 43 && lng >= 68 && lng <= 71) {
-                        console.log('Extracted Yandex coordinates:', [lat, lng]);
-                        return [lat, lng];
+                    // Handle Yandex Maps URLs
+                    if (
+                        decodedUrl.includes("yandex.uz/maps") ||
+                        decodedUrl.includes("yandex.com/maps")
+                    ) {
+                        const llMatch = decodedUrl.match(/ll=([^&]+)/);
+                        if (llMatch) {
+                            const coords = llMatch[1]
+                                .split("%2C")
+                                .join(",")
+                                .split(",");
+                            if (coords.length === 2) {
+                                const lng = parseFloat(coords[0]);
+                                const lat = parseFloat(coords[1]);
+                                if (
+                                    lat >= 39 &&
+                                    lat <= 43 &&
+                                    lng >= 68 &&
+                                    lng <= 71
+                                ) {
+                                    console.log(
+                                        "Extracted Yandex coordinates:",
+                                        [lat, lng]
+                                    );
+                                    return [lat, lng];
+                                }
+                            }
+                        }
                     }
-                }
-            }
-        }
 
-        // Google Maps patterns - multiple formats
-        const googlePatterns = [
-            // Format: @lat,lng,zoom
-            /@(-?\d+\.?\d*),(-?\d+\.?\d*),?\d*[mz]?/,
-            // Format: decimal coordinates in URL
-            /(-?\d+\.\d{4,}),(-?\d+\.\d{4,})/,
-            // Format: !3d!4d coordinates
-            /!3d(-?\d+\.?\d*)!4d(-?\d+\.?\d*)/,
-            // Format: place coordinates
-            /\/place\/[^@]*@(-?\d+\.?\d*),(-?\d+\.?\d*)/,
-            // Format: DMS coordinates converted
-            /%C2%B0(\d+)'(\d+)\.?(\d*)"N\+(\d+)%C2%B0(\d+)'(\d+)\.?(\d*)"E/,
-            // Format: simple lat,lng
-            /(-?\d+\.?\d+),(-?\d+\.?\d+)/
-        ];
+                    // Google Maps patterns - multiple formats
+                    const googlePatterns = [
+                        // Format: @lat,lng,zoom
+                        /@(-?\d+\.?\d*),(-?\d+\.?\d*),?\d*[mz]?/,
+                        // Format: decimal coordinates in URL
+                        /(-?\d+\.\d{4,}),(-?\d+\.\d{4,})/,
+                        // Format: !3d!4d coordinates
+                        /!3d(-?\d+\.?\d*)!4d(-?\d+\.?\d*)/,
+                        // Format: place coordinates
+                        /\/place\/[^@]*@(-?\d+\.?\d*),(-?\d+\.?\d*)/,
+                        // Format: DMS coordinates converted
+                        /%C2%B0(\d+)'(\d+)\.?(\d*)"N\+(\d+)%C2%B0(\d+)'(\d+)\.?(\d*)"E/,
+                        // Format: simple lat,lng
+                        /(-?\d+\.?\d+),(-?\d+\.?\d+)/,
+                    ];
 
-        for (const pattern of googlePatterns) {
-            const match = decodedUrl.match(pattern);
-            if (match) {
-                let lat, lng;
+                    for (const pattern of googlePatterns) {
+                        const match = decodedUrl.match(pattern);
+                        if (match) {
+                            let lat, lng;
 
-                // Handle DMS (Degrees Minutes Seconds) format
-                if (pattern.source.includes('C2%B0')) {
-                    const latDeg = parseInt(match[1]);
-                    const latMin = parseInt(match[2]);
-                    const latSec = parseFloat(match[3] || 0);
-                    const lngDeg = parseInt(match[4]);
-                    const lngMin = parseInt(match[5]);
-                    const lngSec = parseFloat(match[6] || 0);
+                            // Handle DMS (Degrees Minutes Seconds) format
+                            if (pattern.source.includes("C2%B0")) {
+                                const latDeg = parseInt(match[1]);
+                                const latMin = parseInt(match[2]);
+                                const latSec = parseFloat(match[3] || 0);
+                                const lngDeg = parseInt(match[4]);
+                                const lngMin = parseInt(match[5]);
+                                const lngSec = parseFloat(match[6] || 0);
 
-                    lat = latDeg + latMin/60 + latSec/3600;
-                    lng = lngDeg + lngMin/60 + lngSec/3600;
-                } else {
-                    lat = parseFloat(match[1]);
-                    lng = parseFloat(match[2]);
-                }
+                                lat = latDeg + latMin / 60 + latSec / 3600;
+                                lng = lngDeg + lngMin / 60 + lngSec / 3600;
+                            } else {
+                                lat = parseFloat(match[1]);
+                                lng = parseFloat(match[2]);
+                            }
 
-                // Validate coordinates are in Uzbekistan range
-                if (lat >= 39 && lat <= 43 && lng >= 68 && lng <= 71) {
-                    console.log('Extracted Google coordinates:', [lat, lng]);
-                    return [lat, lng];
-                }
-            }
-        }
-
-        // Query parameters fallback
-        try {
-            const urlObj = new URL(decodedUrl);
-            const params = urlObj.searchParams;
-
-            const qParam = params.get('q');
-            if (qParam) {
-                const qMatch = qParam.match(/(-?\d+\.?\d*),(-?\d+\.?\d*)/);
-                if (qMatch) {
-                    const lat = parseFloat(qMatch[1]);
-                    const lng = parseFloat(qMatch[2]);
-                    if (lat >= 39 && lat <= 43 && lng >= 68 && lng <= 71) {
-                        console.log('Extracted q parameter coordinates:', [lat, lng]);
-                        return [lat, lng];
+                            // Validate coordinates are in Uzbekistan range
+                            if (
+                                lat >= 39 &&
+                                lat <= 43 &&
+                                lng >= 68 &&
+                                lng <= 71
+                            ) {
+                                console.log("Extracted Google coordinates:", [
+                                    lat,
+                                    lng,
+                                ]);
+                                return [lat, lng];
+                            }
+                        }
                     }
+
+                    // Query parameters fallback
+                    try {
+                        const urlObj = new URL(decodedUrl);
+                        const params = urlObj.searchParams;
+
+                        const qParam = params.get("q");
+                        if (qParam) {
+                            const qMatch = qParam.match(
+                                /(-?\d+\.?\d*),(-?\d+\.?\d*)/
+                            );
+                            if (qMatch) {
+                                const lat = parseFloat(qMatch[1]);
+                                const lng = parseFloat(qMatch[2]);
+                                if (
+                                    lat >= 39 &&
+                                    lat <= 43 &&
+                                    lng >= 68 &&
+                                    lng <= 71
+                                ) {
+                                    console.log(
+                                        "Extracted q parameter coordinates:",
+                                        [lat, lng]
+                                    );
+                                    return [lat, lng];
+                                }
+                            }
+                        }
+                    } catch (urlError) {
+                        // URL parsing failed, continue
+                    }
+
+                    // Fallback: any two decimal numbers that look like coordinates
+                    const allCoordMatches = decodedUrl.match(/(-?\d+\.\d+)/g);
+                    if (allCoordMatches && allCoordMatches.length >= 2) {
+                        for (let i = 0; i < allCoordMatches.length - 1; i++) {
+                            const coord1 = parseFloat(allCoordMatches[i]);
+                            const coord2 = parseFloat(allCoordMatches[i + 1]);
+
+                            // Try both orders (lat,lng and lng,lat)
+                            if (
+                                coord1 >= 39 &&
+                                coord1 <= 43 &&
+                                coord2 >= 68 &&
+                                coord2 <= 71
+                            ) {
+                                console.log(
+                                    "Extracted fallback coordinates (lat,lng):",
+                                    [coord1, coord2]
+                                );
+                                return [coord1, coord2];
+                            }
+                            if (
+                                coord2 >= 39 &&
+                                coord2 <= 43 &&
+                                coord1 >= 68 &&
+                                coord1 <= 71
+                            ) {
+                                console.log(
+                                    "Extracted fallback coordinates (lng,lat):",
+                                    [coord2, coord1]
+                                );
+                                return [coord2, coord1];
+                            }
+                        }
+                    }
+
+                    console.log("No valid coordinates found in URL");
+                    return null;
+                } catch (error) {
+                    console.error(
+                        "Error extracting coordinates from URL:",
+                        url,
+                        error
+                    );
+                    return null;
                 }
-            }
-        } catch (urlError) {
-            // URL parsing failed, continue
-        }
-
-        // Fallback: any two decimal numbers that look like coordinates
-        const allCoordMatches = decodedUrl.match(/(-?\d+\.\d+)/g);
-        if (allCoordMatches && allCoordMatches.length >= 2) {
-            for (let i = 0; i < allCoordMatches.length - 1; i++) {
-                const coord1 = parseFloat(allCoordMatches[i]);
-                const coord2 = parseFloat(allCoordMatches[i + 1]);
-
-                // Try both orders (lat,lng and lng,lat)
-                if (coord1 >= 39 && coord1 <= 43 && coord2 >= 68 && coord2 <= 71) {
-                    console.log('Extracted fallback coordinates (lat,lng):', [coord1, coord2]);
-                    return [coord1, coord2];
-                }
-                if (coord2 >= 39 && coord2 <= 43 && coord1 >= 68 && coord1 <= 71) {
-                    console.log('Extracted fallback coordinates (lng,lat):', [coord2, coord1]);
-                    return [coord2, coord1];
-                }
-            }
-        }
-
-        console.log('No valid coordinates found in URL');
-        return null;
-
-    } catch (error) {
-        console.error('Error extracting coordinates from URL:', url, error);
-        return null;
-    }
-};
+            };
             // Enhanced marker creation
             const createMarkerIcon = (type, size = 16) => {
                 const colors = {
@@ -1474,7 +1525,7 @@
                     if (fileUrl.includes("http://localhost/")) {
                         correctedUrl = fileUrl.replace(
                             "http://localhost/",
-                            "https://development.toshkentinvest.uz/"
+                            "http://127.0.0.1:8000/"
                         );
                     }
 
@@ -2522,7 +2573,7 @@
                 const [selectedItem, setSelectedItem] = useState(null);
                 const [currentMapStyle, setCurrentMapStyle] = useState("osm");
                 const [geoJsonFilepath, setGeoJsonFilepath] = useState(
-                    "https://development.toshkentinvest.uz/tashkent_master_plan.geojson"
+                    "http://127.0.0.1:8000/tashkent_master_plan.geojson"
                 );
                 const [geoJsonStatus, setGeoJsonStatus] = useState(
                     "GeoJSON файллари учун тайёр..."
@@ -2822,22 +2873,87 @@
 
                         if (layer) {
                             const popup = `
-                            <div class="popup-header">KMZ: ${
-                                lotData.neighborhood_name || "Объект"
-                            }</div>
-                            <div class="popup-details">
-                                <p><strong>Тур:</strong> <span class="badge badge-renovation">KMZ маълумот</span></p>
-                                <p><strong>${TEXTS.district}:</strong> ${
+        <div class="popup-header">KMZ: ${
+            lotData.neighborhood_name || "Объект"
+        }</div>
+        <div class="popup-details">
+            <p><strong>Тур:</strong> <span class="badge badge-renovation">KMZ маълумот</span></p>
+            <p><strong>${TEXTS.district}:</strong> ${
                                 lotData.district_name || "N/A"
                             }</p>
-                            </div>
-                            <button class="details-btn" onclick="window.showDetails('${
-                                lotData.id
-                            }', 'kmz')">
-                                ${TEXTS.viewDetails}
-                            </button>
-                        `;
-                            layer.bindPopup(popup, { maxWidth: 300 });
+            <p><strong>${TEXTS.area}:</strong> ${
+                                lotData.area_hectare || "N/A"
+                            } га</p>
+            <p><strong>Умумий бино майдони:</strong> ${
+                lotData.total_building_area || "N/A"
+            } м²</p>
+            <p><strong>Яшаш майдони:</strong> ${
+                lotData.residential_area || "N/A"
+            } м²</p>
+            <p><strong>Қаватлар:</strong> ${
+                lotData.designated_floors || "N/A"
+            } (белгиланган) / ${lotData.proposed_floors || "N/A"} (таклиф)</p>
+            <p><strong>УМН коэффициенти:</strong> ${
+                lotData.umn_coefficient || "N/A"
+            }</p>
+            <p><strong>ҚМН фоизи:</strong> ${
+                lotData.qmn_percentage ? lotData.qmn_percentage + "%" : "N/A"
+            }</p>
+            <p><strong>Инвестор:</strong> ${lotData.investor || "N/A"}</p>
+            <p><strong>Қарор рақами:</strong> ${
+                lotData.decision_number || "N/A"
+            }</p>
+            <p><strong>Кадастр гувоҳномаси:</strong> ${
+                lotData.cadastre_certificate || "N/A"
+            }</p>
+            <p><strong>Ҳудуд стратегияси:</strong> ${
+                lotData.area_strategy || "N/A"
+            }</p>
+            <p><strong>Статус:</strong> ${lotData.status || "N/A"}</p>
+            ${
+                lotData.object_information
+                    ? `<p><strong>Объект маълумоти:</strong> ${lotData.object_information}</p>`
+                    : ""
+            }
+            ${
+                lotData.additional_information
+                    ? `<p><strong>Қўшимча маълумот:</strong> ${lotData.additional_information}</p>`
+                    : ""
+            }
+            ${
+                lotData.documents && lotData.documents.length > 0
+                    ? `
+                <div style="margin-top: 10px;">
+                    <strong>Ҳужжатлар:</strong>
+                    ${lotData.documents
+                        .map(
+                            (doc) => `
+                        <div style="margin: 5px 0;">
+                            <a href="${doc.url.replace(
+                                "http://localhost/",
+                                "http://127.0.0.1:8000/"
+                            )}"
+                               target="_blank"
+                               style="color: #2563eb; text-decoration: none; font-size: 12px;">
+                                ${
+                                    doc.doc_type === "pdf-document"
+                                        ? "📄"
+                                        : doc.doc_type === "kmz-document"
+                                        ? "🗺️"
+                                        : "📎"
+                                } ${doc.filename}
+                            </a>
+                        </div>
+                    `
+                        )
+                        .join("")}
+                </div>
+            `
+                    : ""
+            }
+        </div>
+    `;
+                            layer.bindPopup(popup, { maxWidth: 450 });
                             layer.kmzData = { ...lotData, kmzFeature: feature };
                         }
                         return layer;
@@ -2879,25 +2995,38 @@
                                 icon: createMarkerIcon(markerType),
                             });
 
-                            const popup = `
-                            <div class="popup-header">${
-                                item["Манзил(МФЙ,кўча)"] || "JSON объект"
-                            }</div>
-                            <div class="popup-details">
-                                <p><strong>Тур:</strong> <span class="badge badge-${markerType}">${
-                                type || "Номаълум"
-                            }</span></p>
-                                <p><strong>${TEXTS.district}:</strong> ${
-                                item["Туман"] || "N/A"
-                            }</p>
-                                <p><strong>${TEXTS.area}:</strong> ${
-                                item["ТаклифЕрмайдони(га)"] || "N/A"
-                            } га</p>
-                            </div>
-                            <button class="details-btn" onclick="window.showDetails('${index}', 'jsonData')">
-                                ${TEXTS.viewDetails}
-                            </button>
-                        `;
+                      const popup = `
+    <div class="popup-header">${item["Манзил_(МФЙ,_кўча)"] || item["Манзил(МФЙ,кўча)"] || "JSON объект"}</div>
+    <div class="popup-details">
+        <p><strong>№:</strong> ${item["№"] || "N/A"}</p>
+        <p><strong>Тур:</strong> <span class="badge badge-${markerType}">${type || "Номаълум"}</span></p>
+        <p><strong>${TEXTS.district}:</strong> ${item["Туман"] || "N/A"}</p>
+        <p><strong>${TEXTS.area}:</strong> ${item["Таклиф_Ер_майдони_(га)"] || item["ТаклифЕрмайдони(га)"] || "N/A"} га</p>
+        <p><strong>Бош режадаги ҳолати:</strong> ${item["Бош_режадаги_ҳолати_ва_қавати"] || "N/A"}</p>
+        <p><strong>Таклиф қавати ва ҳудуд:</strong> ${item["Таклиф_қавати_ва_ҳудуд"] || "N/A"}</p>
+        <p><strong>Фаолият тури:</strong> ${item["Таклиф_Фаолият_тури"] || "N/A"}</p>
+        <p><strong>Фалияти филтир:</strong> ${item["Таклиф_Фалияти_филтир_учун"] || "N/A"}</p>
+        <p><strong>Этажность:</strong> ${item["Этажность"] || "N/A"}</p>
+        <p><strong>Қурилиш ости майдони:</strong> ${item["Қурилиш_ости_майдони"] ? item["Қурилиш_ости_майдони"] + " м²" : "N/A"}</p>
+        <p><strong>Бинонинг умумий майдони:</strong> ${item["Бинонинг_умумий_майдони"] ? item["Бинонинг_умумий_майдони"] + " м²" : "N/A"}</p>
+        <p><strong>Хизмат кўрсатиш сохаси:</strong> ${item["Хизмат_кўрсатиш_сохаси"] ? item["Хизмат_кўрсатиш_сохаси"] + " м²" : "N/A"}</p>
+        <p><strong>Яшаш майдон:</strong> ${item["Яшаш_майдон"] ? item["Яшаш_майдон"] + " м²" : "N/A"}</p>
+        <p><strong>Хонадонлар сони:</strong> ${item["хонадонлар_сони"] ? Math.round(item["хонадонлар_сони"]) : "N/A"}</p>
+        <p><strong>Аҳоли сони:</strong> ${item["Ахоли_сони"] ? Math.round(item["Ахоли_сони"]) : "N/A"}</p>
+        <p><strong>Бош режага киритилганлиги:</strong>
+            <span class="badge ${item["Таклиф_Бош_режага_таклиф_киритилганлиги_(таклиф_берилган_лекин_киритилмаган_бўлас_КИРИТИЛМАГАН_хисобланади)"] === "Киритилган" ? "badge-sold" : "badge-auction"}">
+                ${item["Таклиф_Бош_режага_таклиф_киритилганлиги_(таклиф_берилган_лекин_киритилмаган_бўлас_КИРИТИЛМАГАН_хисобланади)"] || "N/A"}
+            </span>
+        </p>
+        ${item["Таклиф_Харита"] ? `
+            <div style="margin-top: 10px;">
+                <a href="${item["Таклиф_Харита"]}" target="_blank" style="color: #2563eb; text-decoration: none;">
+                    🗺️ Харитада кўриш
+                </a>
+            </div>
+        ` : ""}
+    </div>
+`;
 
                             marker.bindPopup(popup, { maxWidth: 300 });
                             marker.itemData = item;
@@ -2939,36 +3068,38 @@
                                 }
                             );
 
-                            const popup = `
-                            <div class="popup-header">${
-                                lot.property_name || "Аукцион мулки"
-                            }</div>
-                            ${
-                                lot.main_image
-                                    ? `<img src="${lot.main_image}" class="popup-image" onerror="this.style.display='none'">`
-                                    : ""
-                            }
-                            <div class="popup-details">
-                                <p><strong>Бошланғич нарх:</strong> ${
-                                    lot.start_price
-                                        ? Number(
-                                              lot.start_price
-                                          ).toLocaleString("uz-UZ") + " сум"
-                                        : "N/A"
-                                }</p>
-                                <p><strong>Аукцион санаси:</strong> ${
-                                    lot.auction_date || "N/A"
-                                }</p>
-                                <p><strong>${TEXTS.area}:</strong> ${
-                                lot.land_area || "N/A"
-                            } га</p>
-                                <p><strong>Ҳолат:</strong> <span class="badge badge-auction">Аукцион</span></p>
-                            </div>
-                            <button class="details-btn" onclick="window.showDetails('${index}', 'auction')">
-                                ${TEXTS.viewDetails}
-                            </button>
-                        `;
-
+                         const popup = `
+    <div class="popup-header">${lot.property_name || "Аукцион мулки"}</div>
+    ${lot.main_image ? `<img src="${lot.main_image}" class="popup-image" onerror="this.style.display='none'">` : ""}
+    <div class="popup-details">
+        <p><strong>Лот рақами:</strong> ${lot.lot_number || "N/A"}</p>
+        <p><strong>Бошланғич нарх:</strong> ${lot.start_price ? Number(lot.start_price).toLocaleString("uz-UZ") + " сум" : "N/A"}</p>
+        <p><strong>Аукцион санаси:</strong> ${lot.auction_date || "N/A"}</p>
+        <p><strong>Ариза мухлати:</strong> ${lot.application_deadline || "N/A"}</p>
+        <p><strong>Вилоят:</strong> ${lot.region || "N/A"}</p>
+        <p><strong>Ҳудуд:</strong> ${lot.area || "N/A"}</p>
+        <p><strong>Манзил:</strong> ${lot.address || "N/A"}</p>
+        <p><strong>${TEXTS.area}:</strong> ${lot.land_area || "N/A"} га</p>
+        <p><strong>Қурилиш майдони:</strong> ${lot.building_area ? lot.building_area + " м²" : "N/A"}</p>
+        <p><strong>Қурилиш турлари:</strong> ${lot.build_types || "N/A"}</p>
+        <p><strong>Ҳуқуқий тур:</strong> ${lot.law_type || "N/A"}</p>
+        <p><strong>Мулк гуруҳи:</strong> ${lot.property_group || "N/A"}</p>
+        <p><strong>Мулк категорияси:</strong> ${lot.property_category || "N/A"}</p>
+        <p><strong>Лот ҳолати:</strong> ${lot.lot_status || "N/A"}</p>
+        <p><strong>Тўлов тури:</strong> ${lot.payment_type || "N/A"}</p>
+        <p><strong>Савдо тури:</strong> ${lot.trade_type || "N/A"}</p>
+        ${lot.contract_number ? `<p><strong>Шартнома рақами:</strong> ${lot.contract_number}</p>` : ""}
+        ${lot.contract_date ? `<p><strong>Шартнома санаси:</strong> ${lot.contract_date}</p>` : ""}
+        <p><strong>Ҳолат:</strong> <span class="badge badge-auction">Аукцион</span></p>
+        ${lot.lot_link ? `
+            <div style="margin-top: 10px;">
+                <a href="${lot.lot_link}" target="_blank" style="color: #2563eb; text-decoration: none;">
+                    🔗 Лотни кўриш
+                </a>
+            </div>
+        ` : ""}
+    </div>
+`;
                             marker.bindPopup(popup, { maxWidth: 300 });
                             marker.auctionData = lot;
                             group.addLayer(marker);
@@ -3010,41 +3141,56 @@
                             );
 
                             const popup = `
-                            <div class="popup-header">🏆 ${
-                                lot.property_name || "Сотилган мулк"
-                            }</div>
-                            ${
-                                lot.main_image
-                                    ? `<img src="${lot.main_image}" class="popup-image" onerror="this.style.display='none'">`
-                                    : ""
-                            }
-                            <div class="popup-details">
-<p><strong>Сотилди:</strong> ${
-                                lot.sold_price
-                                    ? Number(lot.sold_price).toLocaleString(
-                                          "uz-UZ"
-                                      ) + " сум"
-                                    : "N/A"
-                            }</p>
-                                <p><strong>Бошланғич нарх:</strong> ${
-                                    lot.start_price
-                                        ? Number(
-                                              lot.start_price
-                                          ).toLocaleString("uz-UZ") + " сум"
-                                        : "N/A"
-                                }</p>
-                                <p><strong>Ғолиб:</strong> ${
-                                    lot.winner_name || "N/A"
-                                }</p>
-                                <p><strong>Аукцион санаси:</strong> ${
-                                    lot.auction_date || "N/A"
-                                }</p>
-                                <p><strong>Ҳолат:</strong> <span class="badge badge-sold">✅ Сотилган</span></p>
-                            </div>
-                            <button class="details-btn" onclick="window.showDetails('${index}', 'sold')">
-                                ${TEXTS.viewDetails}
-                            </button>
-                        `;
+    <div class="popup-header">🏆 ${lot.property_name || "Сотилган мулк"}</div>
+    ${
+        lot.main_image
+            ? `<img src="${lot.main_image}" class="popup-image" onerror="this.style.display='none'">`
+            : ""
+    }
+    <div class="popup-details">
+        <p><strong>Лот рақами:</strong> ${lot.lot_number || "N/A"}</p>
+        <p><strong>Сотилди:</strong> ${
+            lot.sold_price
+                ? Number(lot.sold_price).toLocaleString("uz-UZ") + " сум"
+                : "N/A"
+        }</p>
+        <p><strong>Бошланғич нарх:</strong> ${
+            lot.start_price
+                ? Number(lot.start_price).toLocaleString("uz-UZ") + " сум"
+                : "N/A"
+        }</p>
+        <p><strong>Ғолиб:</strong> ${lot.winner_name || "N/A"}</p>
+        <p><strong>Ғолиб телефони:</strong> ${lot.winner_phone || "N/A"}</p>
+        <p><strong>Аукцион санаси:</strong> ${lot.auction_date || "N/A"}</p>
+        <p><strong>Аукцион санаси ҳолати:</strong> ${
+            lot.auction_date_status || "N/A"
+        }</p>
+        <p><strong>Майдон:</strong> ${lot.land_area || "N/A"} га</p>
+        <p><strong>Майдон изоҳи:</strong> ${lot.land_area_comment || "N/A"}</p>
+        <p><strong>Манзил:</strong> ${lot.address || "N/A"}</p>
+        <p><strong>Қурилиш тури:</strong> ${lot.building_type || "N/A"}</p>
+        <p><strong>Қурилиш тури изоҳи:</strong> ${
+            lot.building_type_comment || "N/A"
+        }</p>
+        <p><strong>Кадастр рақами:</strong> ${lot.kadastr_raqami || "N/A"}</p>
+        <p><strong>Зона:</strong> ${lot.zone || "N/A"}</p>
+        <p><strong>Тўлов тури:</strong> ${lot.payment_type || "N/A"}</p>
+        <p><strong>Фойдаланувчи:</strong> ${lot.user_name || "N/A"}</p>
+        <p><strong>Электрон почта:</strong> ${lot.user_email || "N/A"}</p>
+        <p><strong>Ҳолат:</strong> <span class="badge badge-sold">✅ Сотилган</span></p>
+        ${
+            lot.lot_link
+                ? `
+            <div style="margin-top: 10px;">
+                <a href="${lot.lot_link}" target="_blank" style="color: #2563eb; text-decoration: none;">
+                    🔗 Лотни кўриш
+                </a>
+            </div>
+        `
+                : ""
+        }
+    </div>
+`;
 
                             marker.bindPopup(popup, { maxWidth: 300 });
                             marker.soldData = lot;
@@ -3347,23 +3493,23 @@
                     }
                 }, []);
 
-                const addGeoJSONPopup = useCallback((layer, properties) => {
-                    if (!properties) return;
+              const addGeoJSONPopup = useCallback((layer, properties) => {
+    if (!properties) return;
 
-                    const title =
-                        properties.mahalla_nomi ||
-                        properties.name ||
-                        "GeoJSON объект";
-                    const strategy =
-                        properties.strategiya ||
-                        properties.strategy ||
-                        properties.funksiya ||
-                        "Номаълум";
-                    const isRedLine = properties.funksiya === "Qizil_chiziqlar";
+    const title =
+        properties.mahalla_nomi ||
+        properties.name ||
+        "GeoJSON объект";
+    const strategy =
+        properties.strategiya ||
+        properties.strategy ||
+        properties.funksiya ||
+        "Номаълум";
+    const isRedLine = properties.funksiya === "Qizil_chiziqlar";
 
-                    layer.bindPopup(
-                        () => {
-                            let content = `
+    layer.bindPopup(
+        () => {
+            let content = `
                 <div class="popup-header">${title}</div>
                 <div class="popup-details">
                     <p><strong>${isRedLine ? "Тур" : "Стратегия"}:</strong>
@@ -3378,45 +3524,69 @@
                                 ? "new-construction"
                                 : "investment"
                         }">${
-                                isRedLine
-                                    ? TEXTS.redLines
-                                    : formatStrategy(strategy)
-                            }</span>
+                            isRedLine
+                                ? TEXTS.redLines
+                                : formatStrategy(strategy)
+                        }</span>
                     </p>
             `;
 
-                            // Show all available properties
-                            if (properties.district)
-                                content += `<p><strong>${TEXTS.district}:</strong> ${properties.district}</p>`;
-                            if (properties.maydoni)
-                                content += `<p><strong>${TEXTS.area}:</strong> ${properties.maydoni} га</p>`;
-                            if (properties.qavatlilik)
-                                content += `<p><strong>Қаватлилик:</strong> ${properties.qavatlilik}</p>`;
-                            if (properties.funksiya)
-                                content += `<p><strong>Функция:</strong> ${properties.funksiya}</p>`;
-                            if (properties.seysmologik_zonasi)
-                                content += `<p><strong>Сейсмик зона:</strong> ${properties.seysmologik_zonasi}</p>`;
-                            if (properties.region_name)
-                                content += `<p><strong>Регион:</strong> ${properties.region_name}</p>`;
-                            if (properties.hudud)
-                                content += `<p><strong>Ҳудуд:</strong> ${properties.hudud}</p>`;
-                            if (properties.strategiya_ishlari_turi)
-                                content += `<p><strong>Стратегия иши тури:</strong> ${properties.strategiya_ishlari_turi}</p>`;
-                            if (isRedLine)
-                                content += `<p><strong>Маълумот:</strong> Қизил чизиқлар - муҳофаза қилинадиган ҳудудлар</p>`;
+            // Show all available properties with proper formatting
+            if (properties.layerId)
+                content += `<p><strong>Қатлам ID:</strong> ${properties.layerId}</p>`;
+            if (properties.layerName)
+                content += `<p><strong>Қатлам номи:</strong> ${properties.layerName}</p>`;
+            if (properties.code)
+                content += `<p><strong>Код:</strong> ${properties.code}</p>`;
+            if (properties.objectid)
+                content += `<p><strong>Объект ID:</strong> ${properties.objectid}</p>`;
+            if (properties.globalid)
+                content += `<p><strong>Глобал ID:</strong> ${properties.globalid}</p>`;
+            if (properties.district)
+                content += `<p><strong>${TEXTS.district}:</strong> ${properties.district}</p>`;
+            if (properties.region_name)
+                content += `<p><strong>Регион:</strong> ${properties.region_name}</p>`;
+            if (properties.maydoni)
+                content += `<p><strong>${TEXTS.area}:</strong> ${properties.maydoni} га</p>`;
+            if (properties.SHAPE__Area)
+                content += `<p><strong>Шакл майдони:</strong> ${properties.SHAPE__Area.toFixed(2)} м²</p>`;
+            if (properties.SHAPE__Length)
+                content += `<p><strong>Шакл узунлиги:</strong> ${properties.SHAPE__Length.toFixed(2)} м</p>`;
+            if (properties.qavatlilik)
+                content += `<p><strong>Қаватлилик:</strong> ${properties.qavatlilik}</p>`;
+            if (properties.funksiya)
+                content += `<p><strong>Функция:</strong> ${properties.funksiya}</p>`;
+            if (properties.seysmologik_zonasi)
+                content += `<p><strong>Сейсмик зона:</strong> ${properties.seysmologik_zonasi}</p>`;
+            if (properties.hudud)
+                content += `<p><strong>Ҳудуд:</strong> ${properties.hudud}</p>`;
+            if (properties.strategiya_ishlari_turi)
+                content += `<p><strong>Стратегия иши тури:</strong> ${properties.strategiya_ishlari_turi}</p>`;
+            if (properties.mahalla_id)
+                content += `<p><strong>Маҳалла ID:</strong> ${properties.mahalla_id}</p>`;
+            if (properties.parent_code)
+                content += `<p><strong>Ота код:</strong> ${properties.parent_code}</p>`;
+            if (properties.umumiy_maydonning_yer_maydoniga !== undefined)
+                content += `<p><strong>Умумий майдоннинг ер майдонига нисбати:</strong> ${properties.umumiy_maydonning_yer_maydoniga}</p>`;
+            if (properties.qurilish_maydonining_yer_maydon !== undefined)
+                content += `<p><strong>Қурилиш майдонининг ер майдонига нисбати:</strong> ${properties.qurilish_maydonining_yer_maydon}</p>`;
+            if (properties.created_user)
+                content += `<p><strong>Яратувчи:</strong> ${properties.created_user}</p>`;
+            if (properties.last_edited_user)
+                content += `<p><strong>Охирги таҳрирчи:</strong> ${properties.last_edited_user}</p>`;
+            if (properties.created_date)
+                content += `<p><strong>Яратилган сана:</strong> ${new Date(properties.created_date).toLocaleDateString('uz-UZ')}</p>`;
+            if (properties.last_edited_date)
+                content += `<p><strong>Охирги таҳрир санаси:</strong> ${new Date(properties.last_edited_date).toLocaleDateString('uz-UZ')}</p>`;
+            if (properties.tekshirildi)
+                content += `<p><strong>Текширилди:</strong> ${properties.tekshirildi}</p>`;
+            if (properties.id_raqami)
+                content += `<p><strong>ID рақами:</strong> ${properties.id_raqami}</p>`;
+            if (isRedLine)
+                content += `<p><strong>Маълумот:</strong> Қизил чизиқлар - муҳофаза қилинадиган ҳудудлар</p>`;
 
-                            // Store properties in a global variable to avoid JSON encoding issues
-                            const propertiesId =
-                                "geojson_" +
-                                Date.now() +
-                                Math.random().toString(36).substr(2, 9);
-                            window[propertiesId] = properties;
-
-                            content += `</div>
-                <button class="details-btn" onclick="window.showGeoJSONDetails(window.${propertiesId})">
-                    ${TEXTS.viewDetails}
-                </button>`;
-                            return content;
+            content += `</div>`;
+            return content;
                         },
                         { maxWidth: 400, className: "geojson-popup" }
                     );
