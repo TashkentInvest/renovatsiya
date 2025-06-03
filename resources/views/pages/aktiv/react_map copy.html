@@ -22,7 +22,6 @@
             --success-green: #10b981;
             --warning-orange: #f97316;
             --error-red: #ef4444;
-            --red-line-color: #dc2626;
             --white: #ffffff;
             --gray-50: #f9fafb;
             --gray-100: #f3f4f6;
@@ -674,12 +673,6 @@
             border: 1px solid #ce93d8;
         }
 
-        .badge-red-line {
-            background: linear-gradient(135deg, #fef2f2, #fecaca);
-            color: var(--red-line-color);
-            border: 1px solid #fca5a5;
-        }
-
         /* Enhanced Loading */
         .loading-overlay {
             position: fixed;
@@ -951,6 +944,43 @@
             background: #dc2626;
         }
 
+        /* Responsive Design */
+        @media (max-width: 768px) {
+            .app-title {
+                font-size: 18px;
+            }
+
+            .app-subtitle {
+                display: none;
+            }
+
+            .layer-controls,
+            .geojson-controls {
+                width: 300px;
+                right: 10px;
+                padding: 20px;
+            }
+
+            .map-style-controls {
+                width: 180px;
+                left: 10px;
+                padding: 16px;
+            }
+
+            .sidebar {
+                width: 100%;
+                right: -100%;
+            }
+
+            .control-panel {
+                max-height: 60vh;
+            }
+
+            .stats-grid {
+                grid-template-columns: 1fr;
+            }
+        }
+
         /* Custom marker styles */
         .custom-marker {
             background: none !important;
@@ -1026,43 +1056,6 @@
         .sidebar::-webkit-scrollbar-thumb:hover,
         .layer-list::-webkit-scrollbar-thumb:hover {
             background: var(--gray-400);
-        }
-
-        /* Responsive Design */
-        @media (max-width: 768px) {
-            .app-title {
-                font-size: 18px;
-            }
-
-            .app-subtitle {
-                display: none;
-            }
-
-            .layer-controls,
-            .geojson-controls {
-                width: 300px;
-                right: 10px;
-                padding: 20px;
-            }
-
-            .map-style-controls {
-                width: 180px;
-                left: 10px;
-                padding: 16px;
-            }
-
-            .sidebar {
-                width: 100%;
-                right: -100%;
-            }
-
-            .control-panel {
-                max-height: 60vh;
-            }
-
-            .stats-grid {
-                grid-template-columns: 1fr;
-            }
         }
     </style>
 </head>
@@ -1144,17 +1137,16 @@
             lastEdited: 'Охирги таҳрир',
             technicalParams: 'Техник параметрлар',
             administrativeInfo: 'Маъмурий маълумот',
-            buildingInfo: 'Қурилиш маълумотлари',
-            redLines: 'Қизил чизиқлар'
+            buildingInfo: 'Қурилиш маълумотлари'
         };
 
-        // Enhanced API endpoints with your specific URLs
+        // Enhanced API endpoints
         const API_ENDPOINTS = {
-            aktivs: 'http://127.0.0.1:8000/api/aktivs',
+            aktivs: '/api/aktivs',
             auction: 'https://projects.toshkentinvest.uz/api/markersing',
             sold: 'https://projects.toshkentinvest.uz/api/sotilgan',
-            jsonData: 'http://127.0.0.1:8000/assets/data/443_output.json',
-            geoJsonStrategy: 'http://127.0.0.1:8000/tashkent_master_plan.geojson'
+            jsonData: '/assets/data/443_output.json',
+            geoJsonStrategy: '/tashkent_master_plan.geojson'
         };
 
         // Enhanced map styles
@@ -1190,7 +1182,6 @@
             'Savdo_xizmat': '#059669',
             'Sanoat': '#dc2626',
             'Madaniy_tarixiy': '#7c3aed',
-            'Qizil_chiziqlar': '#dc2626', // Red color for red lines
             'default': '#6b7280'
         };
 
@@ -1203,7 +1194,6 @@
             'Rekreatsiya': '#10b981',
             'Transport': '#f59e0b',
             'Kommunal': '#6b7280',
-            'Qizil_chiziqlar': '#dc2626', // Red color for red lines
             'default': '#8e24aa'
         };
 
@@ -1294,8 +1284,7 @@
                 kmz: '#f59e0b',
                 conservation: '#0277bd',
                 reconstruction: '#f57c00',
-                'new-construction': '#8e24aa',
-                'red-line': '#dc2626'
+                'new-construction': '#8e24aa'
             };
 
             return L.divIcon({
@@ -1335,17 +1324,11 @@
             }
         };
 
-        // Enhanced strategy color function with red lines support
+        // Enhanced strategy color function
         const getStrategyColor = (properties) => {
             if (!properties) return STRATEGY_COLORS.default;
 
-            // Check for red lines first
-            const funksiya = properties.funksiya || properties.function || properties.type;
-            if (funksiya === 'Qizil_chiziqlar') {
-                return STRATEGY_COLORS.Qizil_chiziqlar;
-            }
-
-            // Check strategy
+            // Check strategy first
             const strategy = properties.strategiya || properties.strategy || properties.type;
             if (strategy) {
                 const normalizedStrategy = strategy.toString().toLowerCase();
@@ -1368,8 +1351,9 @@
             }
 
             // Check function if no strategy
-            if (funksiya) {
-                return FUNCTION_COLORS[funksiya] || FUNCTION_COLORS.default;
+            const func = properties.funksiya || properties.function;
+            if (func) {
+                return FUNCTION_COLORS[func] || FUNCTION_COLORS.default;
             }
 
             return STRATEGY_COLORS.default;
@@ -1399,8 +1383,7 @@
                 'Konservatsiya': TEXTS.conservation,
                 'Rekonstruktsiya': TEXTS.reconstruction,
                 'Yangi_qurilish': TEXTS.newConstruction,
-                'Rekonstruksiya': TEXTS.reconstruction,
-                'Qizil_chiziqlar': TEXTS.redLines
+                'Rekonstruksiya': TEXTS.reconstruction
             };
             return strategies[strategy] || strategy || 'N/A';
         };
@@ -1413,12 +1396,12 @@
                 'Madaniy_tarixiy': 'Маданий-тарихий',
                 'Rekreatsiya': 'Рекреация',
                 'Transport': 'Транспорт',
-                'Kommunal': 'Коммунал',
-                'Qizil_chiziqlar': TEXTS.redLines
+                'Kommunal': 'Коммунал'
             };
             return functions[func] || func || 'N/A';
         };
-// Toast Component
+
+        // Toast Component
         const Toast = ({ toasts, removeToast }) => (
             React.createElement('div', { className: 'toast-container' },
                 toasts.map(toast =>
@@ -1452,7 +1435,7 @@
             ) : null
         );
 
-        // Enhanced Legend Component with red lines
+        // Enhanced Legend Component
         const Legend = () => (
             React.createElement('div', { className: 'legend' },
                 React.createElement('div', { className: 'legend-title' },
@@ -1483,13 +1466,6 @@
                 React.createElement('div', { className: 'legend-item' },
                     React.createElement('div', {
                         className: 'legend-color',
-                        style: { backgroundColor: STRATEGY_COLORS['Qizil_chiziqlar'] }
-                    }),
-                    React.createElement('span', null, TEXTS.redLines)
-                ),
-                React.createElement('div', { className: 'legend-item' },
-                    React.createElement('div', {
-                        className: 'legend-color',
                         style: { backgroundColor: FUNCTION_COLORS['Aholi_yashash_joyi'] }
                     }),
                     React.createElement('span', null, 'Аҳоли яшаш жойи')
@@ -1511,17 +1487,12 @@
                     React.createElement('div', null,
                         React.createElement('h2', { className: 'sidebar-title' },
                             item?.property_name ||
-                            item?.neighborhood_name ||
                             item?.mahalla_nomi ||
                             item?.funksiya ||
                             item?.['Объект_номи'] ||
-                            item?.['Манзил(МФЙ,кўча)'] ||
                             TEXTS.objectDetails
                         ),
-                        (item?.district_name || item?.district || item?.['Туман']) &&
-                        React.createElement('div', { className: 'app-subtitle' },
-                            item.district_name || item.district || item['Туман']
-                        )
+                        item?.district && React.createElement('div', { className: 'app-subtitle' }, item.district)
                     ),
                     React.createElement('button', { className: 'close-btn', onClick: onClose },
                         React.createElement('i', { className: 'fas fa-times' })
@@ -1542,10 +1513,8 @@
                                         React.createElement('td', null, TEXTS.name + ':'),
                                         React.createElement('td', null,
                                             item.property_name ||
-                                            item.neighborhood_name ||
                                             item.mahalla_nomi ||
                                             item['Объект_номи'] ||
-                                            item['Манзил(МФЙ,кўча)'] ||
                                             item.funksiya ||
                                             'N/A'
                                         )
@@ -1559,18 +1528,9 @@
                                                     item.strategiya === 'Konservatsiya' ? 'conservation' :
                                                     item.strategiya === 'Rekonstruktsiya' ? 'reconstruction' :
                                                     item.strategiya === 'Yangi_qurilish' ? 'new-construction' :
-                                                    item.funksiya === 'Qizil_chiziqlar' ? 'red-line' :
-                                                    item['Таклиф_тури_(Реновация,_Инвестиция,_Аукцион)'] === 'Реновация' ? 'renovation' :
-                                                    item['Таклиф_тури_(Реновация,_Инвестиция,_Аукцион)'] === 'Аукцион' ? 'auction' :
                                                     'investment'
                                                 }`
-                                            },
-                                                formatStrategy(item.strategiya) ||
-                                                formatStrategy(item.type) ||
-                                                item['Таклиф_тури_(Реновация,_Инвестиция,_Аукцион)'] ||
-                                                formatFunction(item.funksiya) ||
-                                                'N/A'
-                                            )
+                                            }, formatStrategy(item.strategiya) || formatStrategy(item.type) || 'N/A')
                                         )
                                     ),
                                     // Function
@@ -1582,24 +1542,31 @@
                                     React.createElement('tr', null,
                                         React.createElement('td', null, TEXTS.district + ':'),
                                         React.createElement('td', null,
-                                            item.district_name ||
                                             item.district ||
                                             item.region_name ||
                                             item['Туман'] ||
                                             'N/A'
                                         )
                                     ),
+                                    // Mahalla
+                                    item.mahalla_nomi && React.createElement('tr', null,
+                                        React.createElement('td', null, TEXTS.mahalla + ':'),
+                                        React.createElement('td', null, item.mahalla_nomi)
+                                    ),
                                     // Area
                                     React.createElement('tr', null,
                                         React.createElement('td', null, TEXTS.area + ':'),
                                         React.createElement('td', null,
-                                            item.area_hectare ? `${item.area_hectare} га` :
                                             item.maydoni ? formatArea(item.maydoni * 10000) :
                                             item.land_area ? `${item.land_area} га` :
-                                            item['ТаклифЕрмайдони(га)'] ? `${item['ТаклифЕрмайдони(га)']} га` :
                                             item['SHAPE__Area'] ? formatArea(item['SHAPE__Area']) :
                                             'N/A'
                                         )
+                                    ),
+                                    // Floors
+                                    item.qavatlilik && React.createElement('tr', null,
+                                        React.createElement('td', null, TEXTS.floors + ':'),
+                                        React.createElement('td', null, item.qavatlilik)
                                     ),
                                     // Price
                                     (item.start_price || item.sold_price) && React.createElement('tr', null,
@@ -1607,6 +1574,66 @@
                                         React.createElement('td', null,
                                             `${Number(item.start_price || item.sold_price).toLocaleString('uz-UZ')} сум`
                                         )
+                                    )
+                                )
+                            )
+                        ),
+
+                        // Technical Parameters Section (for GeoJSON data)
+                        item.code && React.createElement('div', { className: 'section' },
+                            React.createElement('h3', { className: 'section-title' },
+                                React.createElement('i', { className: 'fas fa-cogs' }),
+                                TEXTS.technicalParams
+                            ),
+                            React.createElement('table', { className: 'info-table' },
+                                React.createElement('tbody', null,
+                                    item.code && React.createElement('tr', null,
+                                        React.createElement('td', null, 'Код:'),
+                                        React.createElement('td', null, item.code)
+                                    ),
+                                    item.globalid && React.createElement('tr', null,
+                                        React.createElement('td', null, TEXTS.globalId + ':'),
+                                        React.createElement('td', null, item.globalid)
+                                    ),
+                                    item.seysmologik_zonasi && React.createElement('tr', null,
+                                        React.createElement('td', null, TEXTS.seismicZone + ':'),
+                                        React.createElement('td', null, item.seysmologik_zonasi)
+                                    ),
+                                    item.qurilish_maydonining_yer_maydon && React.createElement('tr', null,
+                                        React.createElement('td', null, TEXTS.buildingArea + ':'),
+                                        React.createElement('td', null, `${item.qurilish_maydonining_yer_maydon}%`)
+                                    ),
+                                    item.umumiy_maydonning_yer_maydoniga && React.createElement('tr', null,
+                                        React.createElement('td', null, TEXTS.areaRatio + ':'),
+                                        React.createElement('td', null, item.umumiy_maydonning_yer_maydoniga)
+                                    )
+                                )
+                            )
+                        ),
+
+                        // Administrative Information Section
+                        (item.created_date || item.last_edited_date || item.created_user) && React.createElement('div', { className: 'section' },
+                            React.createElement('h3', { className: 'section-title' },
+                                React.createElement('i', { className: 'fas fa-user-shield' }),
+                                TEXTS.administrativeInfo
+                            ),
+                            React.createElement('table', { className: 'info-table' },
+                                React.createElement('tbody', null,
+                                    item.created_date && React.createElement('tr', null,
+                                        React.createElement('td', null, TEXTS.createdDate + ':'),
+                                        React.createElement('td', null, formatDate(item.created_date))
+                                    ),
+                                    item.last_edited_date && React.createElement('tr', null,
+                                        React.createElement('td', null, TEXTS.lastEdited + ':'),
+                                        React.createElement('td', null, formatDate(item.last_edited_date))
+                                    ),
+                                    item.created_user && React.createElement('tr', null,
+                                        React.createElement('td', null, 'Яратувчи:'),
+                                        React.createElement('td', null, item.created_user)
+                                    ),
+                                    item.last_edited_user && React.createElement('tr', null,
+                                        React.createElement('td', null, 'Таҳрирчи:'),
+                                        React.createElement('td', null, item.last_edited_user)
                                     )
                                 )
                             )
@@ -1620,7 +1647,7 @@
                             ),
                             React.createElement('img', {
                                 src: item.main_image,
-                                alt: item.property_name || item.neighborhood_name || 'Property',
+                                alt: item.property_name || 'Property',
                                 style: {
                                     width: '100%',
                                     maxHeight: '200px',
@@ -1659,6 +1686,8 @@
                         React.createElement('span', { className: 'count-badge' }, counts[key] || 0)
                     )
                 ),
+
+
 
                 React.createElement(Legend)
             )
@@ -1749,22 +1778,22 @@
             const [sidebarOpen, setSidebarOpen] = useState(false);
             const [selectedItem, setSelectedItem] = useState(null);
             const [currentMapStyle, setCurrentMapStyle] = useState('osm');
-            const [geoJsonFilepath, setGeoJsonFilepath] = useState('http://127.0.0.1:8000/tashkent_master_plan.geojson');
+            const [geoJsonFilepath, setGeoJsonFilepath] = useState('/tashkent_master_plan.geojson');
             const [geoJsonStatus, setGeoJsonStatus] = useState('GeoJSON файллари учун тайёр...');
             const [dragActive, setDragActive] = useState(false);
 
             // Enhanced layer state
             const [layers, setLayers] = useState({
-                aktivs: { name: TEXTS.apiData, icon: 'fas fa-building', visible: true },
+                // regular: { name: TEXTS.apiData, icon: 'fas fa-building', visible: true },
                 jsonData: { name: TEXTS.jsonData, icon: 'fas fa-layer-group', visible: true },
                 auction: { name: TEXTS.auctions, icon: 'fas fa-gavel', visible: false },
                 sold: { name: TEXTS.soldProperties, icon: 'fas fa-check-circle', visible: true },
                 kmz: { name: TEXTS.kmzData, icon: 'fas fa-file-archive', visible: true },
-                geojson: { name: TEXTS.strategyLayers, icon: 'fas fa-map', visible: true }
+                // geojson: { name: TEXTS.strategyLayers, icon: 'fas fa-map', visible: true }
             });
 
             const [counts, setCounts] = useState({
-                aktivs: 0,
+                regular: 0,
                 jsonData: 0,
                 auction: 0,
                 sold: 0,
@@ -1803,16 +1832,58 @@
                     preferCanvas: true
                 });
 
-                // Initialize layer groups
+                // Initialize enhanced layer groups
                 const groups = {
-                    aktivs: L.markerClusterGroup({ chunkedLoading: true, maxClusterRadius: 40 }),
-                    jsonData: L.markerClusterGroup({ chunkedLoading: true, maxClusterRadius: 40 }),
-                    auction: L.markerClusterGroup({ chunkedLoading: true, maxClusterRadius: 40 }),
-                    sold: L.markerClusterGroup({ chunkedLoading: true, maxClusterRadius: 40 }),
-                    kmz: L.markerClusterGroup({ chunkedLoading: true, maxClusterRadius: 40 }),
-                    geojson: L.featureGroup()
+                    regular: L.markerClusterGroup({
+                        chunkedLoading: true,
+                        maxClusterRadius: 40,
+                        spiderfyOnMaxZoom: true,
+                        showCoverageOnHover: false,
+                        disableClusteringAtZoom: 15,
+                        iconCreateFunction: function(cluster) {
+                            const count = cluster.getChildCount();
+                            let size = 'small';
+                            if (count > 100) size = 'large';
+                            else if (count > 10) size = 'medium';
+
+                            return L.divIcon({
+                                html: `<div class="cluster-${size}">${count}</div>`,
+                                className: 'marker-cluster marker-cluster-regular',
+                                iconSize: L.point(40, 40)
+                            });
+                        }
+                    }),
+                    jsonData: L.markerClusterGroup({
+                        chunkedLoading: true,
+                        maxClusterRadius: 40,
+                        spiderfyOnMaxZoom: true,
+                        showCoverageOnHover: false,
+                        disableClusteringAtZoom: 15
+                    }),
+                    auction: L.markerClusterGroup({
+                        chunkedLoading: true,
+                        maxClusterRadius: 40,
+                        spiderfyOnMaxZoom: true,
+                        showCoverageOnHover: false,
+                        disableClusteringAtZoom: 15
+                    }),
+                    sold: L.markerClusterGroup({
+                        chunkedLoading: true,
+                        maxClusterRadius: 40,
+                        spiderfyOnMaxZoom: true,
+                        showCoverageOnHover: false,
+                        disableClusteringAtZoom: 15
+                    }),
+                    kmz: L.markerClusterGroup({
+                        chunkedLoading: true,
+                        maxClusterRadius: 40,
+                        spiderfyOnMaxZoom: true,
+                        showCoverageOnHover: false,
+                        disableClusteringAtZoom: 15
+                    })
                 };
 
+                // Add initial visible layers
                 Object.entries(groups).forEach(([key, group]) => {
                     if (layers[key]?.visible) {
                         map.addLayer(group);
@@ -1821,15 +1892,20 @@
 
                 layerGroupsRef.current = groups;
 
-                const osmLayer = L.tileLayer(MAP_STYLES.osm.url, { attribution: MAP_STYLES.osm.attribution });
+                // Add initial map layer
+                const osmLayer = L.tileLayer(MAP_STYLES.osm.url, {
+                    attribution: MAP_STYLES.osm.attribution
+                });
                 osmLayer.addTo(map);
 
                 mapInstanceRef.current = map;
+
+                // Initialize coordinate system
                 initProj4();
             }, [layers]);
 
-            // Data Fetching Functions
-            const fetchAktivsData = useCallback(async () => {
+            // Enhanced Data Fetching Functions
+            const fetchRegularData = useCallback(async () => {
                 try {
                     const response = await fetch(API_ENDPOINTS.aktivs);
                     if (!response.ok) throw new Error(`API request failed: ${response.status}`);
@@ -1839,26 +1915,28 @@
 
                     let processed = 0;
                     let kmzProcessed = 0;
-                    const group = layerGroupsRef.current.aktivs;
+                    const group = layerGroupsRef.current.regular;
                     const kmzGroup = layerGroupsRef.current.kmz;
 
                     for (const lot of lots) {
                         if (!lot) continue;
 
+                        // Add regular marker if coordinates exist
                         if (lot.lat && lot.lng) {
                             const marker = L.marker([parseFloat(lot.lat), parseFloat(lot.lng)], {
                                 icon: createMarkerIcon('regular')
                             });
 
                             const popup = `
-                                <div class="popup-header">${lot.neighborhood_name || 'Активс мулки'}</div>
+                                <div class="popup-header">${lot.property_name || 'Инвестиция мулки'}</div>
                                 ${lot.main_image ? `<img src="${lot.main_image}" class="popup-image" onerror="this.style.display='none'">` : ''}
                                 <div class="popup-details">
-                                    <p><strong>${TEXTS.district}:</strong> ${lot.district_name || 'N/A'}</p>
-                                    <p><strong>${TEXTS.area}:</strong> ${lot.area_hectare || 'N/A'} га</p>
-                                    <p><strong>Статус:</strong> <span class="badge badge-investment">Активс</span></p>
+                                    <p><strong>${TEXTS.district}:</strong> ${lot.district || 'N/A'}</p>
+                                    <p><strong>${TEXTS.location}:</strong> ${lot.address || 'N/A'}</p>
+                                    ${lot.land_area ? `<p><strong>${TEXTS.area}:</strong> ${lot.land_area} га</p>` : ''}
+                                    ${lot.start_price ? `<p><strong>${TEXTS.price}:</strong> ${Number(lot.start_price).toLocaleString('uz-UZ')} сум</p>` : ''}
                                 </div>
-                                <button class="details-btn" onclick="window.showDetails('${lot.id || processed}', 'aktivs')">
+                                <button class="details-btn" onclick="window.showDetails('${lot.id || processed}', 'regular')">
                                     ${TEXTS.viewDetails}
                                 </button>
                             `;
@@ -1869,12 +1947,16 @@
                             processed++;
                         }
 
-                        // Process KMZ files
+                        // Process KMZ files if available
                         if (lot.documents && Array.isArray(lot.documents)) {
-                            const kmzDocs = lot.documents.filter(doc => doc.doc_type === 'kmz-document' && doc.url);
+                            const kmzDocs = lot.documents.filter(doc =>
+                                doc.doc_type === 'kmz-document' && doc.file_path
+                            );
+
                             for (const kmzDoc of kmzDocs) {
                                 try {
-                                    const geoJSON = await processKMZFile(kmzDoc.url);
+                                    const geoJSON = await processKMZFile(kmzDoc.file_path);
+
                                     if (geoJSON && geoJSON.features) {
                                         geoJSON.features.forEach(feature => {
                                             const layer = createKMZLayer(feature, lot);
@@ -1891,14 +1973,20 @@
                         }
                     }
 
-                    setCounts(prev => ({ ...prev, aktivs: processed, kmz: prev.kmz + kmzProcessed }));
+                    setCounts(prev => ({
+                        ...prev,
+                        regular: processed,
+                        kmz: kmzProcessed
+                    }));
+
                     if (processed > 0 || kmzProcessed > 0) {
-                        addToast(`${TEXTS.successLoaded}: ${processed} активс, ${kmzProcessed} KMZ`, 'success');
+                        addToast(`${TEXTS.successLoaded}: ${processed} маркер, ${kmzProcessed} KMZ`, 'success');
                     }
+
                     return processed > 0 || kmzProcessed > 0;
                 } catch (error) {
-                    console.error('Error fetching aktivs data:', error);
-                    addToast(`${TEXTS.errorLoading}: Активс маълумотлар`, 'error');
+                    console.error('Error fetching regular data:', error);
+                    addToast(`${TEXTS.errorLoading}: API маълумотлар`, 'error');
                     return false;
                 }
             }, [addToast]);
@@ -1907,9 +1995,10 @@
                 if (!feature.geometry || !feature.geometry.coordinates) return null;
 
                 const geomType = feature.geometry.type;
-                let layer = null;
 
                 try {
+                    let layer = null;
+
                     switch (geomType) {
                         case 'Point':
                             const coords = convertCoordinates(feature.geometry.coordinates);
@@ -1921,7 +2010,9 @@
                             const rings = feature.geometry.coordinates.map(ring =>
                                 ring.map(coord => convertCoordinates(coord)).filter(Boolean)
                             ).filter(ring => ring.length > 0);
+
                             if (rings.length === 0) return null;
+
                             layer = L.polygon(rings, {
                                 fillColor: '#f59e0b',
                                 weight: 2,
@@ -1935,8 +2026,14 @@
                             const latLngs = feature.geometry.coordinates
                                 .map(coord => convertCoordinates(coord))
                                 .filter(Boolean);
+
                             if (latLngs.length === 0) return null;
-                            layer = L.polyline(latLngs, { color: '#f59e0b', weight: 3, opacity: 0.8 });
+
+                            layer = L.polyline(latLngs, {
+                                color: '#f59e0b',
+                                weight: 3,
+                                opacity: 0.8
+                            });
                             break;
 
                         default:
@@ -1945,18 +2042,22 @@
 
                     if (layer) {
                         const popup = `
-                            <div class="popup-header">KMZ: ${lotData.neighborhood_name || 'Объект'}</div>
+                            <div class="popup-header">KMZ: ${lotData.property_name || 'Объект'}</div>
                             <div class="popup-details">
                                 <p><strong>Тур:</strong> <span class="badge badge-renovation">KMZ маълумот</span></p>
-                                <p><strong>${TEXTS.district}:</strong> ${lotData.district_name || 'N/A'}</p>
+                                <p><strong>${TEXTS.district}:</strong> ${lotData.district || 'N/A'}</p>
+                                <p><strong>${TEXTS.location}:</strong> ${lotData.address || 'N/A'}</p>
+                                ${feature.properties?.name ? `<p><strong>KMZ номи:</strong> ${feature.properties.name}</p>` : ''}
                             </div>
                             <button class="details-btn" onclick="window.showDetails('${lotData.id}', 'kmz')">
                                 ${TEXTS.viewDetails}
                             </button>
                         `;
+
                         layer.bindPopup(popup, { maxWidth: 300 });
                         layer.kmzData = { ...lotData, kmzFeature: feature };
                     }
+
                     return layer;
                 } catch (error) {
                     console.warn('Error creating KMZ layer:', error);
@@ -1976,22 +2077,24 @@
                     const group = layerGroupsRef.current.jsonData;
 
                     data.forEach((item, index) => {
-                        const coordinates = extractCoordinatesFromUrl(item['Таклиф_Харита'] || item['ТаклифХарита']);
+                        const coordinates = extractCoordinatesFromUrl(item['Таклиф_Харита']);
                         if (!coordinates) return;
 
-                        const type = item['Таклиф_тури_(Реновация,_Инвестиция,_Аукцион)'] || item['Таклифтури(Реновация,Инвестиция,Аукцион)'];
+                        const type = item['Таклиф_тури_(Реновация,_Инвестиция,_Аукцион)'];
                         let markerType = 'investment';
                         if (type === 'Реновация') markerType = 'renovation';
                         else if (type === 'Аукцион') markerType = 'auction';
 
-                        const marker = L.marker(coordinates, { icon: createMarkerIcon(markerType) });
+                        const marker = L.marker(coordinates, {
+                            icon: createMarkerIcon(markerType)
+                        });
 
                         const popup = `
-                            <div class="popup-header">${item['Манзил(МФЙ,кўча)'] || 'JSON объект'}</div>
+                            <div class="popup-header">${item['Объект_номи'] || 'JSON объект'}</div>
                             <div class="popup-details">
                                 <p><strong>Тур:</strong> <span class="badge badge-${markerType}">${type || 'Номаълум'}</span></p>
                                 <p><strong>${TEXTS.district}:</strong> ${item['Туман'] || 'N/A'}</p>
-                                <p><strong>${TEXTS.area}:</strong> ${item['ТаклифЕрмайдони(га)'] || 'N/A'} га</p>
+                                <p><strong>${TEXTS.location}:</strong> ${item['Манзил_(МФЙ,_кўча)'] || 'N/A'}</p>
                             </div>
                             <button class="details-btn" onclick="window.showDetails('${index}', 'jsonData')">
                                 ${TEXTS.viewDetails}
@@ -2005,7 +2108,9 @@
                     });
 
                     setCounts(prev => ({ ...prev, jsonData: processed }));
-                    if (processed > 0) addToast(`${TEXTS.successLoaded}: ${processed} JSON объект`, 'success');
+                    if (processed > 0) {
+                        addToast(`${TEXTS.successLoaded}: ${processed} JSON объект`, 'success');
+                    }
                     return processed > 0;
                 } catch (error) {
                     console.error('Error fetching JSON data:', error);
@@ -2037,6 +2142,7 @@
                             <div class="popup-details">
                                 <p><strong>Бошланғич нарх:</strong> ${lot.start_price ? Number(lot.start_price).toLocaleString('uz-UZ') + ' сум' : 'N/A'}</p>
                                 <p><strong>Аукцион санаси:</strong> ${lot.auction_date || 'N/A'}</p>
+                                <p><strong>${TEXTS.location}:</strong> ${lot.region || ''} ${lot.area || ''} ${lot.address || ''}</p>
                                 <p><strong>${TEXTS.area}:</strong> ${lot.land_area || 'N/A'} га</p>
                                 <p><strong>Ҳолат:</strong> <span class="badge badge-auction">Аукцион</span></p>
                             </div>
@@ -2052,7 +2158,9 @@
                     });
 
                     setCounts(prev => ({ ...prev, auction: processed }));
-                    if (processed > 0) addToast(`${TEXTS.successLoaded}: ${processed} аукцион мулки`, 'success');
+                    if (processed > 0) {
+                        addToast(`${TEXTS.successLoaded}: ${processed} аукцион мулки`, 'success');
+                    }
                     return processed > 0;
                 } catch (error) {
                     console.error('Error fetching auction data:', error);
@@ -2082,10 +2190,11 @@
                             <div class="popup-header">🏆 ${lot.property_name || 'Сотилган мулк'}</div>
                             ${lot.main_image ? `<img src="${lot.main_image}" class="popup-image" onerror="this.style.display='none'">` : ''}
                             <div class="popup-details">
-<p><strong>Сотилди:</strong> ${lot.sold_price ? Number(lot.sold_price).toLocaleString('uz-UZ') + ' сум' : 'N/A'}</p>
+                                <p><strong>Сотилди:</strong> ${lot.sold_price ? Number(lot.sold_price).toLocaleString('uz-UZ') + ' сум' : 'N/A'}</p>
                                 <p><strong>Бошланғич нарх:</strong> ${lot.start_price ? Number(lot.start_price).toLocaleString('uz-UZ') + ' сум' : 'N/A'}</p>
                                 <p><strong>Ғолиб:</strong> ${lot.winner_name || 'N/A'}</p>
                                 <p><strong>Аукцион санаси:</strong> ${lot.auction_date || 'N/A'}</p>
+                                <p><strong>${TEXTS.location}:</strong> ${lot.region || ''} ${lot.area || ''} ${lot.address || ''}</p>
                                 <p><strong>Ҳолат:</strong> <span class="badge badge-sold">✅ Сотилган</span></p>
                             </div>
                             <button class="details-btn" onclick="window.showDetails('${index}', 'sold')">
@@ -2100,7 +2209,9 @@
                     });
 
                     setCounts(prev => ({ ...prev, sold: processed }));
-                    if (processed > 0) addToast(`${TEXTS.successLoaded}: ${processed} сотилган мулк`, 'success');
+                    if (processed > 0) {
+                        addToast(`${TEXTS.successLoaded}: ${processed} сотилган мулк`, 'success');
+                    }
                     return processed > 0;
                 } catch (error) {
                     console.error('Error fetching sold data:', error);
@@ -2116,6 +2227,7 @@
                         [layerKey]: { ...prev[layerKey], visible: !prev[layerKey].visible }
                     };
 
+                    // Update map layers
                     const map = mapInstanceRef.current;
                     const group = layerGroupsRef.current[layerKey];
 
@@ -2136,8 +2248,9 @@
                 const map = mapInstanceRef.current;
                 if (!map) return;
 
+                // Remove current layers
                 map.eachLayer(layer => {
-                    if (layer._url) {
+                    if (layer._url) { // Tile layer
                         map.removeLayer(layer);
                     }
                 });
@@ -2157,7 +2270,7 @@
                 setCurrentMapStyle(styleKey);
             }, []);
 
-            // GeoJSON Functions
+            // Enhanced GeoJSON Functions
             const loadGeoJSON = useCallback(async (filepath) => {
                 if (!filepath.trim()) {
                     addToast('Файл йўлини киритинг', 'error');
@@ -2176,6 +2289,7 @@
 
                     const layerId = filepath.split('/').pop().replace(/\.[^/.]+$/, '');
 
+                    // Remove existing layer if it exists
                     if (geoJsonLayersRef.current.has(layerId)) {
                         const existingLayer = geoJsonLayersRef.current.get(layerId);
                         mapInstanceRef.current.removeLayer(existingLayer.group);
@@ -2184,31 +2298,27 @@
 
                     const featureGroup = L.featureGroup();
                     let featuresProcessed = 0;
-                    let redLinesCount = 0;
 
+                    // Process features with enhanced styling
                     data.features.forEach(feature => {
                         const layer = createGeoJSONLayer(feature);
                         if (layer) {
                             addGeoJSONPopup(layer, feature.properties);
                             featureGroup.addLayer(layer);
                             featuresProcessed++;
-
-                            if (feature.properties?.funksiya === 'Qizil_chiziqlar') {
-                                redLinesCount++;
-                            }
                         }
                     });
 
                     geoJsonLayersRef.current.set(layerId, {
                         group: featureGroup,
                         visible: true,
-                        count: featuresProcessed,
-                        redLines: redLinesCount
+                        count: featuresProcessed
                     });
 
                     mapInstanceRef.current.addLayer(featureGroup);
                     setCounts(prev => ({ ...prev, geojson: prev.geojson + featuresProcessed }));
 
+                    // Fit bounds if this is the first layer
                     if (geoJsonLayersRef.current.size === 1) {
                         try {
                             mapInstanceRef.current.fitBounds(featureGroup.getBounds(), { padding: [20, 20] });
@@ -2217,8 +2327,8 @@
                         }
                     }
 
-                    setGeoJsonStatus(`${featuresProcessed} объект юкланди ${redLinesCount > 0 ? `(${redLinesCount} қизил чизиқ)` : ''}`);
-                    addToast(`GeoJSON муваффақиятли юкланди: ${featuresProcessed} объект${redLinesCount > 0 ? `, ${redLinesCount} қизил чизиқ` : ''}`, 'success');
+                    setGeoJsonStatus(`${featuresProcessed} объект юкланди`);
+                    addToast(`GeoJSON муваффақиятли юкланди: ${featuresProcessed} объект`, 'success');
 
                 } catch (error) {
                     console.error('Error loading GeoJSON:', error);
@@ -2226,6 +2336,7 @@
                     addToast(`GeoJSON юклашда хатолик: ${error.message}`, 'error');
                 }
             }, [addToast]);
+
 
             const createGeoJSONLayer = useCallback((feature) => {
                 if (!feature.geometry || !feature.geometry.coordinates) return null;
@@ -2239,29 +2350,22 @@
                         case 'Point':
                             const latLng = convertCoordinates(coords);
                             if (!latLng) return null;
-
-                            const isRedLine = properties.funksiya === 'Qizil_chiziqlar';
-
                             return L.circleMarker(latLng, {
-                                radius: isRedLine ? 8 : 6,
+                                radius: 6,
                                 fillColor: getStrategyColor(properties),
-                                color: isRedLine ? '#ffffff' : '#fff',
-                                weight: isRedLine ? 3 : 2,
+                                color: '#fff',
+                                weight: 2,
                                 opacity: 1,
-                                fillOpacity: isRedLine ? 1 : 0.8
+                                fillOpacity: 0.8
                             });
 
                         case 'LineString':
                             const latLngs = coords.map(coord => convertCoordinates(coord)).filter(Boolean);
                             if (latLngs.length === 0) return null;
-
-                            const isRedLineString = properties.funksiya === 'Qizil_chiziqlar';
-
                             return L.polyline(latLngs, {
                                 color: getStrategyColor(properties),
-                                weight: isRedLineString ? 5 : 3,
-                                opacity: isRedLineString ? 0.9 : 0.8,
-                                dashArray: isRedLineString ? '10, 10' : null
+                                weight: 3,
+                                opacity: 0.8
                             });
 
                         case 'Polygon':
@@ -2270,16 +2374,14 @@
                             ).filter(ring => ring.length > 0);
                             if (rings.length === 0) return null;
 
-                            const isRedPolygon = properties.funksiya === 'Qizil_chiziqlar';
-
-                            return L.polygon(rings, {
+                            const polygon = L.polygon(rings, {
                                 fillColor: getStrategyColor(properties),
-                                weight: isRedPolygon ? 3 : 1.5,
-                                opacity: isRedPolygon ? 1 : 0.8,
-                                color: isRedPolygon ? '#dc2626' : '#ffffff',
-                                fillOpacity: isRedPolygon ? 0.3 : 0.7,
-                                dashArray: isRedPolygon ? '5, 5' : null
+                                weight: 1.5,
+                                opacity: 0.8,
+                                color: '#ffffff',
+                                fillOpacity: 0.7
                             });
+                            return polygon;
 
                         case 'MultiPolygon':
                             const multiLatLngs = coords.map(polygon =>
@@ -2289,16 +2391,14 @@
                             ).filter(polygon => polygon.length > 0);
                             if (multiLatLngs.length === 0) return null;
 
-                            const isRedMultiPolygon = properties.funksiya === 'Qizil_chiziqlar';
-
-                            return L.polygon(multiLatLngs, {
+                            const multiPolygon = L.polygon(multiLatLngs, {
                                 fillColor: getStrategyColor(properties),
-                                weight: isRedMultiPolygon ? 3 : 1.5,
-                                opacity: isRedMultiPolygon ? 1 : 0.8,
-                                color: isRedMultiPolygon ? '#dc2626' : '#ffffff',
-                                fillOpacity: isRedMultiPolygon ? 0.3 : 0.7,
-                                dashArray: isRedMultiPolygon ? '5, 5' : null
+                                weight: 1.5,
+                                opacity: 0.8,
+                                color: '#ffffff',
+                                fillOpacity: 0.7
                             });
+                            return multiPolygon;
 
                         default:
                             console.warn('Unsupported geometry type:', geomType);
@@ -2313,35 +2413,44 @@
             const addGeoJSONPopup = useCallback((layer, properties) => {
                 if (!properties) return;
 
-                const title = properties.mahalla_nomi || properties.name || 'GeoJSON объект';
-                const strategy = properties.strategiya || properties.strategy || properties.funksiya || 'Номаълум';
-                const isRedLine = properties.funksiya === 'Qizil_chiziqlar';
+                const titleKey = Object.keys(properties).find(key =>
+                    ['name', 'title', 'id', 'funksiya', 'function', 'property_name'].includes(key.toLowerCase())
+                ) || Object.keys(properties)[0];
+
+                const title = properties[titleKey] || 'GeoJSON объект';
+                const strategy = properties.strategiya || properties.strategy || 'Номаълум';
 
                 layer.bindPopup(() => {
                     let content = `
                         <div class="popup-header">${title}</div>
                         <div class="popup-details">
-                            <p><strong>${isRedLine ? 'Тур' : 'Стратегия'}:</strong>
+                            <p><strong>Стратегия:</strong>
                                 <span class="badge badge-${
-                                    isRedLine ? 'red-line' :
                                     strategy === 'Konservatsiya' ? 'conservation' :
                                     strategy === 'Rekonstruktsiya' ? 'reconstruction' :
                                     strategy === 'Yangi_qurilish' ? 'new-construction' :
                                     'investment'
-                                }">${isRedLine ? TEXTS.redLines : formatStrategy(strategy)}</span>
+                                }">${strategy}</span>
                             </p>
                     `;
 
-                    if (properties.district) content += `<p><strong>${TEXTS.district}:</strong> ${properties.district}</p>`;
-                    if (properties.maydoni) content += `<p><strong>${TEXTS.area}:</strong> ${properties.maydoni} га</p>`;
-                    if (isRedLine) content += `<p><strong>Маълумот:</strong> Қизил чизиқлар - муҳофаза қилинадиган ҳудудлар</p>`;
+                    // Add other important properties
+                    const importantKeys = ['district', 'region_name', 'mahalla_nomi', 'funksiya', 'maydoni'];
+                    importantKeys.forEach(key => {
+                        if (properties[key]) {
+                            const displayKey = key.replace(/_/g, ' ').replace(/\b\w/g, l => l.toUpperCase());
+                            let value = properties[key];
+                            if (key === 'maydoni') value += ' га';
+                            content += `<p><strong>${displayKey}:</strong> ${value}</p>`;
+                        }
+                    });
 
-                    content += `</div>
-                        <button class="details-btn" onclick="window.showGeoJSONDetails('${JSON.stringify(properties).replace(/'/g, "\\'")}')">
-                            ${TEXTS.viewDetails}
-                        </button>`;
+                    content += '</div>';
                     return content;
-                }, { maxWidth: 400, className: 'geojson-popup' });
+                }, {
+                    maxWidth: 400,
+                    className: 'geojson-popup'
+                });
             }, []);
 
             const toggleGeoJSONLayer = useCallback((layerId) => {
@@ -2367,7 +2476,7 @@
 
                 mapInstanceRef.current.removeLayer(layerData.group);
                 geoJsonLayersRef.current.delete(layerId);
-                setCounts(prev => ({ ...prev, geojson: Math.max(0, prev.geojson - layerData.count) }));
+                setCounts(prev => ({ ...prev, geojson: Math.max(0, prev.geojson - 1) }));
                 addToast(`${layerId} қатлам ўчирилди`, 'info');
             }, [addToast]);
 
@@ -2384,10 +2493,12 @@
             // Global functions for popup buttons
             window.showDetails = useCallback((id, type) => {
                 let item = null;
+
+                // Find the item based on type
                 const groups = layerGroupsRef.current;
                 if (groups[type]) {
                     groups[type].eachLayer(layer => {
-                        if (layer.lotData && (layer.lotData.id == id || layer.lotData.id === `lot-${id}`)) {
+                        if (layer.lotData && (layer.lotData.id === id || layer.lotData.id === `lot-${id}`)) {
                             item = layer.lotData;
                         } else if (layer.itemData) {
                             item = layer.itemData;
@@ -2407,15 +2518,101 @@
                 }
             }, []);
 
-            window.showGeoJSONDetails = useCallback((propertiesJson) => {
-                try {
-                    const properties = JSON.parse(propertiesJson);
-                    setSelectedItem(properties);
-                    setSidebarOpen(true);
-                } catch (error) {
-                    console.error('Error parsing GeoJSON properties:', error);
-                }
+            // Drag and Drop
+            const handleDragEnter = useCallback((e) => {
+                e.preventDefault();
+                e.stopPropagation();
+                setDragActive(true);
             }, []);
+
+            const handleDragLeave = useCallback((e) => {
+                e.preventDefault();
+                e.stopPropagation();
+                setDragActive(false);
+            }, []);
+
+            const handleDragOver = useCallback((e) => {
+                e.preventDefault();
+                e.stopPropagation();
+            }, []);
+
+            const handleDrop = useCallback(async (e) => {
+                e.preventDefault();
+                e.stopPropagation();
+                setDragActive(false);
+
+                const files = Array.from(e.dataTransfer.files);
+                const geoJsonFile = files.find(file =>
+                    file.name.toLowerCase().endsWith('.geojson') ||
+                    file.name.toLowerCase().endsWith('.json')
+                );
+
+                const kmzFile = files.find(file =>
+                    file.name.toLowerCase().endsWith('.kmz')
+                );
+
+                if (geoJsonFile) {
+                    try {
+                        const text = await geoJsonFile.text();
+                        const data = JSON.parse(text);
+
+                        if (!data.features || !Array.isArray(data.features)) {
+                            throw new Error('Нотўғри GeoJSON формати');
+                        }
+
+                        const layerId = geoJsonFile.name.replace(/\.[^/.]+$/, '');
+
+                        const featureGroup = L.featureGroup();
+
+                        data.features.forEach(feature => {
+                            const layer = createGeoJSONLayer(feature);
+                            if (layer) {
+                                addGeoJSONPopup(layer, feature.properties);
+                                featureGroup.addLayer(layer);
+                            }
+                        });
+
+                        geoJsonLayersRef.current.set(layerId, {
+                            group: featureGroup,
+                            visible: true
+                        });
+
+                        mapInstanceRef.current.addLayer(featureGroup);
+                        setCounts(prev => ({ ...prev, geojson: prev.geojson + 1 }));
+
+                        addToast(`${geoJsonFile.name} муваффақиятли юкланди`, 'success');
+                    } catch (error) {
+                        addToast(`${geoJsonFile.name} юклашда хатолик: ${error.message}`, 'error');
+                    }
+                } else if (kmzFile) {
+                    try {
+                        const geoJSON = await processKMZFile(URL.createObjectURL(kmzFile));
+
+                        if (geoJSON && geoJSON.features) {
+                            const kmzGroup = layerGroupsRef.current.kmz;
+                            let processed = 0;
+
+                            geoJSON.features.forEach(feature => {
+                                const layer = createKMZLayer(feature, {
+                                    property_name: kmzFile.name,
+                                    id: `dropped-${Date.now()}`
+                                });
+                                if (layer) {
+                                    kmzGroup.addLayer(layer);
+                                    processed++;
+                                }
+                            });
+
+                            setCounts(prev => ({ ...prev, kmz: prev.kmz + processed }));
+                            addToast(`${kmzFile.name} юкланди: ${processed} объект`, 'success');
+                        }
+                    } catch (error) {
+                        addToast(`${kmzFile.name} юклашда хатолик: ${error.message}`, 'error');
+                    }
+                } else {
+                    addToast('Фақат GeoJSON (.geojson, .json) ва KMZ файллари қўллаб-қувватланади', 'error');
+                }
+            }, [createGeoJSONLayer, addGeoJSONPopup, createKMZLayer, addToast]);
 
             // Data Loading Effect
             useEffect(() => {
@@ -2425,24 +2622,47 @@
                     setLoading(true);
 
                     try {
+                        // Load all data sources concurrently
                         const results = await Promise.allSettled([
-                            fetchAktivsData(),
+                            fetchRegularData(),
                             fetchJsonData(),
                             fetchAuctionData(),
                             fetchSoldData()
                         ]);
 
+                        // Count successful loads
                         const successCount = results.filter(result =>
                             result.status === 'fulfilled' && result.value
                         ).length;
 
                         if (successCount > 0) {
+                            // Auto-load default GeoJSON file
                             setTimeout(() => {
-                                loadGeoJSON(API_ENDPOINTS.geoJsonStrategy);
+                                loadGeoJSON('/tashkent_master_plan.geojson');
                             }, 1000);
 
-                            mapInstanceRef.current.setView([41.311, 69.279], 11);
-                            addToast(`Маълумотлар муваффақиятли юкланди`, 'success');
+                            // Fit map to show all data
+                            const allLayers = [];
+                            Object.values(layerGroupsRef.current).forEach(group => {
+                                group.eachLayer(layer => allLayers.push(layer));
+                            });
+
+                            if (allLayers.length > 0) {
+                                const group = L.featureGroup(allLayers);
+                                try {
+                                    mapInstanceRef.current.fitBounds(group.getBounds(), {
+                                        padding: [50, 50]
+                                    });
+                                } catch (e) {
+                                    // Fallback to default center
+                                    mapInstanceRef.current.setView([41.311, 69.279], 11);
+                                }
+                            } else {
+                                mapInstanceRef.current.setView([41.311, 69.279], 11);
+                            }
+
+                            const totalLoaded = Object.values(counts).reduce((a, b) => a + b, 0);
+                            addToast(`Жами юкланди: ${totalLoaded} маълумот`, 'success');
                         } else {
                             addToast('Ҳеч қандай маълумот юкланмади. Серверни текширинг.', 'warning');
                             mapInstanceRef.current.setView([41.311, 69.279], 11);
@@ -2456,11 +2676,21 @@
                     }
                 };
 
+                // Initialize map first, then load data
                 if (mapRef.current && !mapInstanceRef.current) {
                     initializeMap();
-                    setTimeout(loadAllData, 100);
+                    setTimeout(loadAllData, 100); // Small delay to ensure map is ready
                 }
-            }, [initializeMap, fetchAktivsData, fetchJsonData, fetchAuctionData, fetchSoldData, loadGeoJSON, addToast]);
+            }, [
+                initializeMap,
+                fetchRegularData,
+                fetchJsonData,
+                fetchAuctionData,
+                fetchSoldData,
+                loadGeoJSON,
+                addToast,
+                counts
+            ]);
 
             // Memoized components
             const memoizedLayerControls = useMemo(() => (
@@ -2489,19 +2719,21 @@
                     filepath: geoJsonFilepath,
                     setFilepath: setGeoJsonFilepath
                 })
-            ), [geoJsonFilepath, geoJsonStatus, loadGeoJSON, toggleGeoJSONLayer, removeGeoJSONLayer, clearAllGeoJSON]);
+            ), [
+                geoJsonFilepath,
+                geoJsonStatus,
+                loadGeoJSON,
+                toggleGeoJSONLayer,
+                removeGeoJSONLayer,
+                clearAllGeoJSON
+            ]);
 
             return React.createElement('div', { className: 'app-container' },
-                // Header with Uzbek Flag
+                // Header
                 React.createElement('header', { className: 'app-header' },
                     React.createElement('div', { className: 'app-logo' },
-                        React.createElement('div', { className: 'logo-icon' },
-                            React.createElement('i', { className: 'fas fa-map-marked-alt' })
-                        ),
-                        React.createElement('div', null,
-                            React.createElement('div', { className: 'app-title' }, TEXTS.appTitle),
-                            React.createElement('div', { className: 'app-subtitle' }, TEXTS.appSubtitle)
-                        )
+                        React.createElement('i', { className: 'fas fa-map-marked-alt fa-2x' }),
+                        React.createElement('div', { className: 'app-title' }, TEXTS.appTitle)
                     ),
                     React.createElement('div', { className: 'header-controls' },
                         React.createElement('div', { className: 'lang-switcher' },
@@ -2509,15 +2741,29 @@
                             React.createElement('button', { className: 'lang-btn' }, 'RU'),
                             React.createElement('button', { className: 'lang-btn' }, 'EN')
                         )
-                    ),
-                    React.createElement('div', { className: 'uzbek-flag-stripe' })
+                    )
                 ),
 
                 // Main Content
                 React.createElement('div', { className: 'main-content' },
                     React.createElement('div', { className: 'map-container' },
                         // Map
-                        React.createElement('div', { ref: mapRef, id: 'map' }),
+                        React.createElement('div', {
+                            ref: mapRef,
+                            id: 'map',
+                            onDragEnter: handleDragEnter,
+                            onDragLeave: handleDragLeave,
+                            onDragOver: handleDragOver,
+                            onDrop: handleDrop
+                        }),
+
+                        // Drag Overlay
+                        React.createElement('div', { className: `drag-overlay ${dragActive ? 'active' : ''}` },
+                            React.createElement('div', null,
+                                React.createElement('i', { className: 'fas fa-upload fa-3x', style: { marginBottom: '20px' } }),
+                                React.createElement('div', null, TEXTS.dropFiles)
+                            )
+                        ),
 
                         // Control Panels
                         memoizedMapStyleControls,

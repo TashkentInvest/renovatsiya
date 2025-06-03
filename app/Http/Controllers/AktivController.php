@@ -630,7 +630,7 @@ class AktivController extends Controller
         }
     }
 
- public function myTaklifMap_which_work()
+    public function myTaklifMap_which_work()
     {
         $userRole = auth()->user()->roles->first()->name;
 
