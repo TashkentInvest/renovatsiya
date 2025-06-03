@@ -1324,66 +1324,122 @@
             };
 
             // Enhanced coordinate extraction
-            const extractCoordinatesFromUrl = (url) => {
-                if (!url) return null;
+           const extractCoordinatesFromUrl = (url) => {
+    if (!url) return null;
 
-                try {
-                    const decodedUrl = decodeURIComponent(url);
+    try {
+        const decodedUrl = decodeURIComponent(url);
+        console.log('Processing URL:', decodedUrl);
 
-                    // Yandex Maps
-                    if (
-                        decodedUrl.includes("yandex.uz/maps") ||
-                        decodedUrl.includes("yandex.com/maps")
-                    ) {
-                        const llMatch = decodedUrl.match(/ll=([^&]+)/);
-                        if (llMatch) {
-                            const coords = llMatch[1].split(",");
-                            if (coords.length === 2) {
-                                const lng = parseFloat(coords[0]);
-                                const lat = parseFloat(coords[1]);
-                                if (
-                                    lat >= 39 &&
-                                    lat <= 43 &&
-                                    lng >= 68 &&
-                                    lng <= 71
-                                ) {
-                                    return [lat, lng];
-                                }
-                            }
-                        }
+        // Handle Yandex Maps URLs
+        if (decodedUrl.includes('yandex.uz/maps') || decodedUrl.includes('yandex.com/maps')) {
+            const llMatch = decodedUrl.match(/ll=([^&]+)/);
+            if (llMatch) {
+                const coords = llMatch[1].split('%2C').join(',').split(',');
+                if (coords.length === 2) {
+                    const lng = parseFloat(coords[0]);
+                    const lat = parseFloat(coords[1]);
+                    if (lat >= 39 && lat <= 43 && lng >= 68 && lng <= 71) {
+                        console.log('Extracted Yandex coordinates:', [lat, lng]);
+                        return [lat, lng];
                     }
-
-                    // Google Maps patterns
-                    const patterns = [
-                        /@(-?\d+\.?\d*),(-?\d+\.?\d*),?\d*z?/,
-                        /(-?\d+\.\d{4,}),(-?\d+\.\d{4,})/,
-                        /!3d(-?\d+\.?\d*)!4d(-?\d+\.?\d*)/,
-                        /\/place\/[^@]*@(-?\d+\.?\d*),(-?\d+\.?\d*)/,
-                    ];
-
-                    for (const pattern of patterns) {
-                        const match = decodedUrl.match(pattern);
-                        if (match) {
-                            const lat = parseFloat(match[1]);
-                            const lng = parseFloat(match[2]);
-                            if (
-                                lat >= 39 &&
-                                lat <= 43 &&
-                                lng >= 68 &&
-                                lng <= 71
-                            ) {
-                                return [lat, lng];
-                            }
-                        }
-                    }
-
-                    return null;
-                } catch (error) {
-                    console.error("Error extracting coordinates:", error);
-                    return null;
                 }
-            };
+            }
+        }
 
+        // Google Maps patterns - multiple formats
+        const googlePatterns = [
+            // Format: @lat,lng,zoom
+            /@(-?\d+\.?\d*),(-?\d+\.?\d*),?\d*[mz]?/,
+            // Format: decimal coordinates in URL
+            /(-?\d+\.\d{4,}),(-?\d+\.\d{4,})/,
+            // Format: !3d!4d coordinates
+            /!3d(-?\d+\.?\d*)!4d(-?\d+\.?\d*)/,
+            // Format: place coordinates
+            /\/place\/[^@]*@(-?\d+\.?\d*),(-?\d+\.?\d*)/,
+            // Format: DMS coordinates converted
+            /%C2%B0(\d+)'(\d+)\.?(\d*)"N\+(\d+)%C2%B0(\d+)'(\d+)\.?(\d*)"E/,
+            // Format: simple lat,lng
+            /(-?\d+\.?\d+),(-?\d+\.?\d+)/
+        ];
+
+        for (const pattern of googlePatterns) {
+            const match = decodedUrl.match(pattern);
+            if (match) {
+                let lat, lng;
+
+                // Handle DMS (Degrees Minutes Seconds) format
+                if (pattern.source.includes('C2%B0')) {
+                    const latDeg = parseInt(match[1]);
+                    const latMin = parseInt(match[2]);
+                    const latSec = parseFloat(match[3] || 0);
+                    const lngDeg = parseInt(match[4]);
+                    const lngMin = parseInt(match[5]);
+                    const lngSec = parseFloat(match[6] || 0);
+
+                    lat = latDeg + latMin/60 + latSec/3600;
+                    lng = lngDeg + lngMin/60 + lngSec/3600;
+                } else {
+                    lat = parseFloat(match[1]);
+                    lng = parseFloat(match[2]);
+                }
+
+                // Validate coordinates are in Uzbekistan range
+                if (lat >= 39 && lat <= 43 && lng >= 68 && lng <= 71) {
+                    console.log('Extracted Google coordinates:', [lat, lng]);
+                    return [lat, lng];
+                }
+            }
+        }
+
+        // Query parameters fallback
+        try {
+            const urlObj = new URL(decodedUrl);
+            const params = urlObj.searchParams;
+
+            const qParam = params.get('q');
+            if (qParam) {
+                const qMatch = qParam.match(/(-?\d+\.?\d*),(-?\d+\.?\d*)/);
+                if (qMatch) {
+                    const lat = parseFloat(qMatch[1]);
+                    const lng = parseFloat(qMatch[2]);
+                    if (lat >= 39 && lat <= 43 && lng >= 68 && lng <= 71) {
+                        console.log('Extracted q parameter coordinates:', [lat, lng]);
+                        return [lat, lng];
+                    }
+                }
+            }
+        } catch (urlError) {
+            // URL parsing failed, continue
+        }
+
+        // Fallback: any two decimal numbers that look like coordinates
+        const allCoordMatches = decodedUrl.match(/(-?\d+\.\d+)/g);
+        if (allCoordMatches && allCoordMatches.length >= 2) {
+            for (let i = 0; i < allCoordMatches.length - 1; i++) {
+                const coord1 = parseFloat(allCoordMatches[i]);
+                const coord2 = parseFloat(allCoordMatches[i + 1]);
+
+                // Try both orders (lat,lng and lng,lat)
+                if (coord1 >= 39 && coord1 <= 43 && coord2 >= 68 && coord2 <= 71) {
+                    console.log('Extracted fallback coordinates (lat,lng):', [coord1, coord2]);
+                    return [coord1, coord2];
+                }
+                if (coord2 >= 39 && coord2 <= 43 && coord1 >= 68 && coord1 <= 71) {
+                    console.log('Extracted fallback coordinates (lng,lat):', [coord2, coord1]);
+                    return [coord2, coord1];
+                }
+            }
+        }
+
+        console.log('No valid coordinates found in URL');
+        return null;
+
+    } catch (error) {
+        console.error('Error extracting coordinates from URL:', url, error);
+        return null;
+    }
+};
             // Enhanced marker creation
             const createMarkerIcon = (type, size = 16) => {
                 const colors = {
@@ -1780,7 +1836,7 @@
                                                         item.mahalla_nomi ||
                                                         item["Объект_номи"] ||
                                                         item[
-                                                            "Манзил(МФЙ,кўча)"
+                                                            "Манзил_(МФЙ,_кўча)"
                                                         ] ||
                                                         item.funksiya ||
                                                         "N/A"
@@ -1902,9 +1958,9 @@
                                                         : item.land_area
                                                         ? `${item.land_area} га`
                                                         : item[
-                                                              "ТаклифЕрмайдони(га)"
+                                                              "Таклиф_Ер_майдони_(га)"
                                                           ]
-                                                        ? `${item["ТаклифЕрмайдони(га)"]} га`
+                                                        ? `${item["Таклиф_Ер_майдони_(га)"]} га`
                                                         : item["SHAPE__Area"]
                                                         ? formatArea(
                                                               item[
@@ -1914,6 +1970,222 @@
                                                         : "N/A"
                                                 )
                                             ),
+                                            // Building Area (for aktivs)
+                                            item.total_building_area &&
+                                                React.createElement(
+                                                    "tr",
+                                                    null,
+                                                    React.createElement(
+                                                        "td",
+                                                        null,
+                                                        "Умумий бино майдони:"
+                                                    ),
+                                                    React.createElement(
+                                                        "td",
+                                                        null,
+                                                        `${item.total_building_area} м²`
+                                                    )
+                                                ),
+                                            // Residential Area
+                                            (item.residential_area ||
+                                                item["Яшаш_майдон"]) &&
+                                                React.createElement(
+                                                    "tr",
+                                                    null,
+                                                    React.createElement(
+                                                        "td",
+                                                        null,
+                                                        "Яшаш майдони:"
+                                                    ),
+                                                    React.createElement(
+                                                        "td",
+                                                        null,
+                                                        `${
+                                                            item.residential_area ||
+                                                            item["Яшаш_майдон"]
+                                                        } м²`
+                                                    )
+                                                ),
+                                            // Floors
+                                            (item.designated_floors ||
+                                                item.proposed_floors ||
+                                                item["Этажность"]) &&
+                                                React.createElement(
+                                                    "tr",
+                                                    null,
+                                                    React.createElement(
+                                                        "td",
+                                                        null,
+                                                        "Қаватлар:"
+                                                    ),
+                                                    React.createElement(
+                                                        "td",
+                                                        null,
+                                                        item.designated_floors
+                                                            ? `${
+                                                                  item.designated_floors
+                                                              } (белгиланган) / ${
+                                                                  item.proposed_floors ||
+                                                                  "N/A"
+                                                              } (таклиф)`
+                                                            : item[
+                                                                  "Этажность"
+                                                              ] || "N/A"
+                                                    )
+                                                ),
+                                            // Population
+                                            (item.population ||
+                                                item["Ахоли_сони"]) &&
+                                                React.createElement(
+                                                    "tr",
+                                                    null,
+                                                    React.createElement(
+                                                        "td",
+                                                        null,
+                                                        "Аҳоли сони:"
+                                                    ),
+                                                    React.createElement(
+                                                        "td",
+                                                        null,
+                                                        Math.round(
+                                                            item.population ||
+                                                                item[
+                                                                    "Ахоли_сони"
+                                                                ]
+                                                        )
+                                                    )
+                                                ),
+                                            // Households
+                                            (item.household_count ||
+                                                item["хонадонлар_сони"]) &&
+                                                React.createElement(
+                                                    "tr",
+                                                    null,
+                                                    React.createElement(
+                                                        "td",
+                                                        null,
+                                                        "Хонадонлар:"
+                                                    ),
+                                                    React.createElement(
+                                                        "td",
+                                                        null,
+                                                        Math.round(
+                                                            item.household_count ||
+                                                                item[
+                                                                    "хонадонлар_сони"
+                                                                ]
+                                                        )
+                                                    )
+                                                ),
+                                            // Investor
+                                            item.investor &&
+                                                React.createElement(
+                                                    "tr",
+                                                    null,
+                                                    React.createElement(
+                                                        "td",
+                                                        null,
+                                                        "Инвестор:"
+                                                    ),
+                                                    React.createElement(
+                                                        "td",
+                                                        null,
+                                                        item.investor
+                                                    )
+                                                ),
+                                            // Decision Number
+                                            item.decision_number &&
+                                                React.createElement(
+                                                    "tr",
+                                                    null,
+                                                    React.createElement(
+                                                        "td",
+                                                        null,
+                                                        "Қарор рақами:"
+                                                    ),
+                                                    React.createElement(
+                                                        "td",
+                                                        null,
+                                                        item.decision_number
+                                                    )
+                                                ),
+                                            // Activity Type
+                                            item["Таклиф_Фаолият_тури"] &&
+                                                React.createElement(
+                                                    "tr",
+                                                    null,
+                                                    React.createElement(
+                                                        "td",
+                                                        null,
+                                                        "Фаолият тури:"
+                                                    ),
+                                                    React.createElement(
+                                                        "td",
+                                                        null,
+                                                        item[
+                                                            "Таклиф_Фаолият_тури"
+                                                        ]
+                                                    )
+                                                ),
+                                            // Construction Area
+                                            (item["Қурилиш_ости_майдони"] ||
+                                                item[
+                                                    "Бинонинг_умумий_майдони"
+                                                ]) &&
+                                                React.createElement(
+                                                    "tr",
+                                                    null,
+                                                    React.createElement(
+                                                        "td",
+                                                        null,
+                                                        "Қурилиш майдони:"
+                                                    ),
+                                                    React.createElement(
+                                                        "td",
+                                                        null,
+                                                        `${
+                                                            item[
+                                                                "Қурилиш_ости_майдони"
+                                                            ] ||
+                                                            item[
+                                                                "Бинонинг_умумий_майдони"
+                                                            ]
+                                                        } м²`
+                                                    )
+                                                ),
+                                            // Master Plan Status
+                                            item[
+                                                "Таклиф_Бош_режага_таклиф_киритилганлиги_(таклиф_берилган_лекин_киритилмаган_бўлас_КИРИТИЛМАГАН_хисобланади)"
+                                            ] &&
+                                                React.createElement(
+                                                    "tr",
+                                                    null,
+                                                    React.createElement(
+                                                        "td",
+                                                        null,
+                                                        "Бош режадаги ҳолати:"
+                                                    ),
+                                                    React.createElement(
+                                                        "td",
+                                                        null,
+                                                        React.createElement(
+                                                            "span",
+                                                            {
+                                                                className: `badge ${
+                                                                    item[
+                                                                        "Таклиф_Бош_режага_таклиф_киритилганлиги_(таклиф_берилган_лекин_киритилмаган_бўлас_КИРИТИЛМАГАН_хисобланади)"
+                                                                    ] ===
+                                                                    "Киритилган"
+                                                                        ? "badge-sold"
+                                                                        : "badge-auction"
+                                                                }`,
+                                                            },
+                                                            item[
+                                                                "Таклиф_Бош_режага_таклиф_киритилганлиги_(таклиф_берилган_лекин_киритилмаган_бўлас_КИРИТИЛМАГАН_хисобланади)"
+                                                            ]
+                                                        )
+                                                    )
+                                                ),
                                             // Price
                                             (item.start_price ||
                                                 item.sold_price) &&
@@ -1939,6 +2211,78 @@
                                         )
                                     )
                                 ),
+
+                                // Technical Parameters Section
+                                (item.umn_coefficient ||
+                                    item.qmn_percentage ||
+                                    item["Хизмат_кўрсатиш_сохаси"]) &&
+                                    React.createElement(
+                                        "div",
+                                        { className: "section" },
+                                        React.createElement(
+                                            "h3",
+                                            { className: "section-title" },
+                                            React.createElement("i", {
+                                                className: "fas fa-cogs",
+                                            }),
+                                            "Техник параметрлар"
+                                        ),
+                                        React.createElement(
+                                            "table",
+                                            { className: "info-table" },
+                                            React.createElement(
+                                                "tbody",
+                                                null,
+                                                item.umn_coefficient &&
+                                                    React.createElement(
+                                                        "tr",
+                                                        null,
+                                                        React.createElement(
+                                                            "td",
+                                                            null,
+                                                            "УМН коэффициенти:"
+                                                        ),
+                                                        React.createElement(
+                                                            "td",
+                                                            null,
+                                                            item.umn_coefficient
+                                                        )
+                                                    ),
+                                                item.qmn_percentage &&
+                                                    React.createElement(
+                                                        "tr",
+                                                        null,
+                                                        React.createElement(
+                                                            "td",
+                                                            null,
+                                                            "ҚМН фоизи:"
+                                                        ),
+                                                        React.createElement(
+                                                            "td",
+                                                            null,
+                                                            `${item.qmn_percentage}%`
+                                                        )
+                                                    ),
+                                                item[
+                                                    "Хизмат_кўрсатиш_сохаси"
+                                                ] &&
+                                                    React.createElement(
+                                                        "tr",
+                                                        null,
+                                                        React.createElement(
+                                                            "td",
+                                                            null,
+                                                            "Хизмат кўрсатиш:"
+                                                        ),
+                                                        React.createElement(
+                                                            "td",
+                                                            null,
+                                                            `${item["Хизмат_кўрсатиш_сохаси"]} м²`
+                                                        )
+                                                    )
+                                            )
+                                        )
+                                    ),
 
                                 // Image Section
                                 item.main_image &&
