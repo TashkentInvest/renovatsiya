@@ -18,7 +18,7 @@ use App\Http\Controllers\Blade\HomeController;
 use App\Http\Controllers\Blade\PermissionController;
 use App\Http\Controllers\Blade\RegionController;
 use App\Http\Controllers\ExcelController;
-
+use App\Http\Controllers\MonitoringController;
 
 // Default laravel auth routes
 Auth::routes(['register' => false]);
@@ -29,12 +29,12 @@ Auth::routes(['register' => false]);
 Route::get('/', [AktivController::class, 'myMap'])->name('aktivs.myMap');
 
 // Route::get('/', function () {
-    //     return view('welcome');
-    // });
+//     return view('welcome');
+// });
 
 
 
-    Route::group(['middleware' => ['auth', 'checkUserRole']], function () {
+Route::group(['middleware' => ['auth', 'checkUserRole']], function () {
     Route::get('/my-taklif-map', [AktivController::class, 'myTaklifMap'])->name('myTaklifMap');
     Route::get('/invest', [AktivController::class, 'myTaklifMap_which_work'])->name('myTaklifMap_which_work');
 
@@ -188,3 +188,22 @@ Route::get('/demo', function () {
 });
 
 
+Route::prefix('monitoring')->name('monitoring.')->group(function () {
+    Route::get('/', [MonitoringController::class, 'index'])->name('dashboard');
+    Route::get('/test', [MonitoringController::class, 'test'])->name('test');
+    Route::get('/refresh', [MonitoringController::class, 'refresh'])->name('refresh');
+    Route::get('/api-status', [MonitoringController::class, 'apiStatus'])->name('api-status');
+
+    // Individual refresh endpoints
+    Route::post('/refresh-aktivs', [MonitoringController::class, 'refreshAktivs'])->name('refresh-aktivs');
+    Route::post('/refresh-auctions', [MonitoringController::class, 'refreshAuctions'])->name('refresh-auctions');
+    Route::post('/refresh-sold', [MonitoringController::class, 'refreshSold'])->name('refresh-sold');
+    Route::post('/refresh-gis', [MonitoringController::class, 'refreshGIS'])->name('refresh-gis');
+    Route::post('/clear-cache', [MonitoringController::class, 'clearCache'])->name('clear-cache');
+
+    // Chart data endpoints
+    Route::get('/chart-data/{type}', [MonitoringController::class, 'getChartData'])->name('chart-data');
+
+    // Export endpoints
+    Route::post('/export-report', [MonitoringController::class, 'exportReport'])->name('export-report');
+});

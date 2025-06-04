@@ -1232,12 +1232,12 @@
 
             // Enhanced API endpoints with your specific URLs
             const API_ENDPOINTS = {
-                aktivs: "https://development.toshkentinvest.uz/api/aktivs",
+                aktivs: "/api/aktivs",
                 auction: "https://projects.toshkentinvest.uz/api/markersing",
                 sold: "https://projects.toshkentinvest.uz/api/sotilgan",
-                jsonData: "https://development.toshkentinvest.uz/assets/data/443_output.json",
+                jsonData: "/assets/data/443_output.json",
                 geoJsonStrategy:
-                    "https://development.toshkentinvest.uz/tashkent_master_plan.geojson",
+                    "/tashkent_master_plan.geojson",
             };
 
             // Enhanced map styles
@@ -1525,7 +1525,7 @@
                     if (fileUrl.includes("http://localhost/")) {
                         correctedUrl = fileUrl.replace(
                             "http://localhost/",
-                            "https://development.toshkentinvest.uz/"
+                            "http://127.0.0.1:8000/"
                         );
                     }
 
@@ -2573,7 +2573,7 @@
                 const [selectedItem, setSelectedItem] = useState(null);
                 const [currentMapStyle, setCurrentMapStyle] = useState("osm");
                 const [geoJsonFilepath, setGeoJsonFilepath] = useState(
-                    "https://development.toshkentinvest.uz/tashkent_master_plan.geojson"
+                    "http://127.0.0.1:8000/tashkent_master_plan.geojson"
                 );
                 const [geoJsonStatus, setGeoJsonStatus] = useState(
                     "GeoJSON файллари учун тайёр..."
@@ -2931,7 +2931,7 @@
                         <div style="margin: 5px 0;">
                             <a href="${doc.url.replace(
                                 "http://localhost/",
-                                "https://development.toshkentinvest.uz/"
+                                "http://127.0.0.1:8000/"
                             )}"
                                target="_blank"
                                style="color: #2563eb; text-decoration: none; font-size: 12px;">
