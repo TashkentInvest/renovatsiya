@@ -1,5 +1,5 @@
 @extends('layouts.app')
-@section('title', 'Ўзбекистон Республикаси Инвестиция ва Тадбиркорлик вазирлиги - Мониторинг тизими')
+@section('title', 'Тошкент шаҳар ҳокимлиги - Мониторинг тизими')
 
 @section('content')
 <div class="gov-monitoring-dashboard">
@@ -7,9 +7,8 @@
         <!-- Government Header -->
         <div class="gov-header">
             <div class="gov-logo">
-                <img src="/images/gov-logo.png" alt="Герб" class="emblem">
                 <div class="ministry-info">
-                    <h1 class="ministry-title">ЎЗБЕКИСТОН РЕСПУБЛИКАСИ<br>ИНВЕСТИЦИЯ ВА ТАДБИРКОРЛИК ВАЗИРЛИГИ</h1>
+                    <h1 class="ministry-title">Toshkent Invest Company</h1>
                     <h2 class="system-title">Инвестиция лойиҳалари мониторинг тизими</h2>
                 </div>
             </div>
@@ -20,9 +19,7 @@
                     <strong>{{ now()->format('d.m.Y H:i') }}</strong>
                 </div>
                 <div class="control-buttons">
-                    <button class="btn btn-gov-primary" onclick="refreshAllData()" id="refreshAllBtn">
-                        <i class="fas fa-sync-alt"></i> Барча маълумотларни янгилаш
-                    </button>
+
                     <button class="btn btn-gov-secondary" onclick="exportReport()">
                         <i class="fas fa-file-export"></i> Ҳисобот юклаш
                     </button>
@@ -359,7 +356,7 @@
         <div class="gov-footer">
             <div class="footer-content">
                 <div class="footer-left">
-                    <p>&copy; 2025 Ўзбекистон Республикаси Инвестиция ва Тадбиркорлик вазирлиги</p>
+                    <p>&copy; 2025 Тошкент шаҳар ҳокимлиги</p>
                     <p>Барча ҳуқуқлар ҳимояланган</p>
                 </div>
                 <div class="footer-right">
@@ -399,7 +396,7 @@
 .gov-header {
     background: var(--gov-gradient);
     color: white;
-    padding: 2rem 0;
+    padding: 2rem 10px;
     margin-bottom: 2rem;
     position: relative;
     overflow: hidden;
@@ -905,7 +902,7 @@
 .gov-footer {
     background: var(--gov-primary);
     color: white;
-    padding: 2rem 0;
+    padding: 2rem 10px;
     margin-top: 3rem;
 }
 
