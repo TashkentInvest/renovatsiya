@@ -22,18 +22,41 @@ class MonitoringController extends Controller
 
     public function index()
     {
-        $data = [
-            'aktivs' => $this->fetchAktivsData(),
-            'auctions' => $this->fetchAuctionData(),
-            'sold' => $this->fetchSoldData(),
-            'jsonData' => $this->fetchJsonData(),
-            'geoJsonStrategy' => $this->fetchGeoJsonData(),
-        ];
+        try {
+            // Enable error reporting for debugging
+            if (config('app.debug')) {
+                ini_set('display_errors', 1);
+                error_reporting(E_ALL);
+            }
 
-        // Calculate summary after getting all data
-        $data['summary'] = $this->calculateSummary($data);
+            $data = [
+                'aktivs' => $this->fetchAktivsData(),
+                'auctions' => $this->fetchAuctionData(),
+                'sold' => $this->fetchSoldData(),
+                'jsonData' => $this->fetchJsonData(),
+                'geoJsonStrategy' => $this->fetchGeoJsonData(),
+            ];
 
-        return view('monitoring.dashboard', $data);
+            // Calculate summary after getting all data
+            $data['summary'] = $this->calculateSummary($data);
+
+            return view('monitoring.dashboard', $data);
+
+        } catch (\Exception $e) {
+            Log::error('MonitoringController index error: ' . $e->getMessage());
+            Log::error('Stack trace: ' . $e->getTraceAsString());
+
+            // Return error view or JSON based on request
+            if (request()->expectsJson()) {
+                return response()->json([
+                    'error' => 'Internal server error',
+                    'message' => config('app.debug') ? $e->getMessage() : 'Something went wrong'
+                ], 500);
+            }
+
+            // Return a basic error view or redirect
+            return response()->view('errors.500', [], 500);
+        }
     }
 
     /**
@@ -51,14 +74,29 @@ class MonitoringController extends Controller
         ];
 
         try {
+            // Check if cURL is available
+            if (!function_exists('curl_init')) {
+                return array_merge($defaultResult, [
+                    'error' => 'cURL extension not available'
+                ]);
+            }
+
             // Skip self-referencing URLs to prevent loops
-            if (str_contains($url, '127.0.0.1:8000') || str_contains($url, 'localhost')) {
+            if (str_contains($url, '127.0.0.1:8000') ||
+                str_contains($url, 'localhost') ||
+                str_contains($url, request()->getHost())) {
                 return array_merge($defaultResult, [
                     'error' => 'Self-referencing URL blocked to prevent loops'
                 ]);
             }
 
             $ch = curl_init();
+
+            if (!$ch) {
+                return array_merge($defaultResult, [
+                    'error' => 'Failed to initialize cURL'
+                ]);
+            }
 
             curl_setopt_array($ch, [
                 CURLOPT_URL => $url,
@@ -80,7 +118,10 @@ class MonitoringController extends Controller
                 CURLOPT_FORBID_REUSE => true,
             ]);
 
+            $start = microtime(true);
             $response = curl_exec($ch);
+            $responseTime = round((microtime(true) - $start) * 1000, 2);
+
             $httpCode = curl_getinfo($ch, CURLINFO_HTTP_CODE);
             $error = curl_error($ch);
             $info = curl_getinfo($ch);
@@ -89,7 +130,8 @@ class MonitoringController extends Controller
             if ($error) {
                 Log::warning("cURL Error for {$url}: {$error}");
                 return array_merge($defaultResult, [
-                    'error' => 'Connection error: ' . $error
+                    'error' => 'Connection error: ' . $error,
+                    'response_time' => $responseTime
                 ]);
             }
 
@@ -101,21 +143,23 @@ class MonitoringController extends Controller
                         'success' => true,
                         'data' => $data,
                         'status_code' => $httpCode,
-                        'response_time' => round($info['total_time'] * 1000, 2)
+                        'response_time' => $responseTime
                     ];
                 }
 
                 Log::warning("JSON Parse Error for {$url}: " . json_last_error_msg());
                 return array_merge($defaultResult, [
                     'status_code' => $httpCode,
-                    'error' => 'Invalid JSON response: ' . json_last_error_msg()
+                    'error' => 'Invalid JSON response: ' . json_last_error_msg(),
+                    'response_time' => $responseTime
                 ]);
             }
 
             Log::warning("HTTP Error for {$url}: Code {$httpCode}");
             return array_merge($defaultResult, [
                 'status_code' => $httpCode,
-                'error' => 'HTTP error: ' . $httpCode
+                'error' => 'HTTP error: ' . $httpCode,
+                'response_time' => $responseTime
             ]);
 
         } catch (\Exception $e) {
@@ -156,7 +200,7 @@ class MonitoringController extends Controller
             if (str_starts_with($path, '/')) {
                 $localPath = public_path(ltrim($path, '/'));
 
-                if (file_exists($localPath)) {
+                if (file_exists($localPath) && is_readable($localPath)) {
                     try {
                         $content = file_get_contents($localPath);
                         if ($content !== false) {
@@ -186,10 +230,10 @@ class MonitoringController extends Controller
                         ]);
                     }
                 } else {
-                    Log::warning("Local file not found: {$localPath}");
+                    Log::warning("Local file not found or not readable: {$localPath}");
                     $result = array_merge($defaultResult, [
                         'status_code' => 404,
-                        'error' => 'Local file not found'
+                        'error' => 'Local file not found or not readable'
                     ]);
                 }
             }
@@ -197,7 +241,7 @@ class MonitoringController extends Controller
             // If local file failed or it's an external URL, try HTTP
             if (!$result || !$result['success']) {
                 if (str_starts_with($path, '/')) {
-                    // Don't make HTTP requests to self
+                    // Don't make HTTP requests to self for local paths
                     $result = array_merge($defaultResult, [
                         'status_code' => 404,
                         'error' => 'Local file not found and HTTP blocked'
@@ -211,7 +255,11 @@ class MonitoringController extends Controller
 
             // Cache successful results
             if ($cacheKey && $result && $result['success']) {
-                Cache::put($cacheKey, $result, now()->addMinutes(self::CACHE_DURATION));
+                try {
+                    Cache::put($cacheKey, $result, now()->addMinutes(self::CACHE_DURATION));
+                } catch (\Exception $e) {
+                    Log::warning("Cache put failed for {$cacheKey}: " . $e->getMessage());
+                }
             }
 
             return $result;
@@ -240,9 +288,9 @@ class MonitoringController extends Controller
             try {
                 // Try different possible controller paths
                 $possibleControllers = [
-                    \App\Http\Controllers\Api\AktivsController::class,
-                    \App\Http\Controllers\AktivsController::class,
-                    \App\Http\Controllers\API\AktivsController::class,
+                    'App\\Http\\Controllers\\Api\\AktivsController',
+                    'App\\Http\\Controllers\\AktivsController',
+                    'App\\Http\\Controllers\\API\\AktivsController',
                 ];
 
                 foreach ($possibleControllers as $controllerClass) {
@@ -276,9 +324,10 @@ class MonitoringController extends Controller
 
             // Method 2: Try to get data from database directly
             try {
-                // Try to get lots from database
-                if (class_exists(\App\Models\Lot::class)) {
-                    $lots = \App\Models\Lot::all()->toArray();
+                // Check if Lot model exists
+                if (class_exists('App\\Models\\Lot')) {
+                    $lotModel = app('App\\Models\\Lot');
+                    $lots = $lotModel::all()->toArray();
                     if (!empty($lots)) {
                         $result = $this->processAktivsData($lots, 'database');
                         Cache::put($cacheKey, $result, now()->addMinutes(self::CACHE_DURATION));
@@ -291,19 +340,25 @@ class MonitoringController extends Controller
 
             // Method 3: Try making internal HTTP request (fallback)
             try {
-                // Create a mock request to simulate the API call
-                $request = Request::create('/api/aktivs', 'GET');
-                $response = app()->handle($request);
+                // Only try this if we're not in a self-referencing situation
+                $endpoint = self::API_ENDPOINTS['aktivs'];
+                if (!str_contains(request()->getHost(), '127.0.0.1') &&
+                    !str_contains(request()->getHost(), 'localhost')) {
 
-                if ($response->getStatusCode() === 200) {
-                    $content = $response->getContent();
-                    $data = json_decode($content, true);
+                    // Create a mock request to simulate the API call
+                    $request = Request::create($endpoint, 'GET');
+                    $response = app()->handle($request);
 
-                    if (json_last_error() === JSON_ERROR_NONE && isset($data['lots'])) {
-                        $lots = $data['lots'];
-                        $result = $this->processAktivsData($lots, 'internal_request');
-                        Cache::put($cacheKey, $result, now()->addMinutes(self::CACHE_DURATION));
-                        return $result;
+                    if ($response->getStatusCode() === 200) {
+                        $content = $response->getContent();
+                        $data = json_decode($content, true);
+
+                        if (json_last_error() === JSON_ERROR_NONE && isset($data['lots'])) {
+                            $lots = $data['lots'];
+                            $result = $this->processAktivsData($lots, 'internal_request');
+                            Cache::put($cacheKey, $result, now()->addMinutes(self::CACHE_DURATION));
+                            return $result;
+                        }
                     }
                 }
             } catch (\Exception $e) {
@@ -314,42 +369,63 @@ class MonitoringController extends Controller
             Log::error('Aktivs Data Error: ' . $e->getMessage());
         }
 
-        return ['status' => 'error', 'total' => 0, 'error' => 'Failed to fetch aktivs data - API not accessible'];
+        return [
+            'status' => 'error',
+            'total' => 0,
+            'error' => 'Failed to fetch aktivs data - API not accessible',
+            'source' => 'error',
+            'last_updated' => now()->format('Y-m-d H:i:s')
+        ];
     }
 
     private function processAktivsData($lots, $source = 'unknown')
     {
-        return [
-            'total' => count($lots),
-            'with_coordinates' => count(array_filter($lots, function($lot) {
-                return isset($lot['lat']) && isset($lot['lng']) &&
-                       !empty($lot['lat']) && !empty($lot['lng']);
-            })),
-            'with_images' => count(array_filter($lots, function($lot) {
-                return isset($lot['main_image']) && !empty($lot['main_image']);
-            })),
-            'with_documents' => count(array_filter($lots, function($lot) {
-                return isset($lot['documents']) && !empty($lot['documents']);
-            })),
-            'total_area' => array_sum(array_filter(array_column($lots, 'area_hectare'), 'is_numeric')),
-            'investors' => array_values(array_unique(array_filter(array_column($lots, 'investor')))),
-            'districts' => array_count_values(array_filter(array_column($lots, 'district_name'))),
-            'by_floors' => $this->groupByFloors($lots),
-            'avg_area' => count($lots) > 0 ?
-                array_sum(array_filter(array_column($lots, 'area_hectare'), 'is_numeric')) / count($lots) : 0,
-            'with_kmz' => count(array_filter($lots, function($lot) {
-                if (empty($lot['documents'])) return false;
-                foreach ($lot['documents'] as $doc) {
-                    if (isset($doc['doc_type']) && $doc['doc_type'] === 'kmz-document') {
-                        return true;
+        try {
+            if (!is_array($lots)) {
+                $lots = [];
+            }
+
+            return [
+                'total' => count($lots),
+                'with_coordinates' => count(array_filter($lots, function($lot) {
+                    return isset($lot['lat']) && isset($lot['lng']) &&
+                           !empty($lot['lat']) && !empty($lot['lng']);
+                })),
+                'with_images' => count(array_filter($lots, function($lot) {
+                    return isset($lot['main_image']) && !empty($lot['main_image']);
+                })),
+                'with_documents' => count(array_filter($lots, function($lot) {
+                    return isset($lot['documents']) && !empty($lot['documents']);
+                })),
+                'total_area' => array_sum(array_filter(array_column($lots, 'area_hectare'), 'is_numeric')),
+                'investors' => array_values(array_unique(array_filter(array_column($lots, 'investor')))),
+                'districts' => array_count_values(array_filter(array_column($lots, 'district_name'))),
+                'by_floors' => $this->groupByFloors($lots),
+                'avg_area' => count($lots) > 0 ?
+                    array_sum(array_filter(array_column($lots, 'area_hectare'), 'is_numeric')) / count($lots) : 0,
+                'with_kmz' => count(array_filter($lots, function($lot) {
+                    if (empty($lot['documents'])) return false;
+                    foreach ($lot['documents'] as $doc) {
+                        if (isset($doc['doc_type']) && $doc['doc_type'] === 'kmz-document') {
+                            return true;
+                        }
                     }
-                }
-                return false;
-            })),
-            'status' => 'success',
-            'last_updated' => now()->format('Y-m-d H:i:s'),
-            'source' => $source
-        ];
+                    return false;
+                })),
+                'status' => 'success',
+                'last_updated' => now()->format('Y-m-d H:i:s'),
+                'source' => $source
+            ];
+        } catch (\Exception $e) {
+            Log::error('processAktivsData error: ' . $e->getMessage());
+            return [
+                'status' => 'error',
+                'total' => 0,
+                'error' => 'Failed to process aktivs data',
+                'source' => $source,
+                'last_updated' => now()->format('Y-m-d H:i:s')
+            ];
+        }
     }
 
     private function fetchAuctionData()
@@ -390,7 +466,12 @@ class MonitoringController extends Controller
             Log::error('Auction API Error: ' . $e->getMessage());
         }
 
-        return ['status' => 'error', 'total' => 0, 'error' => 'Failed to fetch auction data'];
+        return [
+            'status' => 'error',
+            'total' => 0,
+            'error' => 'Failed to fetch auction data',
+            'last_updated' => now()->format('Y-m-d H:i:s')
+        ];
     }
 
     private function fetchSoldData()
@@ -433,7 +514,12 @@ class MonitoringController extends Controller
             Log::error('Sold API Error: ' . $e->getMessage());
         }
 
-        return ['status' => 'error', 'total' => 0, 'error' => 'Failed to fetch sold data'];
+        return [
+            'status' => 'error',
+            'total' => 0,
+            'error' => 'Failed to fetch sold data',
+            'last_updated' => now()->format('Y-m-d H:i:s')
+        ];
     }
 
     private function fetchJsonData()
@@ -445,6 +531,10 @@ class MonitoringController extends Controller
 
             if (isset($result['success']) && $result['success']) {
                 $data = $result['data'];
+
+                if (!is_array($data)) {
+                    $data = [];
+                }
 
                 $processedResult = [
                     'total' => count($data),
@@ -471,7 +561,12 @@ class MonitoringController extends Controller
             Log::error('JSON Data API Error: ' . $e->getMessage());
         }
 
-        return ['status' => 'error', 'total' => 0, 'error' => 'Failed to fetch JSON data'];
+        return [
+            'status' => 'error',
+            'total' => 0,
+            'error' => 'Failed to fetch JSON data',
+            'last_updated' => now()->format('Y-m-d H:i:s')
+        ];
     }
 
     private function fetchGeoJsonData()
@@ -513,45 +608,73 @@ class MonitoringController extends Controller
             Log::error('GeoJSON API Error: ' . $e->getMessage());
         }
 
-        return ['status' => 'error', 'total' => 0, 'error' => 'Failed to fetch GeoJSON data'];
+        return [
+            'status' => 'error',
+            'total' => 0,
+            'error' => 'Failed to fetch GeoJSON data',
+            'last_updated' => now()->format('Y-m-d H:i:s')
+        ];
     }
 
     private function calculateSummary($data)
     {
-        return [
-            'total_properties' =>
-                ($data['aktivs']['total'] ?? 0) +
-                ($data['auctions']['total'] ?? 0) +
-                ($data['sold']['total'] ?? 0) +
-                ($data['jsonData']['total'] ?? 0),
-            'total_investment_value' =>
-                ($data['auctions']['total_start_price'] ?? 0) +
-                ($data['sold']['total_sold_amount'] ?? 0),
-            'total_area' =>
-                ($data['aktivs']['total_area'] ?? 0) +
-                ($data['jsonData']['total_area'] ?? 0) +
-                ($data['geoJsonStrategy']['total_area'] ?? 0),
-            'total_population' => $data['jsonData']['total_population'] ?? 0,
-            'data_sources_status' => [
-                'aktivs' => $data['aktivs']['status'] ?? 'error',
-                'auctions' => $data['auctions']['status'] ?? 'error',
-                'sold' => $data['sold']['status'] ?? 'error',
-                'json_data' => $data['jsonData']['status'] ?? 'error',
-                'geojson' => $data['geoJsonStrategy']['status'] ?? 'error',
-            ],
-            'last_sync' => now()->format('Y-m-d H:i:s'),
-        ];
+        try {
+            return [
+                'total_properties' =>
+                    ($data['aktivs']['total'] ?? 0) +
+                    ($data['auctions']['total'] ?? 0) +
+                    ($data['sold']['total'] ?? 0) +
+                    ($data['jsonData']['total'] ?? 0),
+                'total_investment_value' =>
+                    ($data['auctions']['total_start_price'] ?? 0) +
+                    ($data['sold']['total_sold_amount'] ?? 0),
+                'total_area' =>
+                    ($data['aktivs']['total_area'] ?? 0) +
+                    ($data['jsonData']['total_area'] ?? 0) +
+                    ($data['geoJsonStrategy']['total_area'] ?? 0),
+                'total_population' => $data['jsonData']['total_population'] ?? 0,
+                'data_sources_status' => [
+                    'aktivs' => $data['aktivs']['status'] ?? 'error',
+                    'auctions' => $data['auctions']['status'] ?? 'error',
+                    'sold' => $data['sold']['status'] ?? 'error',
+                    'json_data' => $data['jsonData']['status'] ?? 'error',
+                    'geojson' => $data['geoJsonStrategy']['status'] ?? 'error',
+                ],
+                'last_sync' => now()->format('Y-m-d H:i:s'),
+            ];
+        } catch (\Exception $e) {
+            Log::error('calculateSummary error: ' . $e->getMessage());
+            return [
+                'total_properties' => 0,
+                'total_investment_value' => 0,
+                'total_area' => 0,
+                'total_population' => 0,
+                'data_sources_status' => [
+                    'aktivs' => 'error',
+                    'auctions' => 'error',
+                    'sold' => 'error',
+                    'json_data' => 'error',
+                    'geojson' => 'error',
+                ],
+                'last_sync' => now()->format('Y-m-d H:i:s'),
+                'error' => 'Failed to calculate summary'
+            ];
+        }
     }
 
     private function groupByFloors($lots)
     {
         $grouped = [];
-        foreach ($lots as $lot) {
-            $floors = $lot['proposed_floors'] ?? $lot['designated_floors'] ?? 0;
-            if (is_numeric($floors)) {
-                $range = $this->getFloorRange((int)$floors);
-                $grouped[$range] = ($grouped[$range] ?? 0) + 1;
+        try {
+            foreach ($lots as $lot) {
+                $floors = $lot['proposed_floors'] ?? $lot['designated_floors'] ?? 0;
+                if (is_numeric($floors)) {
+                    $range = $this->getFloorRange((int)$floors);
+                    $grouped[$range] = ($grouped[$range] ?? 0) + 1;
+                }
             }
+        } catch (\Exception $e) {
+            Log::error('groupByFloors error: ' . $e->getMessage());
         }
         return $grouped;
     }
@@ -559,12 +682,16 @@ class MonitoringController extends Controller
     private function groupJsonByFloors($data)
     {
         $grouped = [];
-        foreach ($data as $item) {
-            $floors = $item['Этажность'] ?? 0;
-            if (is_numeric($floors)) {
-                $range = $this->getFloorRange((int)$floors);
-                $grouped[$range] = ($grouped[$range] ?? 0) + 1;
+        try {
+            foreach ($data as $item) {
+                $floors = $item['Этажность'] ?? 0;
+                if (is_numeric($floors)) {
+                    $range = $this->getFloorRange((int)$floors);
+                    $grouped[$range] = ($grouped[$range] ?? 0) + 1;
+                }
             }
+        } catch (\Exception $e) {
+            Log::error('groupJsonByFloors error: ' . $e->getMessage());
         }
         return $grouped;
     }
@@ -579,104 +706,125 @@ class MonitoringController extends Controller
 
     private function getUpcomingAuctions($lots)
     {
-        return array_filter($lots, function($lot) {
-            if (empty($lot['auction_date'])) return false;
-            try {
-                $auctionDate = \Carbon\Carbon::parse($lot['auction_date']);
-                return $auctionDate->isFuture();
-            } catch (\Exception $e) {
-                return false;
-            }
-        });
+        try {
+            return array_filter($lots, function($lot) {
+                if (empty($lot['auction_date'])) return false;
+                try {
+                    $auctionDate = \Carbon\Carbon::parse($lot['auction_date']);
+                    return $auctionDate->isFuture();
+                } catch (\Exception $e) {
+                    return false;
+                }
+            });
+        } catch (\Exception $e) {
+            Log::error('getUpcomingAuctions error: ' . $e->getMessage());
+            return [];
+        }
     }
 
     private function groupSalesByMonth($lots)
     {
         $grouped = [];
-        foreach ($lots as $lot) {
-            if (!empty($lot['auction_date'])) {
-                try {
-                    $month = \Carbon\Carbon::parse($lot['auction_date'])->format('Y-m');
-                    $grouped[$month] = ($grouped[$month] ?? 0) + 1;
-                } catch (\Exception $e) {
-                    // Skip invalid dates
+        try {
+            foreach ($lots as $lot) {
+                if (!empty($lot['auction_date'])) {
+                    try {
+                        $month = \Carbon\Carbon::parse($lot['auction_date'])->format('Y-m');
+                        $grouped[$month] = ($grouped[$month] ?? 0) + 1;
+                    } catch (\Exception $e) {
+                        // Skip invalid dates
+                    }
                 }
             }
+            ksort($grouped);
+        } catch (\Exception $e) {
+            Log::error('groupSalesByMonth error: ' . $e->getMessage());
         }
-        ksort($grouped);
         return $grouped;
     }
 
     public function apiStatus()
     {
-        $status = [];
+        try {
+            $status = [];
 
-        foreach (self::API_ENDPOINTS as $name => $endpoint) {
-            $start = microtime(true);
+            foreach (self::API_ENDPOINTS as $name => $endpoint) {
+                $start = microtime(true);
 
-            try {
-                if (str_starts_with($endpoint, '/')) {
-                    // For local endpoints, check file existence
-                    $localPath = public_path(ltrim($endpoint, '/'));
-                    if (file_exists($localPath)) {
-                        $status[$name] = [
-                            'status' => 'online',
-                            'response_time' => '< 1ms',
-                            'http_code' => 200,
-                            'url' => url($endpoint),
-                            'source' => 'local_file',
-                            'last_check' => now()->format('Y-m-d H:i:s'),
-                        ];
+                try {
+                    if (str_starts_with($endpoint, '/')) {
+                        // For local endpoints, check file existence
+                        $localPath = public_path(ltrim($endpoint, '/'));
+                        if (file_exists($localPath) && is_readable($localPath)) {
+                            $status[$name] = [
+                                'status' => 'online',
+                                'response_time' => '< 1ms',
+                                'http_code' => 200,
+                                'url' => url($endpoint),
+                                'source' => 'local_file',
+                                'last_check' => now()->format('Y-m-d H:i:s'),
+                            ];
+                        } else {
+                            $status[$name] = [
+                                'status' => 'error',
+                                'response_time' => '< 1ms',
+                                'http_code' => 404,
+                                'url' => url($endpoint),
+                                'error' => 'File not found or not readable',
+                                'source' => 'local_file',
+                                'last_check' => now()->format('Y-m-d H:i:s'),
+                            ];
+                        }
                     } else {
+                        // For external endpoints, use HTTP
+                        $result = $this->makeHttpRequest($endpoint, 5);
+                        $time = round((microtime(true) - $start) * 1000, 2);
+
                         $status[$name] = [
-                            'status' => 'error',
-                            'response_time' => '< 1ms',
-                            'http_code' => 404,
-                            'url' => url($endpoint),
-                            'error' => 'File not found',
-                            'source' => 'local_file',
+                            'status' => $result['success'] ? 'online' : 'error',
+                            'response_time' => $time . 'ms',
+                            'http_code' => $result['status_code'] ?? 0,
+                            'url' => $endpoint,
+                            'error' => $result['error'] ?? null,
+                            'source' => 'http',
                             'last_check' => now()->format('Y-m-d H:i:s'),
                         ];
                     }
-                } else {
-                    // For external endpoints, use HTTP
-                    $result = $this->makeHttpRequest($endpoint, 5);
-                    $time = round((microtime(true) - $start) * 1000, 2);
-
+                } catch (\Exception $e) {
                     $status[$name] = [
-                        'status' => $result['success'] ? 'online' : 'error',
-                        'response_time' => $time . 'ms',
-                        'http_code' => $result['status_code'] ?? 0,
+                        'status' => 'offline',
+                        'error' => $e->getMessage(),
                         'url' => $endpoint,
-                        'error' => $result['error'] ?? null,
-                        'source' => 'http',
                         'last_check' => now()->format('Y-m-d H:i:s'),
                     ];
                 }
-            } catch (\Exception $e) {
-                $status[$name] = [
-                    'status' => 'offline',
-                    'error' => $e->getMessage(),
-                    'url' => $endpoint,
-                    'last_check' => now()->format('Y-m-d H:i:s'),
-                ];
             }
-        }
 
-        return response()->json($status);
+            return response()->json($status);
+
+        } catch (\Exception $e) {
+            Log::error('apiStatus error: ' . $e->getMessage());
+            return response()->json(['error' => 'Failed to check API status'], 500);
+        }
     }
 
     public function refresh()
     {
-        // Clear all monitoring caches
-        Cache::forget('aktivs_data');
-        Cache::forget('auction_data');
-        Cache::forget('sold_data');
-        Cache::forget('json_data');
-        Cache::forget('geojson_data');
+        try {
+            // Clear all monitoring caches
+            Cache::forget('aktivs_data');
+            Cache::forget('auction_data');
+            Cache::forget('sold_data');
+            Cache::forget('json_data');
+            Cache::forget('geojson_data');
 
-        return redirect()->route('monitoring.dashboard')
-                        ->with('success', 'Маълумотлар кэши тозаланди ва янгиланди');
+            return redirect()->route('monitoring.dashboard')
+                            ->with('success', 'Маълумотлар кэши тозаланди ва янгиланди');
+        } catch (\Exception $e) {
+            Log::error('refresh error: ' . $e->getMessage());
+            return redirect()->route('monitoring.dashboard')
+                            ->with('error', 'Кэшни янгилашда хатолик юз берди');
+        }
     }
 
     /**
@@ -684,30 +832,50 @@ class MonitoringController extends Controller
      */
     public function refreshAktivs()
     {
-        Cache::forget('aktivs_data');
-        $data = $this->fetchAktivsData();
-        return response()->json($data);
+        try {
+            Cache::forget('aktivs_data');
+            $data = $this->fetchAktivsData();
+            return response()->json($data);
+        } catch (\Exception $e) {
+            Log::error('refreshAktivs error: ' . $e->getMessage());
+            return response()->json(['error' => 'Failed to refresh aktivs data'], 500);
+        }
     }
 
     public function refreshAuctions()
     {
-        Cache::forget('auction_data');
-        $data = $this->fetchAuctionData();
-        return response()->json($data);
+        try {
+            Cache::forget('auction_data');
+            $data = $this->fetchAuctionData();
+            return response()->json($data);
+        } catch (\Exception $e) {
+            Log::error('refreshAuctions error: ' . $e->getMessage());
+            return response()->json(['error' => 'Failed to refresh auction data'], 500);
+        }
     }
 
     public function refreshSold()
     {
-        Cache::forget('sold_data');
-        $data = $this->fetchSoldData();
-        return response()->json($data);
+        try {
+            Cache::forget('sold_data');
+            $data = $this->fetchSoldData();
+            return response()->json($data);
+        } catch (\Exception $e) {
+            Log::error('refreshSold error: ' . $e->getMessage());
+            return response()->json(['error' => 'Failed to refresh sold data'], 500);
+        }
     }
 
     public function refreshGIS()
     {
-        Cache::forget('geojson_data');
-        $data = $this->fetchGeoJsonData();
-        return response()->json($data);
+        try {
+            Cache::forget('geojson_data');
+            $data = $this->fetchGeoJsonData();
+            return response()->json($data);
+        } catch (\Exception $e) {
+            Log::error('refreshGIS error: ' . $e->getMessage());
+            return response()->json(['error' => 'Failed to refresh GIS data'], 500);
+        }
     }
 
     public function clearCache()
@@ -793,5 +961,50 @@ class MonitoringController extends Controller
             Log::error('Export report error: ' . $e->getMessage());
             return response()->json(['error' => 'Failed to generate report'], 500);
         }
+    }
+
+    /**
+     * Debug method to help troubleshoot issues
+     */
+    public function debug()
+    {
+        if (!config('app.debug')) {
+            abort(404);
+        }
+
+        $debug = [
+            'php_version' => PHP_VERSION,
+            'laravel_version' => app()->version(),
+            'extensions' => [
+                'curl' => function_exists('curl_init'),
+                'json' => function_exists('json_encode'),
+                'mbstring' => function_exists('mb_strlen'),
+            ],
+            'paths' => [
+                'public_path' => public_path(),
+                'storage_path' => storage_path(),
+                'base_path' => base_path(),
+            ],
+            'file_checks' => [],
+            'cache_driver' => config('cache.default'),
+            'memory_limit' => ini_get('memory_limit'),
+            'max_execution_time' => ini_get('max_execution_time'),
+        ];
+
+        // Check file existence
+        foreach (self::API_ENDPOINTS as $name => $endpoint) {
+            if (str_starts_with($endpoint, '/')) {
+                $localPath = public_path(ltrim($endpoint, '/'));
+                $debug['file_checks'][$name] = [
+                    'endpoint' => $endpoint,
+                    'local_path' => $localPath,
+                    'exists' => file_exists($localPath),
+                    'readable' => is_readable($localPath),
+                    'size' => file_exists($localPath) ? filesize($localPath) : 0,
+                ];
+            }
+        }
+
+        return response()->json($debug);
     }
 }
