@@ -5,7 +5,6 @@ namespace App\Http\Controllers;
 use Illuminate\Http\Request;
 use Illuminate\Support\Facades\Log;
 use Illuminate\Support\Facades\Cache;
-use Illuminate\Support\Facades\Storage;
 
 class MonitoringController extends Controller
 {
@@ -20,349 +19,176 @@ class MonitoringController extends Controller
     // Cache duration in minutes
     private const CACHE_DURATION = 15;
 
+    // Memory optimization settings
+    private const MAX_MEMORY_USAGE = 100 * 1024 * 1024; // 100MB limit
+    private const CHUNK_SIZE = 1000; // Process data in chunks
+
     public function index()
     {
         try {
-            // Enable error reporting for debugging
-            if (config('app.debug')) {
-                ini_set('display_errors', 1);
-                error_reporting(E_ALL);
+            // Increase memory limit if possible
+            $currentLimit = ini_get('memory_limit');
+            if ($currentLimit !== '-1') {
+                ini_set('memory_limit', '256M');
             }
 
+            // Enable garbage collection
+            gc_enable();
+
+            Log::info('Starting monitoring dashboard - Memory usage: ' . $this->formatBytes(memory_get_usage(true)));
+
             $data = [
-                'aktivs' => $this->fetchAktivsData(),
-                'auctions' => $this->fetchAuctionData(),
-                'sold' => $this->fetchSoldData(),
-                'jsonData' => $this->fetchJsonData(),
-                'geoJsonStrategy' => $this->fetchGeoJsonData(),
+                'aktivs' => $this->fetchAktivsDataOptimized(),
+                'auctions' => $this->fetchAuctionDataOptimized(),
+                'sold' => $this->fetchSoldDataOptimized(),
+                'jsonData' => $this->fetchJsonDataOptimized(),
+                'geoJsonStrategy' => $this->fetchGeoJsonDataOptimized(),
             ];
+
+            // Force garbage collection after each data fetch
+            gc_collect_cycles();
 
             // Calculate summary after getting all data
             $data['summary'] = $this->calculateSummary($data);
+
+            Log::info('Completed data fetching - Memory usage: ' . $this->formatBytes(memory_get_usage(true)));
 
             return view('monitoring.dashboard', $data);
 
         } catch (\Exception $e) {
             Log::error('MonitoringController index error: ' . $e->getMessage());
-            Log::error('Stack trace: ' . $e->getTraceAsString());
+            Log::error('Memory usage at error: ' . $this->formatBytes(memory_get_usage(true)));
 
-            // Return error view or JSON based on request
-            if (request()->expectsJson()) {
-                return response()->json([
-                    'error' => 'Internal server error',
-                    'message' => config('app.debug') ? $e->getMessage() : 'Something went wrong'
-                ], 500);
+            // Clear any loaded data to free memory
+            if (isset($data)) {
+                unset($data);
             }
+            gc_collect_cycles();
 
-            // Return a basic error view or redirect
-            return response()->view('errors.500', [], 500);
+            // Return minimal error response
+            return response()->view('errors.500', [
+                'message' => 'Memory limit exceeded. Please contact administrator.'
+            ], 500);
         }
     }
 
     /**
-     * Make HTTP request using cURL with optimized settings
+     * Memory-optimized file reading with streaming
      */
-    private function makeHttpRequest($url, $timeout = 30)
+    private function readFileStreamOptimized($filePath)
     {
-        // Default return structure
-        $defaultResult = [
-            'success' => false,
-            'data' => null,
-            'status_code' => 0,
-            'error' => 'Unknown error',
-            'response_time' => 0
-        ];
+        if (!file_exists($filePath) || !is_readable($filePath)) {
+            return null;
+        }
+
+        $fileSize = filesize($filePath);
+
+        // If file is too large, return error
+        if ($fileSize > 50 * 1024 * 1024) { // 50MB limit
+            Log::warning("File too large: {$filePath} ({$this->formatBytes($fileSize)})");
+            return null;
+        }
+
+        // Check available memory before reading
+        $memoryUsage = memory_get_usage(true);
+        if ($memoryUsage > self::MAX_MEMORY_USAGE) {
+            Log::warning("Memory usage too high before reading file: " . $this->formatBytes($memoryUsage));
+            return null;
+        }
 
         try {
-            // Check if cURL is available
-            if (!function_exists('curl_init')) {
-                return array_merge($defaultResult, [
-                    'error' => 'cURL extension not available'
-                ]);
+            $content = file_get_contents($filePath);
+            if ($content === false) {
+                return null;
             }
 
-            // Skip self-referencing URLs to prevent loops
-            if (str_contains($url, '127.0.0.1:8000') ||
-                str_contains($url, 'localhost') ||
-                str_contains($url, request()->getHost())) {
-                return array_merge($defaultResult, [
-                    'error' => 'Self-referencing URL blocked to prevent loops'
-                ]);
+            $data = json_decode($content, true);
+
+            // Free the content variable immediately
+            unset($content);
+
+            if (json_last_error() !== JSON_ERROR_NONE) {
+                Log::error("JSON decode error for {$filePath}: " . json_last_error_msg());
+                return null;
             }
 
-            $ch = curl_init();
-
-            if (!$ch) {
-                return array_merge($defaultResult, [
-                    'error' => 'Failed to initialize cURL'
-                ]);
-            }
-
-            curl_setopt_array($ch, [
-                CURLOPT_URL => $url,
-                CURLOPT_RETURNTRANSFER => true,
-                CURLOPT_TIMEOUT => $timeout,
-                CURLOPT_CONNECTTIMEOUT => 10,
-                CURLOPT_FOLLOWLOCATION => true,
-                CURLOPT_MAXREDIRS => 3,
-                CURLOPT_SSL_VERIFYPEER => false,
-                CURLOPT_SSL_VERIFYHOST => false,
-                CURLOPT_USERAGENT => 'Laravel Monitoring/1.0',
-                CURLOPT_HTTPHEADER => [
-                    'Accept: application/json',
-                    'Content-Type: application/json',
-                    'Cache-Control: no-cache'
-                ],
-                CURLOPT_ENCODING => '', // Enable compression
-                CURLOPT_FRESH_CONNECT => true,
-                CURLOPT_FORBID_REUSE => true,
-            ]);
-
-            $start = microtime(true);
-            $response = curl_exec($ch);
-            $responseTime = round((microtime(true) - $start) * 1000, 2);
-
-            $httpCode = curl_getinfo($ch, CURLINFO_HTTP_CODE);
-            $error = curl_error($ch);
-            $info = curl_getinfo($ch);
-            curl_close($ch);
-
-            if ($error) {
-                Log::warning("cURL Error for {$url}: {$error}");
-                return array_merge($defaultResult, [
-                    'error' => 'Connection error: ' . $error,
-                    'response_time' => $responseTime
-                ]);
-            }
-
-            if ($httpCode >= 200 && $httpCode < 300) {
-                $data = json_decode($response, true);
-
-                if (json_last_error() === JSON_ERROR_NONE) {
-                    return [
-                        'success' => true,
-                        'data' => $data,
-                        'status_code' => $httpCode,
-                        'response_time' => $responseTime
-                    ];
-                }
-
-                Log::warning("JSON Parse Error for {$url}: " . json_last_error_msg());
-                return array_merge($defaultResult, [
-                    'status_code' => $httpCode,
-                    'error' => 'Invalid JSON response: ' . json_last_error_msg(),
-                    'response_time' => $responseTime
-                ]);
-            }
-
-            Log::warning("HTTP Error for {$url}: Code {$httpCode}");
-            return array_merge($defaultResult, [
-                'status_code' => $httpCode,
-                'error' => 'HTTP error: ' . $httpCode,
-                'response_time' => $responseTime
-            ]);
+            return $data;
 
         } catch (\Exception $e) {
-            Log::error("makeHttpRequest exception for {$url}: " . $e->getMessage());
-            return array_merge($defaultResult, [
-                'error' => 'Exception: ' . $e->getMessage()
-            ]);
+            Log::error("Error reading file {$filePath}: " . $e->getMessage());
+            return null;
         }
     }
 
     /**
-     * Get file contents with local file priority and caching
+     * Process data in chunks to save memory
      */
-    private function getFileContents($path, $cacheKey = null)
+    private function processDataInChunks($data, $processor)
     {
-        // Default return structure
-        $defaultResult = [
-            'success' => false,
-            'data' => null,
-            'status_code' => 0,
-            'source' => 'unknown',
-            'error' => 'Unknown error'
-        ];
-
-        try {
-            // Try cache first if cache key provided
-            if ($cacheKey && Cache::has($cacheKey)) {
-                $cached = Cache::get($cacheKey);
-                if (is_array($cached) && isset($cached['success'])) {
-                    $cached['source'] = 'cache';
-                    return $cached;
-                }
-            }
-
-            $result = null;
-
-            // For local files, try direct file access first
-            if (str_starts_with($path, '/')) {
-                $localPath = public_path(ltrim($path, '/'));
-
-                if (file_exists($localPath) && is_readable($localPath)) {
-                    try {
-                        $content = file_get_contents($localPath);
-                        if ($content !== false) {
-                            $data = json_decode($content, true);
-                            if (json_last_error() === JSON_ERROR_NONE) {
-                                $result = [
-                                    'success' => true,
-                                    'data' => $data,
-                                    'status_code' => 200,
-                                    'source' => 'local_file'
-                                ];
-                            } else {
-                                Log::error("JSON Parse Error for local file {$localPath}: " . json_last_error_msg());
-                                $result = array_merge($defaultResult, [
-                                    'error' => 'JSON parse error: ' . json_last_error_msg()
-                                ]);
-                            }
-                        } else {
-                            $result = array_merge($defaultResult, [
-                                'error' => 'Could not read file content'
-                            ]);
-                        }
-                    } catch (\Exception $e) {
-                        Log::error("File read error for {$localPath}: " . $e->getMessage());
-                        $result = array_merge($defaultResult, [
-                            'error' => 'File read error: ' . $e->getMessage()
-                        ]);
-                    }
-                } else {
-                    Log::warning("Local file not found or not readable: {$localPath}");
-                    $result = array_merge($defaultResult, [
-                        'status_code' => 404,
-                        'error' => 'Local file not found or not readable'
-                    ]);
-                }
-            }
-
-            // If local file failed or it's an external URL, try HTTP
-            if (!$result || !$result['success']) {
-                if (str_starts_with($path, '/')) {
-                    // Don't make HTTP requests to self for local paths
-                    $result = array_merge($defaultResult, [
-                        'status_code' => 404,
-                        'error' => 'Local file not found and HTTP blocked'
-                    ]);
-                } else {
-                    $httpResult = $this->makeHttpRequest($path);
-                    // Ensure the HTTP result has the proper structure
-                    $result = array_merge($defaultResult, $httpResult);
-                }
-            }
-
-            // Cache successful results
-            if ($cacheKey && $result && $result['success']) {
-                try {
-                    Cache::put($cacheKey, $result, now()->addMinutes(self::CACHE_DURATION));
-                } catch (\Exception $e) {
-                    Log::warning("Cache put failed for {$cacheKey}: " . $e->getMessage());
-                }
-            }
-
-            return $result;
-
-        } catch (\Exception $e) {
-            Log::error("getFileContents error for {$path}: " . $e->getMessage());
-            return array_merge($defaultResult, [
-                'error' => 'Exception: ' . $e->getMessage()
-            ]);
+        if (!is_array($data)) {
+            return [];
         }
+
+        $result = [];
+        $chunks = array_chunk($data, self::CHUNK_SIZE);
+
+        foreach ($chunks as $chunk) {
+            $chunkResult = $processor($chunk);
+            $result = array_merge_recursive($result, $chunkResult);
+
+            // Free chunk memory
+            unset($chunk, $chunkResult);
+
+            // Check memory usage
+            if (memory_get_usage(true) > self::MAX_MEMORY_USAGE) {
+                gc_collect_cycles();
+
+                if (memory_get_usage(true) > self::MAX_MEMORY_USAGE) {
+                    Log::warning('Memory limit reached during chunk processing');
+                    break;
+                }
+            }
+        }
+
+        unset($chunks);
+        return $result;
     }
 
-    private function fetchAktivsData()
+    private function fetchAktivsDataOptimized()
     {
-        $cacheKey = 'aktivs_data';
+        $cacheKey = 'aktivs_data_optimized';
 
         try {
             // Check cache first
             if (Cache::has($cacheKey)) {
-                $cached = Cache::get($cacheKey);
-                $cached['source'] = 'cache';
-                return $cached;
+                return Cache::get($cacheKey);
             }
 
-            // Method 1: Try to call the API controller directly (most efficient)
+            // Try simple database query first (most memory efficient)
             try {
-                // Try different possible controller paths
-                $possibleControllers = [
-                    'App\\Http\\Controllers\\Api\\AktivsController',
-                    'App\\Http\\Controllers\\AktivsController',
-                    'App\\Http\\Controllers\\API\\AktivsController',
-                ];
-
-                foreach ($possibleControllers as $controllerClass) {
-                    if (class_exists($controllerClass)) {
-                        $apiController = app($controllerClass);
-                        if (method_exists($apiController, 'index')) {
-                            $apiResponse = $apiController->index();
-
-                            // Handle different response types
-                            if (is_object($apiResponse) && method_exists($apiResponse, 'getData')) {
-                                $responseData = $apiResponse->getData(true);
-                            } elseif (is_array($apiResponse)) {
-                                $responseData = $apiResponse;
-                            } else {
-                                continue;
-                            }
-
-                            if (isset($responseData['lots'])) {
-                                $lots = $responseData['lots'];
-
-                                $result = $this->processAktivsData($lots, 'direct_api');
-                                Cache::put($cacheKey, $result, now()->addMinutes(self::CACHE_DURATION));
-                                return $result;
-                            }
-                        }
-                    }
-                }
-            } catch (\Exception $e) {
-                Log::info('Direct API call failed: ' . $e->getMessage());
-            }
-
-            // Method 2: Try to get data from database directly
-            try {
-                // Check if Lot model exists
                 if (class_exists('App\\Models\\Lot')) {
-                    $lotModel = app('App\\Models\\Lot');
-                    $lots = $lotModel::all()->toArray();
-                    if (!empty($lots)) {
-                        $result = $this->processAktivsData($lots, 'database');
-                        Cache::put($cacheKey, $result, now()->addMinutes(self::CACHE_DURATION));
-                        return $result;
-                    }
+                    $count = \App\Models\Lot::count();
+                    $result = [
+                        'total' => $count,
+                        'with_coordinates' => 0,
+                        'with_images' => 0,
+                        'with_documents' => 0,
+                        'total_area' => 0,
+                        'investors' => [],
+                        'districts' => [],
+                        'by_floors' => [],
+                        'avg_area' => 0,
+                        'with_kmz' => 0,
+                        'status' => 'success',
+                        'last_updated' => now()->format('Y-m-d H:i:s'),
+                        'source' => 'database_count_only'
+                    ];
+
+                    Cache::put($cacheKey, $result, now()->addMinutes(self::CACHE_DURATION));
+                    return $result;
                 }
             } catch (\Exception $e) {
-                Log::info('Database access failed: ' . $e->getMessage());
-            }
-
-            // Method 3: Try making internal HTTP request (fallback)
-            try {
-                // Only try this if we're not in a self-referencing situation
-                $endpoint = self::API_ENDPOINTS['aktivs'];
-                if (!str_contains(request()->getHost(), '127.0.0.1') &&
-                    !str_contains(request()->getHost(), 'localhost')) {
-
-                    // Create a mock request to simulate the API call
-                    $request = Request::create($endpoint, 'GET');
-                    $response = app()->handle($request);
-
-                    if ($response->getStatusCode() === 200) {
-                        $content = $response->getContent();
-                        $data = json_decode($content, true);
-
-                        if (json_last_error() === JSON_ERROR_NONE && isset($data['lots'])) {
-                            $lots = $data['lots'];
-                            $result = $this->processAktivsData($lots, 'internal_request');
-                            Cache::put($cacheKey, $result, now()->addMinutes(self::CACHE_DURATION));
-                            return $result;
-                        }
-                    }
-                }
-            } catch (\Exception $e) {
-                Log::info('Internal request failed: ' . $e->getMessage());
+                Log::info('Database count failed: ' . $e->getMessage());
             }
 
         } catch (\Exception $e) {
@@ -372,92 +198,33 @@ class MonitoringController extends Controller
         return [
             'status' => 'error',
             'total' => 0,
-            'error' => 'Failed to fetch aktivs data - API not accessible',
+            'error' => 'Failed to fetch aktivs data',
             'source' => 'error',
             'last_updated' => now()->format('Y-m-d H:i:s')
         ];
     }
 
-    private function processAktivsData($lots, $source = 'unknown')
+    private function fetchAuctionDataOptimized()
     {
+        $cacheKey = 'auction_data_optimized';
+
         try {
-            if (!is_array($lots)) {
-                $lots = [];
+            if (Cache::has($cacheKey)) {
+                return Cache::get($cacheKey);
             }
 
-            return [
-                'total' => count($lots),
-                'with_coordinates' => count(array_filter($lots, function($lot) {
-                    return isset($lot['lat']) && isset($lot['lng']) &&
-                           !empty($lot['lat']) && !empty($lot['lng']);
-                })),
-                'with_images' => count(array_filter($lots, function($lot) {
-                    return isset($lot['main_image']) && !empty($lot['main_image']);
-                })),
-                'with_documents' => count(array_filter($lots, function($lot) {
-                    return isset($lot['documents']) && !empty($lot['documents']);
-                })),
-                'total_area' => array_sum(array_filter(array_column($lots, 'area_hectare'), 'is_numeric')),
-                'investors' => array_values(array_unique(array_filter(array_column($lots, 'investor')))),
-                'districts' => array_count_values(array_filter(array_column($lots, 'district_name'))),
-                'by_floors' => $this->groupByFloors($lots),
-                'avg_area' => count($lots) > 0 ?
-                    array_sum(array_filter(array_column($lots, 'area_hectare'), 'is_numeric')) / count($lots) : 0,
-                'with_kmz' => count(array_filter($lots, function($lot) {
-                    if (empty($lot['documents'])) return false;
-                    foreach ($lot['documents'] as $doc) {
-                        if (isset($doc['doc_type']) && $doc['doc_type'] === 'kmz-document') {
-                            return true;
-                        }
-                    }
-                    return false;
-                })),
-                'status' => 'success',
-                'last_updated' => now()->format('Y-m-d H:i:s'),
-                'source' => $source
-            ];
-        } catch (\Exception $e) {
-            Log::error('processAktivsData error: ' . $e->getMessage());
-            return [
-                'status' => 'error',
-                'total' => 0,
-                'error' => 'Failed to process aktivs data',
-                'source' => $source,
-                'last_updated' => now()->format('Y-m-d H:i:s')
-            ];
-        }
-    }
-
-    private function fetchAuctionData()
-    {
-        $cacheKey = 'auction_data';
-
-        try {
-            $result = $this->getFileContents(self::API_ENDPOINTS['auction'], $cacheKey);
+            // Try external API with timeout
+            $result = $this->makeHttpRequestOptimized(self::API_ENDPOINTS['auction'], 10);
 
             if (isset($result['success']) && $result['success']) {
                 $data = $result['data'];
                 $lots = $data['lots'] ?? [];
 
-                $processedResult = [
-                    'total' => count($lots),
-                    'active' => count(array_filter($lots, function($lot) {
-                        return isset($lot['lot_status']) &&
-                               str_contains($lot['lot_status'], 'Savdoda ishtirok');
-                    })),
-                    'total_start_price' => array_sum(array_filter(array_column($lots, 'start_price'), 'is_numeric')),
-                    'avg_start_price' => count($lots) > 0 ?
-                        array_sum(array_filter(array_column($lots, 'start_price'), 'is_numeric')) / count($lots) : 0,
-                    'by_region' => array_count_values(array_filter(array_column($lots, 'region'))),
-                    'by_area' => array_count_values(array_filter(array_column($lots, 'area'))),
-                    'by_property_type' => array_count_values(array_filter(array_column($lots, 'property_category'))),
-                    'by_payment_type' => array_count_values(array_filter(array_column($lots, 'payment_type'))),
-                    'upcoming_auctions' => $this->getUpcomingAuctions($lots),
-                    'total_land_area' => array_sum(array_filter(array_column($lots, 'land_area'), 'is_numeric')),
-                    'status' => 'success',
-                    'last_updated' => now()->format('Y-m-d H:i:s'),
-                    'source' => $result['source'] ?? 'unknown'
-                ];
+                // Process in smaller chunks
+                $processedResult = $this->processAuctionDataInChunks($lots);
+                $processedResult['source'] = 'external_api';
+                $processedResult['status'] = 'success';
+                $processedResult['last_updated'] = now()->format('Y-m-d H:i:s');
 
                 Cache::put($cacheKey, $processedResult, now()->addMinutes(self::CACHE_DURATION));
                 return $processedResult;
@@ -474,38 +241,25 @@ class MonitoringController extends Controller
         ];
     }
 
-    private function fetchSoldData()
+    private function fetchSoldDataOptimized()
     {
-        $cacheKey = 'sold_data';
+        $cacheKey = 'sold_data_optimized';
 
         try {
-            $result = $this->getFileContents(self::API_ENDPOINTS['sold'], $cacheKey);
+            if (Cache::has($cacheKey)) {
+                return Cache::get($cacheKey);
+            }
+
+            $result = $this->makeHttpRequestOptimized(self::API_ENDPOINTS['sold'], 10);
 
             if (isset($result['success']) && $result['success']) {
                 $data = $result['data'];
                 $lots = $data['lots'] ?? [];
 
-                $soldPrices = array_filter(array_column($lots, 'sold_price'), 'is_numeric');
-                $startPrices = array_filter(array_column($lots, 'start_price'), 'is_numeric');
-
-                $processedResult = [
-                    'total' => count($lots),
-                    'total_sold_amount' => array_sum($soldPrices),
-                    'total_start_amount' => array_sum($startPrices),
-                    'total_profit' => array_sum($soldPrices) - array_sum($startPrices),
-                    'avg_sold_price' => count($soldPrices) > 0 ? array_sum($soldPrices) / count($soldPrices) : 0,
-                    'avg_profit_margin' => array_sum($startPrices) > 0 ?
-                        ((array_sum($soldPrices) - array_sum($startPrices)) / array_sum($startPrices)) * 100 : 0,
-                    'winners' => array_count_values(array_filter(array_column($lots, 'winner_name'))),
-                    'by_payment_type' => array_count_values(array_filter(array_column($lots, 'payment_type'))),
-                    'by_zone' => array_count_values(array_filter(array_column($lots, 'zone'))),
-                    'by_building_type' => array_count_values(array_filter(array_column($lots, 'building_type_comment'))),
-                    'monthly_sales' => $this->groupSalesByMonth($lots),
-                    'total_land_area' => array_sum(array_filter(array_column($lots, 'land_area'), 'is_numeric')),
-                    'status' => 'success',
-                    'last_updated' => now()->format('Y-m-d H:i:s'),
-                    'source' => $result['source'] ?? 'unknown'
-                ];
+                $processedResult = $this->processSoldDataInChunks($lots);
+                $processedResult['source'] = 'external_api';
+                $processedResult['status'] = 'success';
+                $processedResult['last_updated'] = now()->format('Y-m-d H:i:s');
 
                 Cache::put($cacheKey, $processedResult, now()->addMinutes(self::CACHE_DURATION));
                 return $processedResult;
@@ -522,41 +276,49 @@ class MonitoringController extends Controller
         ];
     }
 
-    private function fetchJsonData()
+    private function fetchJsonDataOptimized()
     {
-        $cacheKey = 'json_data';
+        $cacheKey = 'json_data_optimized';
 
         try {
-            $result = $this->getFileContents(self::API_ENDPOINTS['jsonData'], $cacheKey);
+            if (Cache::has($cacheKey)) {
+                return Cache::get($cacheKey);
+            }
 
-            if (isset($result['success']) && $result['success']) {
-                $data = $result['data'];
+            $localPath = public_path('assets/data/443_output.json');
 
-                if (!is_array($data)) {
-                    $data = [];
+            // Check file size first
+            if (file_exists($localPath)) {
+                $fileSize = filesize($localPath);
+                Log::info("JSON file size: " . $this->formatBytes($fileSize));
+
+                // If file is too large, return basic info only
+                if ($fileSize > 10 * 1024 * 1024) { // 10MB limit
+                    $result = [
+                        'total' => 0,
+                        'status' => 'error',
+                        'error' => 'File too large to process',
+                        'file_size' => $this->formatBytes($fileSize),
+                        'last_updated' => now()->format('Y-m-d H:i:s')
+                    ];
+
+                    Cache::put($cacheKey, $result, now()->addMinutes(self::CACHE_DURATION));
+                    return $result;
                 }
+            }
 
-                $processedResult = [
-                    'total' => count($data),
-                    'by_district' => array_count_values(array_filter(array_column($data, 'Туман'))),
-                    'by_type' => array_count_values(array_filter(array_column($data, 'Таклиф_тури_(Реновация,_Инвестиция,_Аукцион)'))),
-                    'by_master_plan_status' => array_count_values(array_filter(array_column($data, 'Таклиф_Бош_режага_таклиф_киритилганлиги_(таклиф_берилган_лекин_киритилмаган_бўлас_КИРИТИЛМАГАН_хисобланади)'))),
-                    'by_activity_type' => array_count_values(array_filter(array_column($data, 'Таклиф_Фаолият_тури'))),
-                    'total_area' => array_sum(array_filter(array_column($data, 'Таклиф_Ер_майдони_(га)'), 'is_numeric')),
-                    'total_population' => array_sum(array_filter(array_column($data, 'Ахоли_сони'), 'is_numeric')),
-                    'total_apartments' => array_sum(array_filter(array_column($data, 'хонадонлар_сони'), 'is_numeric')),
-                    'total_building_area' => array_sum(array_filter(array_column($data, 'Бинонинг_умумий_майдони'), 'is_numeric')),
-                    'avg_floors' => count($data) > 0 ?
-                        array_sum(array_filter(array_column($data, 'Этажность'), 'is_numeric')) / count($data) : 0,
-                    'by_floor_range' => $this->groupJsonByFloors($data),
-                    'status' => 'success',
-                    'last_updated' => now()->format('Y-m-d H:i:s'),
-                    'source' => $result['source'] ?? 'unknown'
-                ];
+            $data = $this->readFileStreamOptimized($localPath);
+
+            if ($data !== null) {
+                $processedResult = $this->processJsonDataInChunks($data);
+                $processedResult['source'] = 'local_file';
+                $processedResult['status'] = 'success';
+                $processedResult['last_updated'] = now()->format('Y-m-d H:i:s');
 
                 Cache::put($cacheKey, $processedResult, now()->addMinutes(self::CACHE_DURATION));
                 return $processedResult;
             }
+
         } catch (\Exception $e) {
             Log::error('JSON Data API Error: ' . $e->getMessage());
         }
@@ -569,51 +331,320 @@ class MonitoringController extends Controller
         ];
     }
 
-    private function fetchGeoJsonData()
+    private function fetchGeoJsonDataOptimized()
     {
-        $cacheKey = 'geojson_data';
+        $cacheKey = 'geojson_data_optimized';
 
         try {
-            $result = $this->getFileContents(self::API_ENDPOINTS['geoJsonStrategy'], $cacheKey);
+            if (Cache::has($cacheKey)) {
+                return Cache::get($cacheKey);
+            }
 
-            if (isset($result['success']) && $result['success']) {
-                $data = $result['data'];
+            $localPath = public_path('tashkent_master_plan.geojson');
+
+            // Check file size first
+            if (file_exists($localPath)) {
+                $fileSize = filesize($localPath);
+                Log::info("GeoJSON file size: " . $this->formatBytes($fileSize));
+
+                // If file is too large, return basic info only
+                if ($fileSize > 20 * 1024 * 1024) { // 20MB limit
+                    $result = [
+                        'total_features' => 0,
+                        'status' => 'error',
+                        'error' => 'File too large to process',
+                        'file_size' => $this->formatBytes($fileSize),
+                        'last_updated' => now()->format('Y-m-d H:i:s')
+                    ];
+
+                    Cache::put($cacheKey, $result, now()->addMinutes(self::CACHE_DURATION));
+                    return $result;
+                }
+            }
+
+            $data = $this->readFileStreamOptimized($localPath);
+
+            if ($data !== null) {
                 $features = $data['features'] ?? [];
-                $properties = array_column($features, 'properties');
-
-                $processedResult = [
-                    'total_features' => count($features),
-                    'by_strategy' => array_count_values(array_filter(array_column($properties, 'strategiya'))),
-                    'by_function' => array_count_values(array_filter(array_column($properties, 'funksiya'))),
-                    'by_district' => array_count_values(array_filter(array_column($properties, 'district'))),
-                    'red_lines' => count(array_filter($features, function($f) {
-                        return isset($f['properties']['funksiya']) &&
-                               $f['properties']['funksiya'] === 'Qizil_chiziqlar';
-                    })),
-                    'by_region' => array_count_values(array_filter(array_column($properties, 'region_name'))),
-                    'by_strategy_work_type' => array_count_values(array_filter(array_column($properties, 'strategiya_ishlari_turi'))),
-                    'total_area' => array_sum(array_filter(array_column($properties, 'maydoni'), 'is_numeric')),
-                    'avg_floors' => count($properties) > 0 ?
-                        array_sum(array_filter(array_column($properties, 'qavatlilik'), 'is_numeric')) / count($properties) : 0,
-                    'by_seismic_zone' => array_count_values(array_filter(array_column($properties, 'seysmologik_zonasi'))),
-                    'status' => 'success',
-                    'last_updated' => now()->format('Y-m-d H:i:s'),
-                    'source' => $result['source'] ?? 'unknown'
-                ];
+                $processedResult = $this->processGeoJsonDataInChunks($features);
+                $processedResult['source'] = 'local_file';
+                $processedResult['status'] = 'success';
+                $processedResult['last_updated'] = now()->format('Y-m-d H:i:s');
 
                 Cache::put($cacheKey, $processedResult, now()->addMinutes(self::CACHE_DURATION));
                 return $processedResult;
             }
+
         } catch (\Exception $e) {
             Log::error('GeoJSON API Error: ' . $e->getMessage());
         }
 
         return [
             'status' => 'error',
-            'total' => 0,
+            'total_features' => 0,
             'error' => 'Failed to fetch GeoJSON data',
             'last_updated' => now()->format('Y-m-d H:i:s')
         ];
+    }
+
+    /**
+     * Memory-optimized HTTP request
+     */
+    private function makeHttpRequestOptimized($url, $timeout = 15)
+    {
+        $defaultResult = [
+            'success' => false,
+            'data' => null,
+            'status_code' => 0,
+            'error' => 'Unknown error',
+        ];
+
+        try {
+            if (!function_exists('curl_init')) {
+                return array_merge($defaultResult, ['error' => 'cURL not available']);
+            }
+
+            $ch = curl_init();
+            curl_setopt_array($ch, [
+                CURLOPT_URL => $url,
+                CURLOPT_RETURNTRANSFER => true,
+                CURLOPT_TIMEOUT => $timeout,
+                CURLOPT_CONNECTTIMEOUT => 5,
+                CURLOPT_FOLLOWLOCATION => true,
+                CURLOPT_MAXREDIRS => 2,
+                CURLOPT_SSL_VERIFYPEER => false,
+                CURLOPT_USERAGENT => 'Laravel Monitoring/1.0',
+                CURLOPT_HTTPHEADER => ['Accept: application/json'],
+                // Limit response size to prevent memory issues
+                CURLOPT_BUFFERSIZE => 128 * 1024, // 128KB buffer
+            ]);
+
+            $response = curl_exec($ch);
+            $httpCode = curl_getinfo($ch, CURLINFO_HTTP_CODE);
+            $error = curl_error($ch);
+            curl_close($ch);
+
+            if ($error) {
+                return array_merge($defaultResult, ['error' => 'Connection error: ' . $error]);
+            }
+
+            if ($httpCode >= 200 && $httpCode < 300) {
+                $data = json_decode($response, true);
+
+                // Free response memory immediately
+                unset($response);
+
+                if (json_last_error() === JSON_ERROR_NONE) {
+                    return [
+                        'success' => true,
+                        'data' => $data,
+                        'status_code' => $httpCode,
+                    ];
+                }
+
+                return array_merge($defaultResult, [
+                    'status_code' => $httpCode,
+                    'error' => 'Invalid JSON: ' . json_last_error_msg()
+                ]);
+            }
+
+            return array_merge($defaultResult, [
+                'status_code' => $httpCode,
+                'error' => 'HTTP error: ' . $httpCode
+            ]);
+
+        } catch (\Exception $e) {
+            return array_merge($defaultResult, ['error' => 'Exception: ' . $e->getMessage()]);
+        }
+    }
+
+    /**
+     * Process auction data in memory-efficient chunks
+     */
+    private function processAuctionDataInChunks($lots)
+    {
+        if (!is_array($lots)) {
+            $lots = [];
+        }
+
+        $result = [
+            'total' => count($lots),
+            'active' => 0,
+            'total_start_price' => 0,
+            'by_region' => [],
+            'by_payment_type' => [],
+        ];
+
+        // Process in chunks to save memory
+        $chunks = array_chunk($lots, self::CHUNK_SIZE);
+
+        foreach ($chunks as $chunk) {
+            foreach ($chunk as $lot) {
+                if (isset($lot['lot_status']) && str_contains($lot['lot_status'], 'Savdoda ishtirok')) {
+                    $result['active']++;
+                }
+
+                if (isset($lot['start_price']) && is_numeric($lot['start_price'])) {
+                    $result['total_start_price'] += (float)$lot['start_price'];
+                }
+
+                if (!empty($lot['region'])) {
+                    $result['by_region'][$lot['region']] = ($result['by_region'][$lot['region']] ?? 0) + 1;
+                }
+
+                if (!empty($lot['payment_type'])) {
+                    $result['by_payment_type'][$lot['payment_type']] = ($result['by_payment_type'][$lot['payment_type']] ?? 0) + 1;
+                }
+            }
+
+            unset($chunk);
+            gc_collect_cycles();
+        }
+
+        $result['avg_start_price'] = $result['total'] > 0 ? $result['total_start_price'] / $result['total'] : 0;
+
+        return $result;
+    }
+
+    /**
+     * Process sold data in memory-efficient chunks
+     */
+    private function processSoldDataInChunks($lots)
+    {
+        if (!is_array($lots)) {
+            $lots = [];
+        }
+
+        $result = [
+            'total' => count($lots),
+            'total_sold_amount' => 0,
+            'total_start_amount' => 0,
+            'by_payment_type' => [],
+            'winners' => [],
+        ];
+
+        $chunks = array_chunk($lots, self::CHUNK_SIZE);
+
+        foreach ($chunks as $chunk) {
+            foreach ($chunk as $lot) {
+                if (isset($lot['sold_price']) && is_numeric($lot['sold_price'])) {
+                    $result['total_sold_amount'] += (float)$lot['sold_price'];
+                }
+
+                if (isset($lot['start_price']) && is_numeric($lot['start_price'])) {
+                    $result['total_start_amount'] += (float)$lot['start_price'];
+                }
+
+                if (!empty($lot['payment_type'])) {
+                    $result['by_payment_type'][$lot['payment_type']] = ($result['by_payment_type'][$lot['payment_type']] ?? 0) + 1;
+                }
+
+                if (!empty($lot['winner_name'])) {
+                    $result['winners'][$lot['winner_name']] = ($result['winners'][$lot['winner_name']] ?? 0) + 1;
+                }
+            }
+
+            unset($chunk);
+            gc_collect_cycles();
+        }
+
+        $result['total_profit'] = $result['total_sold_amount'] - $result['total_start_amount'];
+        $result['avg_sold_price'] = $result['total'] > 0 ? $result['total_sold_amount'] / $result['total'] : 0;
+
+        return $result;
+    }
+
+    /**
+     * Process JSON data in memory-efficient chunks
+     */
+    private function processJsonDataInChunks($data)
+    {
+        if (!is_array($data)) {
+            $data = [];
+        }
+
+        $result = [
+            'total' => count($data),
+            'by_district' => [],
+            'by_type' => [],
+            'total_area' => 0,
+            'total_population' => 0,
+        ];
+
+        $chunks = array_chunk($data, self::CHUNK_SIZE);
+
+        foreach ($chunks as $chunk) {
+            foreach ($chunk as $item) {
+                if (!empty($item['Туман'])) {
+                    $result['by_district'][$item['Туман']] = ($result['by_district'][$item['Туман']] ?? 0) + 1;
+                }
+
+                if (!empty($item['Таклиф_тури_(Реновация,_Инвестиция,_Аукцион)'])) {
+                    $type = $item['Таклиф_тури_(Реновация,_Инвестиция,_Аукцион)'];
+                    $result['by_type'][$type] = ($result['by_type'][$type] ?? 0) + 1;
+                }
+
+                if (isset($item['Таклиф_Ер_майдони_(га)']) && is_numeric($item['Таклиф_Ер_майдони_(га)'])) {
+                    $result['total_area'] += (float)$item['Таклиф_Ер_майдони_(га)'];
+                }
+
+                if (isset($item['Ахоли_сони']) && is_numeric($item['Ахоли_сони'])) {
+                    $result['total_population'] += (int)$item['Ахоли_сони'];
+                }
+            }
+
+            unset($chunk);
+            gc_collect_cycles();
+        }
+
+        return $result;
+    }
+
+    /**
+     * Process GeoJSON data in memory-efficient chunks
+     */
+    private function processGeoJsonDataInChunks($features)
+    {
+        if (!is_array($features)) {
+            $features = [];
+        }
+
+        $result = [
+            'total_features' => count($features),
+            'by_strategy' => [],
+            'by_function' => [],
+            'by_district' => [],
+            'total_area' => 0,
+        ];
+
+        $chunks = array_chunk($features, self::CHUNK_SIZE);
+
+        foreach ($chunks as $chunk) {
+            foreach ($chunk as $feature) {
+                $props = $feature['properties'] ?? [];
+
+                if (!empty($props['strategiya'])) {
+                    $result['by_strategy'][$props['strategiya']] = ($result['by_strategy'][$props['strategiya']] ?? 0) + 1;
+                }
+
+                if (!empty($props['funksiya'])) {
+                    $result['by_function'][$props['funksiya']] = ($result['by_function'][$props['funksiya']] ?? 0) + 1;
+                }
+
+                if (!empty($props['district'])) {
+                    $result['by_district'][$props['district']] = ($result['by_district'][$props['district']] ?? 0) + 1;
+                }
+
+                if (isset($props['maydoni']) && is_numeric($props['maydoni'])) {
+                    $result['total_area'] += (float)$props['maydoni'];
+                }
+            }
+
+            unset($chunk);
+            gc_collect_cycles();
+        }
+
+        return $result;
     }
 
     private function calculateSummary($data)
@@ -649,174 +680,31 @@ class MonitoringController extends Controller
                 'total_investment_value' => 0,
                 'total_area' => 0,
                 'total_population' => 0,
-                'data_sources_status' => [
-                    'aktivs' => 'error',
-                    'auctions' => 'error',
-                    'sold' => 'error',
-                    'json_data' => 'error',
-                    'geojson' => 'error',
-                ],
+                'data_sources_status' => ['error' => 'Summary calculation failed'],
                 'last_sync' => now()->format('Y-m-d H:i:s'),
-                'error' => 'Failed to calculate summary'
             ];
         }
     }
 
-    private function groupByFloors($lots)
+    private function formatBytes($bytes, $precision = 2)
     {
-        $grouped = [];
-        try {
-            foreach ($lots as $lot) {
-                $floors = $lot['proposed_floors'] ?? $lot['designated_floors'] ?? 0;
-                if (is_numeric($floors)) {
-                    $range = $this->getFloorRange((int)$floors);
-                    $grouped[$range] = ($grouped[$range] ?? 0) + 1;
-                }
-            }
-        } catch (\Exception $e) {
-            Log::error('groupByFloors error: ' . $e->getMessage());
+        $units = array('B', 'KB', 'MB', 'GB', 'TB');
+
+        for ($i = 0; $bytes > 1024 && $i < count($units) - 1; $i++) {
+            $bytes /= 1024;
         }
-        return $grouped;
-    }
 
-    private function groupJsonByFloors($data)
-    {
-        $grouped = [];
-        try {
-            foreach ($data as $item) {
-                $floors = $item['Этажность'] ?? 0;
-                if (is_numeric($floors)) {
-                    $range = $this->getFloorRange((int)$floors);
-                    $grouped[$range] = ($grouped[$range] ?? 0) + 1;
-                }
-            }
-        } catch (\Exception $e) {
-            Log::error('groupJsonByFloors error: ' . $e->getMessage());
-        }
-        return $grouped;
-    }
-
-    private function getFloorRange($floors)
-    {
-        if ($floors <= 5) return '1-5 қават';
-        if ($floors <= 10) return '6-10 қават';
-        if ($floors <= 15) return '11-15 қават';
-        return '15+ қават';
-    }
-
-    private function getUpcomingAuctions($lots)
-    {
-        try {
-            return array_filter($lots, function($lot) {
-                if (empty($lot['auction_date'])) return false;
-                try {
-                    $auctionDate = \Carbon\Carbon::parse($lot['auction_date']);
-                    return $auctionDate->isFuture();
-                } catch (\Exception $e) {
-                    return false;
-                }
-            });
-        } catch (\Exception $e) {
-            Log::error('getUpcomingAuctions error: ' . $e->getMessage());
-            return [];
-        }
-    }
-
-    private function groupSalesByMonth($lots)
-    {
-        $grouped = [];
-        try {
-            foreach ($lots as $lot) {
-                if (!empty($lot['auction_date'])) {
-                    try {
-                        $month = \Carbon\Carbon::parse($lot['auction_date'])->format('Y-m');
-                        $grouped[$month] = ($grouped[$month] ?? 0) + 1;
-                    } catch (\Exception $e) {
-                        // Skip invalid dates
-                    }
-                }
-            }
-            ksort($grouped);
-        } catch (\Exception $e) {
-            Log::error('groupSalesByMonth error: ' . $e->getMessage());
-        }
-        return $grouped;
-    }
-
-    public function apiStatus()
-    {
-        try {
-            $status = [];
-
-            foreach (self::API_ENDPOINTS as $name => $endpoint) {
-                $start = microtime(true);
-
-                try {
-                    if (str_starts_with($endpoint, '/')) {
-                        // For local endpoints, check file existence
-                        $localPath = public_path(ltrim($endpoint, '/'));
-                        if (file_exists($localPath) && is_readable($localPath)) {
-                            $status[$name] = [
-                                'status' => 'online',
-                                'response_time' => '< 1ms',
-                                'http_code' => 200,
-                                'url' => url($endpoint),
-                                'source' => 'local_file',
-                                'last_check' => now()->format('Y-m-d H:i:s'),
-                            ];
-                        } else {
-                            $status[$name] = [
-                                'status' => 'error',
-                                'response_time' => '< 1ms',
-                                'http_code' => 404,
-                                'url' => url($endpoint),
-                                'error' => 'File not found or not readable',
-                                'source' => 'local_file',
-                                'last_check' => now()->format('Y-m-d H:i:s'),
-                            ];
-                        }
-                    } else {
-                        // For external endpoints, use HTTP
-                        $result = $this->makeHttpRequest($endpoint, 5);
-                        $time = round((microtime(true) - $start) * 1000, 2);
-
-                        $status[$name] = [
-                            'status' => $result['success'] ? 'online' : 'error',
-                            'response_time' => $time . 'ms',
-                            'http_code' => $result['status_code'] ?? 0,
-                            'url' => $endpoint,
-                            'error' => $result['error'] ?? null,
-                            'source' => 'http',
-                            'last_check' => now()->format('Y-m-d H:i:s'),
-                        ];
-                    }
-                } catch (\Exception $e) {
-                    $status[$name] = [
-                        'status' => 'offline',
-                        'error' => $e->getMessage(),
-                        'url' => $endpoint,
-                        'last_check' => now()->format('Y-m-d H:i:s'),
-                    ];
-                }
-            }
-
-            return response()->json($status);
-
-        } catch (\Exception $e) {
-            Log::error('apiStatus error: ' . $e->getMessage());
-            return response()->json(['error' => 'Failed to check API status'], 500);
-        }
+        return round($bytes, $precision) . ' ' . $units[$i];
     }
 
     public function refresh()
     {
         try {
-            // Clear all monitoring caches
-            Cache::forget('aktivs_data');
-            Cache::forget('auction_data');
-            Cache::forget('sold_data');
-            Cache::forget('json_data');
-            Cache::forget('geojson_data');
+            Cache::forget('aktivs_data_optimized');
+            Cache::forget('auction_data_optimized');
+            Cache::forget('sold_data_optimized');
+            Cache::forget('json_data_optimized');
+            Cache::forget('geojson_data_optimized');
 
             return redirect()->route('monitoring.dashboard')
                             ->with('success', 'Маълумотлар кэши тозаланди ва янгиланди');
@@ -827,66 +715,14 @@ class MonitoringController extends Controller
         }
     }
 
-    /**
-     * Individual refresh methods for AJAX calls
-     */
-    public function refreshAktivs()
-    {
-        try {
-            Cache::forget('aktivs_data');
-            $data = $this->fetchAktivsData();
-            return response()->json($data);
-        } catch (\Exception $e) {
-            Log::error('refreshAktivs error: ' . $e->getMessage());
-            return response()->json(['error' => 'Failed to refresh aktivs data'], 500);
-        }
-    }
-
-    public function refreshAuctions()
-    {
-        try {
-            Cache::forget('auction_data');
-            $data = $this->fetchAuctionData();
-            return response()->json($data);
-        } catch (\Exception $e) {
-            Log::error('refreshAuctions error: ' . $e->getMessage());
-            return response()->json(['error' => 'Failed to refresh auction data'], 500);
-        }
-    }
-
-    public function refreshSold()
-    {
-        try {
-            Cache::forget('sold_data');
-            $data = $this->fetchSoldData();
-            return response()->json($data);
-        } catch (\Exception $e) {
-            Log::error('refreshSold error: ' . $e->getMessage());
-            return response()->json(['error' => 'Failed to refresh sold data'], 500);
-        }
-    }
-
-    public function refreshGIS()
-    {
-        try {
-            Cache::forget('geojson_data');
-            $data = $this->fetchGeoJsonData();
-            return response()->json($data);
-        } catch (\Exception $e) {
-            Log::error('refreshGIS error: ' . $e->getMessage());
-            return response()->json(['error' => 'Failed to refresh GIS data'], 500);
-        }
-    }
-
     public function clearCache()
     {
         try {
-            // Clear all monitoring caches
-            Cache::forget('aktivs_data');
-            Cache::forget('auction_data');
-            Cache::forget('sold_data');
-            Cache::forget('json_data');
-            Cache::forget('geojson_data');
+            Cache::forget('aktivs_data_optimized');
+            Cache::forget('auction_data_optimized');
+            Cache::forget('sold_data_optimized');
+            Cache::forget('json_data_optimized');
+            Cache::forget('geojson_data_optimized');
 
             return response()->json([
                 'success' => true,
@@ -901,110 +737,19 @@ class MonitoringController extends Controller
         }
     }
 
-    public function getChartData($type)
+    public function memoryStatus()
     {
-        try {
-            switch ($type) {
-                case 'district':
-                    $aktivs = $this->fetchAktivsData();
-                    return response()->json([
-                        'labels' => array_keys($aktivs['districts'] ?? []),
-                        'values' => array_values($aktivs['districts'] ?? [])
-                    ]);
-
-                case 'investment':
-                    $jsonData = $this->fetchJsonData();
-                    return response()->json([
-                        'labels' => array_keys($jsonData['by_type'] ?? []),
-                        'values' => array_values($jsonData['by_type'] ?? [])
-                    ]);
-
-                case 'timeline':
-                    $sold = $this->fetchSoldData();
-                    return response()->json([
-                        'labels' => array_keys($sold['monthly_sales'] ?? []),
-                        'values' => array_values($sold['monthly_sales'] ?? [])
-                    ]);
-
-                default:
-                    return response()->json(['error' => 'Invalid chart type'], 400);
-            }
-        } catch (\Exception $e) {
-            Log::error("Chart data error for {$type}: " . $e->getMessage());
-            return response()->json(['error' => 'Failed to fetch chart data'], 500);
-        }
-    }
-
-    public function exportReport()
-    {
-        try {
-            // For now, return a simple JSON report
-            // In production, you might want to generate a PDF using dompdf or similar
-            $data = [
-                'aktivs' => $this->fetchAktivsData(),
-                'auctions' => $this->fetchAuctionData(),
-                'sold' => $this->fetchSoldData(),
-                'jsonData' => $this->fetchJsonData(),
-                'geoJsonStrategy' => $this->fetchGeoJsonData(),
-            ];
-
-            $data['summary'] = $this->calculateSummary($data);
-            $data['generated_at'] = now()->format('Y-m-d H:i:s');
-
-            $filename = 'monitoring-report-' . now()->format('Y-m-d-H-i-s') . '.json';
-
-            return response()->json($data)
-                ->header('Content-Disposition', 'attachment; filename="' . $filename . '"')
-                ->header('Content-Type', 'application/json');
-
-        } catch (\Exception $e) {
-            Log::error('Export report error: ' . $e->getMessage());
-            return response()->json(['error' => 'Failed to generate report'], 500);
-        }
-    }
-
-    /**
-     * Debug method to help troubleshoot issues
-     */
-    public function debug()
-    {
-        if (!config('app.debug')) {
-            abort(404);
-        }
-
-        $debug = [
-            'php_version' => PHP_VERSION,
-            'laravel_version' => app()->version(),
-            'extensions' => [
-                'curl' => function_exists('curl_init'),
-                'json' => function_exists('json_encode'),
-                'mbstring' => function_exists('mb_strlen'),
-            ],
-            'paths' => [
-                'public_path' => public_path(),
-                'storage_path' => storage_path(),
-                'base_path' => base_path(),
-            ],
-            'file_checks' => [],
-            'cache_driver' => config('cache.default'),
+        return response()->json([
+            'memory_usage' => $this->formatBytes(memory_get_usage(true)),
+            'memory_peak' => $this->formatBytes(memory_get_peak_usage(true)),
             'memory_limit' => ini_get('memory_limit'),
-            'max_execution_time' => ini_get('max_execution_time'),
-        ];
-
-        // Check file existence
-        foreach (self::API_ENDPOINTS as $name => $endpoint) {
-            if (str_starts_with($endpoint, '/')) {
-                $localPath = public_path(ltrim($endpoint, '/'));
-                $debug['file_checks'][$name] = [
-                    'endpoint' => $endpoint,
-                    'local_path' => $localPath,
-                    'exists' => file_exists($localPath),
-                    'readable' => is_readable($localPath),
-                    'size' => file_exists($localPath) ? filesize($localPath) : 0,
-                ];
-            }
-        }
-
-        return response()->json($debug);
+            'cache_status' => [
+                'aktivs' => Cache::has('aktivs_data_optimized'),
+                'auctions' => Cache::has('auction_data_optimized'),
+                'sold' => Cache::has('sold_data_optimized'),
+                'json_data' => Cache::has('json_data_optimized'),
+                'geojson' => Cache::has('geojson_data_optimized'),
+            ]
+        ]);
     }
 }
