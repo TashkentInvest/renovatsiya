@@ -2,9 +2,10 @@
 
 @section('title', 'Активлар рўйхати')
 
-@section('styles')
-    <!-- Google Fonts -->
-    <link href="https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700&display=swap" rel="stylesheet">
+
+@section('content')
+<!-- Google Fonts -->
+<link href="https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700&display=swap" rel="stylesheet">
 
     <style>
         :root {
@@ -355,20 +356,350 @@
             color: var(--gray-500);
         }
 
-        /* Modal Enhancements */
-        .modal-content {
-            border: none;
-            border-radius: var(--border-radius-lg);
-            box-shadow: var(--shadow-xl);
-        }
+       /* Add this CSS to your existing styles */
 
-        .modal-header {
-            background: linear-gradient(135deg, var(--primary-color) 0%, var(--primary-dark) 100%);
-            color: white;
-            border: none;
-            padding: 1.5rem;
-        }
+/* Enhanced Modal Styles - Beautiful, Responsive, Understandable */
+.modal-content {
+    border: none;
+    border-radius: var(--border-radius-lg);
+    box-shadow: var(--shadow-xl);
+    max-height: 90vh;
+    overflow: hidden;
+}
 
+.modal-header {
+    background: linear-gradient(135deg, var(--primary-color) 0%, var(--primary-dark) 100%);
+    color: white;
+    border: none;
+    padding: 1.5rem 2rem;
+    position: sticky;
+    top: 0;
+    z-index: 1000;
+}
+
+.modal-header .modal-title {
+    font-size: 1.5rem;
+    font-weight: 600;
+    display: flex;
+    align-items: center;
+    gap: 0.75rem;
+}
+
+.modal-body {
+    padding: 0;
+    max-height: calc(90vh - 140px);
+    overflow-y: auto;
+    overflow-x: hidden;
+}
+
+.modal-body-content {
+    padding: 2rem;
+}
+
+/* Custom scrollbar for modal */
+.modal-body::-webkit-scrollbar {
+    width: 8px;
+}
+
+.modal-body::-webkit-scrollbar-track {
+    background: var(--gray-100);
+    border-radius: 4px;
+}
+
+.modal-body::-webkit-scrollbar-thumb {
+    background: var(--primary-color);
+    border-radius: 4px;
+}
+
+/* Enhanced Info Cards */
+.info-card {
+    background: var(--white);
+    border: 1px solid var(--gray-200);
+    border-radius: var(--border-radius);
+    padding: 1.5rem;
+    margin-bottom: 1.5rem;
+    box-shadow: var(--shadow-sm);
+    transition: all 0.2s ease;
+}
+
+.info-card:hover {
+    box-shadow: var(--shadow-md);
+    transform: translateY(-1px);
+}
+
+.info-card h6 {
+    color: var(--primary-color);
+    font-weight: 700;
+    margin-bottom: 1.5rem;
+    font-size: 1.1rem;
+    padding-bottom: 0.5rem;
+    border-bottom: 2px solid var(--primary-color);
+    display: flex;
+    align-items: center;
+    gap: 0.5rem;
+}
+
+/* Info Grid Layout */
+.info-grid {
+    display: grid;
+    grid-template-columns: repeat(auto-fit, minmax(200px, 1fr));
+    gap: 1rem;
+}
+
+.info-item {
+    background: var(--gray-50);
+    padding: 1rem;
+    border-radius: var(--border-radius);
+    border-left: 4px solid var(--primary-light);
+    transition: all 0.2s ease;
+}
+
+.info-item:hover {
+    background: var(--primary-light);
+    color: white;
+    transform: translateX(2px);
+}
+
+.info-item:hover .info-label {
+    color: rgba(255, 255, 255, 0.9);
+}
+
+.info-item:hover .info-value {
+    color: white;
+}
+
+.info-label {
+    color: var(--gray-600);
+    font-size: 0.875rem;
+    margin-bottom: 0.5rem;
+    font-weight: 500;
+    text-transform: uppercase;
+    letter-spacing: 0.025em;
+}
+
+.info-value {
+    color: var(--gray-900);
+    font-weight: 700;
+    font-size: 1rem;
+    word-break: break-word;
+}
+
+/* Tabs for Modal Content */
+.modal-tabs {
+    display: flex;
+    border-bottom: 2px solid var(--gray-200);
+    margin-bottom: 2rem;
+    background: var(--gray-50);
+    border-radius: var(--border-radius) var(--border-radius) 0 0;
+    padding: 0 1rem;
+    overflow-x: auto;
+}
+
+.modal-tab {
+    background: none;
+    border: none;
+    padding: 1rem 1.5rem;
+    cursor: pointer;
+    font-weight: 500;
+    color: var(--gray-600);
+    border-bottom: 3px solid transparent;
+    transition: all 0.2s ease;
+    white-space: nowrap;
+    flex-shrink: 0;
+}
+
+.modal-tab.active {
+    color: var(--primary-color);
+    border-bottom-color: var(--primary-color);
+    background: white;
+    border-radius: var(--border-radius) var(--border-radius) 0 0;
+}
+
+.modal-tab:hover {
+    color: var(--primary-color);
+    background: white;
+}
+
+.tab-content {
+    display: none;
+}
+
+.tab-content.active {
+    display: block;
+    animation: fadeIn 0.3s ease;
+}
+
+@keyframes fadeIn {
+    from { opacity: 0; transform: translateY(10px); }
+    to { opacity: 1; transform: translateY(0); }
+}
+
+/* Enhanced Status Badge */
+.modal .status-badge {
+    padding: 0.5rem 1rem;
+    border-radius: 25px;
+    font-size: 0.875rem;
+    font-weight: 600;
+    text-transform: uppercase;
+    letter-spacing: 0.05em;
+    display: inline-flex;
+    align-items: center;
+    gap: 0.5rem;
+}
+
+.modal .status-badge::before {
+    content: '';
+    width: 8px;
+    height: 8px;
+    border-radius: 50%;
+    background: currentColor;
+}
+
+/* Enhanced Document List */
+.document-list {
+    max-height: 300px;
+    overflow-y: auto;
+    border: 1px solid var(--gray-200);
+    border-radius: var(--border-radius);
+    background: var(--gray-50);
+    padding: 1rem;
+}
+
+.document-item {
+    display: flex;
+    align-items: center;
+    padding: 1rem;
+    border: 1px solid var(--gray-200);
+    border-radius: var(--border-radius);
+    margin-bottom: 0.75rem;
+    background: white;
+    text-decoration: none;
+    color: var(--gray-700);
+    transition: all 0.3s ease;
+    box-shadow: var(--shadow-sm);
+}
+
+.document-item:hover {
+    background: var(--primary-color);
+    border-color: var(--primary-color);
+    color: white;
+    text-decoration: none;
+    transform: translateY(-2px);
+    box-shadow: var(--shadow-md);
+}
+
+.document-icon {
+    width: 48px;
+    height: 48px;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    border-radius: var(--border-radius);
+    margin-right: 1rem;
+    font-size: 1.25rem;
+    transition: all 0.3s ease;
+}
+
+.document-item:hover .document-icon {
+    background: rgba(255, 255, 255, 0.2) !important;
+    color: white !important;
+}
+
+/* Area Breakdown Visualization */
+.area-breakdown {
+    background: var(--white);
+    padding: 1rem;
+    border-radius: var(--border-radius);
+    border: 1px solid var(--gray-200);
+}
+
+.progress {
+    height: 12px;
+    border-radius: 6px;
+    background: var(--gray-200);
+}
+
+.progress-bar {
+    border-radius: 6px;
+    transition: width 0.3s ease;
+}
+
+/* Additional Info Styling */
+.additional-info {
+    background: var(--gray-50);
+    border: 1px solid var(--gray-200);
+    border-radius: var(--border-radius);
+    padding: 1.5rem;
+    margin-top: 1rem;
+    line-height: 1.6;
+}
+
+.additional-info p {
+    margin-bottom: 1rem;
+}
+
+.additional-info p:last-child {
+    margin-bottom: 0;
+}
+
+/* Image Container */
+.image-container {
+    position: relative;
+    border-radius: var(--border-radius);
+    overflow: hidden;
+    box-shadow: var(--shadow-md);
+}
+
+.image-container img {
+    width: 100%;
+    height: auto;
+    max-height: 400px;
+    object-fit: cover;
+    transition: transform 0.3s ease;
+}
+
+.image-container:hover img {
+    transform: scale(1.02);
+}
+
+/* Responsive Design */
+@media (max-width: 768px) {
+    .modal-dialog {
+        margin: 0.5rem;
+        max-width: none;
+    }
+
+    .modal-content {
+        max-height: 95vh;
+    }
+
+    .modal-header,
+    .modal-footer {
+        padding: 1rem;
+    }
+
+    .modal-body-content {
+        padding: 1rem;
+    }
+
+    .info-grid {
+        grid-template-columns: 1fr;
+    }
+
+    .modal-tabs {
+        padding: 0;
+        margin: 0 -1rem 1rem -1rem;
+    }
+
+    .modal-tab {
+        padding: 0.75rem 1rem;
+        font-size: 0.875rem;
+    }
+
+    .modal-header .modal-title {
+        font-size: 1.25rem;
+    }
+}
         .info-card {
             background: var(--gray-50);
             border: 1px solid var(--gray-200);
@@ -501,9 +832,6 @@
             z-index: 9999;
         }
     </style>
-@endsection
-
-@section('content')
     <!-- Loading Overlay -->
     <div class="loading-overlay" id="loadingOverlay">
         <div class="spinner-border text-primary" role="status">
@@ -705,10 +1033,7 @@
 
     <!-- Toast Container -->
     <div class="toast-container"></div>
-@endsection
-
-@section('scripts')
-    <script>
+<script>
         // Global variables
         let allData = [];
         let filteredData = [];
@@ -1418,3 +1743,5 @@
         });
     </script>
 @endsection
+
+
