@@ -2266,6 +2266,7 @@
 
                 try {
                     const decodedUrl = decodeURIComponent(url);
+                    console.log("Processing URL:", decodedUrl);
 
                     // Handle Yandex Maps URLs
                     if (
@@ -2287,6 +2288,10 @@
                                     lng >= 68 &&
                                     lng <= 71
                                 ) {
+                                    console.log(
+                                        "Extracted Yandex coordinates:",
+                                        [lat, lng]
+                                    );
                                     return [lat, lng];
                                 }
                             }
@@ -2295,11 +2300,17 @@
 
                     // Google Maps patterns - multiple formats
                     const googlePatterns = [
+                        // Format: @lat,lng,zoom
                         /@(-?\d+\.?\d*),(-?\d+\.?\d*),?\d*[mz]?/,
+                        // Format: decimal coordinates in URL
                         /(-?\d+\.\d{4,}),(-?\d+\.\d{4,})/,
+                        // Format: !3d!4d coordinates
                         /!3d(-?\d+\.?\d*)!4d(-?\d+\.?\d*)/,
+                        // Format: place coordinates
                         /\/place\/[^@]*@(-?\d+\.?\d*),(-?\d+\.?\d*)/,
+                        // Format: DMS coordinates converted
                         /%C2%B0(\d+)'(\d+)\.?(\d*)"N\+(\d+)%C2%B0(\d+)'(\d+)\.?(\d*)"E/,
+                        // Format: simple lat,lng
                         /(-?\d+\.?\d+),(-?\d+\.?\d+)/,
                     ];
 
@@ -2308,6 +2319,7 @@
                         if (match) {
                             let lat, lng;
 
+                            // Handle DMS (Degrees Minutes Seconds) format
                             if (pattern.source.includes("C2%B0")) {
                                 const latDeg = parseInt(match[1]);
                                 const latMin = parseInt(match[2]);
@@ -2323,12 +2335,17 @@
                                 lng = parseFloat(match[2]);
                             }
 
+                            // Validate coordinates are in Uzbekistan range
                             if (
                                 lat >= 39 &&
                                 lat <= 43 &&
                                 lng >= 68 &&
                                 lng <= 71
                             ) {
+                                console.log("Extracted Google coordinates:", [
+                                    lat,
+                                    lng,
+                                ]);
                                 return [lat, lng];
                             }
                         }
@@ -2338,6 +2355,7 @@
                     try {
                         const urlObj = new URL(decodedUrl);
                         const params = urlObj.searchParams;
+
                         const qParam = params.get("q");
                         if (qParam) {
                             const qMatch = qParam.match(
@@ -2352,6 +2370,10 @@
                                     lng >= 68 &&
                                     lng <= 71
                                 ) {
+                                    console.log(
+                                        "Extracted q parameter coordinates:",
+                                        [lat, lng]
+                                    );
                                     return [lat, lng];
                                 }
                             }
@@ -2360,6 +2382,42 @@
                         // URL parsing failed, continue
                     }
 
+                    // Fallback: any two decimal numbers that look like coordinates
+                    const allCoordMatches = decodedUrl.match(/(-?\d+\.\d+)/g);
+                    if (allCoordMatches && allCoordMatches.length >= 2) {
+                        for (let i = 0; i < allCoordMatches.length - 1; i++) {
+                            const coord1 = parseFloat(allCoordMatches[i]);
+                            const coord2 = parseFloat(allCoordMatches[i + 1]);
+
+                            // Try both orders (lat,lng and lng,lat)
+                            if (
+                                coord1 >= 39 &&
+                                coord1 <= 43 &&
+                                coord2 >= 68 &&
+                                coord2 <= 71
+                            ) {
+                                console.log(
+                                    "Extracted fallback coordinates (lat,lng):",
+                                    [coord1, coord2]
+                                );
+                                return [coord1, coord2];
+                            }
+                            if (
+                                coord2 >= 39 &&
+                                coord2 <= 43 &&
+                                coord1 >= 68 &&
+                                coord1 <= 71
+                            ) {
+                                console.log(
+                                    "Extracted fallback coordinates (lng,lat):",
+                                    [coord2, coord1]
+                                );
+                                return [coord2, coord1];
+                            }
+                        }
+                    }
+
+                    console.log("No valid coordinates found in URL");
                     return null;
                 } catch (error) {
                     console.error(
@@ -2370,8 +2428,7 @@
                     return null;
                 }
             };
-
-            // Enhanced marker creation
+              // Enhanced marker creation
             const createMarkerIcon = (type, size = 16) => {
                 const colors = {
                     renovation: "#7c3aed",
@@ -3701,6 +3758,7 @@
                     }
                 }, [addToast, createKMZLayer]);
 
+
                 const fetchJsonData = useCallback(async () => {
                     try {
                         const response = await fetch(API_ENDPOINTS.jsonData);
@@ -3834,6 +3892,7 @@
                         return false;
                     }
                 }, [addToast]);
+
 
                 const fetchAuctionData = useCallback(async () => {
                     try {
