@@ -3681,6 +3681,7 @@
                         { maxWidth: 400, className: "geojson-popup" }
                     );
                 }, []);
+
                 const toggleGeoJSONLayer = useCallback((layerId) => {
                     const layerData = geoJsonLayersRef.current.get(layerId);
                     if (!layerData) return;
