@@ -225,6 +225,127 @@
                 padding: 24px;
             }
 
+            /* KMZ Search Control */
+            .kmz-search-control {
+                top: 20px;
+                left: 240px;
+                width: 350px;
+                padding: 20px;
+            }
+
+            .search-title {
+                font-size: 16px;
+                font-weight: 600;
+                margin-bottom: 16px;
+                color: var(--gray-900);
+                display: flex;
+                align-items: center;
+                gap: 8px;
+                padding-bottom: 12px;
+                border-bottom: 2px solid var(--gray-100);
+            }
+
+            .search-title i {
+                color: var(--primary-blue);
+            }
+
+            .search-input {
+                width: 100%;
+                padding: 10px 12px;
+                border: 2px solid var(--gray-200);
+                border-radius: var(--border-radius);
+                font-size: 14px;
+                margin-bottom: 12px;
+                outline: none;
+                transition: var(--transition);
+            }
+
+            .search-input:focus {
+                border-color: var(--secondary-blue);
+                box-shadow: 0 0 0 3px rgba(59, 130, 246, 0.1);
+            }
+
+            .results-container {
+                max-height: 200px;
+                overflow-y: auto;
+                border: 1px solid var(--gray-200);
+                border-radius: var(--border-radius);
+                background: var(--white);
+                display: none;
+            }
+
+            .results-container.show {
+                display: block;
+            }
+
+            .result-item {
+                padding: 10px 12px;
+                cursor: pointer;
+                border-bottom: 1px solid var(--gray-100);
+                transition: var(--transition);
+                font-size: 13px;
+            }
+
+            .result-item:hover {
+                background-color: var(--gray-50);
+            }
+
+            .result-item:last-child {
+                border-bottom: none;
+            }
+
+            .result-main {
+                font-weight: 500;
+                color: var(--gray-900);
+                margin-bottom: 4px;
+            }
+
+            .result-details {
+                color: var(--gray-600);
+                font-size: 12px;
+                display: flex;
+                align-items: center;
+                justify-content: space-between;
+            }
+
+            .zoom-btn {
+                background: var(--secondary-blue);
+                color: var(--white);
+                border: none;
+                padding: 4px 8px;
+                border-radius: 4px;
+                font-size: 11px;
+                cursor: pointer;
+                transition: var(--transition);
+            }
+
+            .zoom-btn:hover {
+                background: var(--primary-blue);
+                transform: translateY(-1px);
+            }
+
+            .no-results {
+                padding: 16px;
+                text-align: center;
+                color: var(--gray-500);
+                font-size: 14px;
+            }
+
+            .loading-text {
+                padding: 16px;
+                text-align: center;
+                color: var(--gray-500);
+                font-size: 14px;
+            }
+
+            .stats-info {
+                font-size: 12px;
+                color: var(--gray-600);
+                margin-top: 8px;
+                padding-top: 8px;
+                border-top: 1px solid var(--gray-100);
+            }
+
             .control-title {
                 font-size: 18px;
                 font-weight: 600;
@@ -1086,27 +1207,31 @@
             /* Custom scrollbar */
             .control-panel::-webkit-scrollbar,
             .sidebar::-webkit-scrollbar,
-            .layer-list::-webkit-scrollbar {
+            .layer-list::-webkit-scrollbar,
+            .results-container::-webkit-scrollbar {
                 width: 6px;
             }
 
             .control-panel::-webkit-scrollbar-track,
             .sidebar::-webkit-scrollbar-track,
-            .layer-list::-webkit-scrollbar-track {
+            .layer-list::-webkit-scrollbar-track,
+            .results-container::-webkit-scrollbar-track {
                 background: var(--gray-100);
                 border-radius: 3px;
             }
 
             .control-panel::-webkit-scrollbar-thumb,
             .sidebar::-webkit-scrollbar-thumb,
-            .layer-list::-webkit-scrollbar-thumb {
+            .layer-list::-webkit-scrollbar-thumb,
+            .results-container::-webkit-scrollbar-thumb {
                 background: var(--gray-300);
                 border-radius: 3px;
             }
 
             .control-panel::-webkit-scrollbar-thumb:hover,
             .sidebar::-webkit-scrollbar-thumb:hover,
-            .layer-list::-webkit-scrollbar-thumb:hover {
+            .layer-list::-webkit-scrollbar-thumb:hover,
+            .results-container::-webkit-scrollbar-thumb:hover {
                 background: var(--gray-400);
             }
 
@@ -1121,7 +1246,8 @@
                 }
 
                 .layer-controls,
-                .geojson-controls {
+                .geojson-controls,
+                .kmz-search-control {
                     width: 300px;
                     right: 10px;
                     padding: 20px;
@@ -1177,6 +1303,7 @@
                 auctions: "Аукционлар",
                 soldProperties: "Сотилган мулклар",
                 kmzData: "KMZ маълумотлар",
+                kmzSearch: "KMZ Қидириш ва Танлаш",
                 geojsonLayers: "GeoJSON қатламлари",
                 strategyLayers: "Стратегия қатламлари",
                 standard: "Стандарт",
@@ -1236,8 +1363,7 @@
                 auction: "https://projects.toshkentinvest.uz/api/markersing",
                 sold: "https://projects.toshkentinvest.uz/api/sotilgan",
                 jsonData: "/assets/data/443_output.json",
-                geoJsonStrategy:
-                    "/tashkent_master_plan.geojson",
+                geoJsonStrategy: "/tashkent_master_plan.geojson",
             };
 
             // Enhanced map styles
@@ -1254,10 +1380,8 @@
                 },
                 hybrid: {
                     name: TEXTS.hybrid,
-                    baseUrl:
-                        "https://server.arcgisonline.com/ArcGIS/rest/services/World_Imagery/MapServer/tile/{z}/{y}/{x}",
-                    labelUrl:
-                        "https://server.arcgisonline.com/ArcGIS/rest/services/Reference/World_Boundaries_and_Places/MapServer/tile/{z}/{y}/{x}",
+                    baseUrl: "https://server.arcgisonline.com/ArcGIS/rest/services/World_Imagery/MapServer/tile/{z}/{y}/{x}",
+                    labelUrl: "https://server.arcgisonline.com/ArcGIS/rest/services/Reference/World_Boundaries_and_Places/MapServer/tile/{z}/{y}/{x}",
                     attribution: "© Esri, Maxar, Earthstar Geographics",
                 },
             };
@@ -1275,7 +1399,7 @@
                 Savdo_xizmat: "#059669",
                 Sanoat: "#dc2626",
                 Madaniy_tarixiy: "#7c3aed",
-                Qizil_chiziqlar: "#dc2626", // Red color for red lines
+                Qizil_chiziqlar: "#dc2626",
                 default: "#6b7280",
             };
 
@@ -1288,9 +1412,459 @@
                 Rekreatsiya: "#10b981",
                 Transport: "#f59e0b",
                 Kommunal: "#6b7280",
-                Qizil_chiziqlar: "#dc2626", // Red color for red lines
+                Qizil_chiziqlar: "#dc2626",
                 default: "#8e24aa",
             };
+
+            // Fixed KMZ Search Manager Class
+            class KMZSearchManager {
+                constructor() {
+                    this.kmzData = [];
+                    this.filteredData = [];
+                    this.searchInput = null;
+                    this.resultsContainer = null;
+                    this.statsElement = null;
+                    this.totalCountElement = null;
+                    this.addToast = null;
+                    this.isInitialized = false;
+                }
+
+                init(searchInput, resultsContainer, statsElement, totalCountElement, addToast) {
+                    this.searchInput = searchInput;
+                    this.resultsContainer = resultsContainer;
+                    this.statsElement = statsElement;
+                    this.totalCountElement = totalCountElement;
+                    this.addToast = addToast;
+                    this.isInitialized = true;
+
+                    // Bind search input events
+                    if (this.searchInput) {
+                        this.searchInput.addEventListener('input', this.handleSearch.bind(this));
+                        this.searchInput.addEventListener('focus', this.showResults.bind(this));
+                    }
+
+                    // Hide results when clicking outside
+                    document.addEventListener('click', (e) => {
+                        if (!e.target.closest('.kmz-search-control')) {
+                            this.hideResults();
+                        }
+                    });
+
+                    // Initial data collection
+                    this.collectExistingKMZData();
+
+                    // Process any pending KMZ items
+                    if (window.pendingKMZItems && window.pendingKMZItems.length > 0) {
+                        window.pendingKMZItems.forEach(item => {
+                            this.addKMZItem(item.data, item.layer);
+                        });
+                        window.pendingKMZItems = [];
+                    }
+
+                    // Set up periodic check for new data
+                    setInterval(() => {
+                        this.collectExistingKMZData();
+                    }, 2000);
+                }
+
+                collectExistingKMZData() {
+                    if (!window.layerGroupsRef || !window.layerGroupsRef.current || !window.layerGroupsRef.current.kmz) {
+                        return;
+                    }
+
+                    const newKmzData = [];
+                    const kmzGroup = window.layerGroupsRef.current.kmz;
+
+                    kmzGroup.eachLayer((layer) => {
+                        if (layer.kmzData) {
+                            const data = layer.kmzData;
+                            const item = {
+                                id: data.id || `kmz-${Date.now()}-${newKmzData.length}`,
+                                layer: layer,
+                                district_name: data.district_name || 'Noma\'lum tuman',
+                                neighborhood_name: data.neighborhood_name || 'Noma\'lum mahalla',
+                                residential_area: data.residential_area || 0,
+                                total_building_area: data.total_building_area || 0,
+                                property_name: data.property_name || data.neighborhood_name || 'KMZ Obyekt',
+                                area_hectare: data.area_hectare || 0,
+                                designated_floors: data.designated_floors || 0,
+                                proposed_floors: data.proposed_floors || 0,
+                                investor: data.investor || '',
+                                status: data.status || 'KMZ Ma\'lumot'
+                            };
+                            newKmzData.push(item);
+                        }
+                    });
+
+                    if (newKmzData.length !== this.kmzData.length) {
+                        this.kmzData = newKmzData;
+                        this.updateStats();
+
+                        if (this.searchInput && this.searchInput.value) {
+                            this.handleSearch();
+                        } else {
+                            this.showAllResults();
+                        }
+                    }
+                }
+
+                handleSearch() {
+                    const query = this.searchInput.value.toLowerCase().trim();
+
+                    if (!query) {
+                        this.showAllResults();
+                        return;
+                    }
+
+                    this.filteredData = this.kmzData.filter(item => {
+                        const searchFields = [
+                            item.district_name,
+                            item.neighborhood_name,
+                            item.property_name,
+                            item.investor,
+                            item.residential_area.toString(),
+                            item.total_building_area.toString(),
+                            item.area_hectare.toString()
+                        ].join(' ').toLowerCase();
+
+                        return searchFields.includes(query);
+                    });
+
+                    this.renderResults();
+                }
+
+                showAllResults() {
+                    this.filteredData = [...this.kmzData];
+                    this.renderResults();
+                }
+
+                showResults() {
+                    if (this.searchInput && this.searchInput.value) {
+                        this.handleSearch();
+                    } else {
+                        this.showAllResults();
+                    }
+                    if (this.resultsContainer) {
+                        this.resultsContainer.classList.add('show');
+                    }
+                }
+
+                hideResults() {
+                    if (this.resultsContainer) {
+                        this.resultsContainer.classList.remove('show');
+                    }
+                }
+
+                renderResults() {
+                    if (!this.resultsContainer) return;
+
+                    this.resultsContainer.classList.add('show');
+
+                    if (this.filteredData.length === 0) {
+                        this.resultsContainer.innerHTML = '<div class="no-results">Hech narsa topilmadi</div>';
+                        return;
+                    }
+
+                    const html = this.filteredData.map((item, index) => `
+                        <div class="result-item" onclick="window.kmzSearchManager.selectAndZoom('${item.id}')">
+                            <div class="result-main">${item.property_name}</div>
+                            <div class="result-details">
+                                <span>${item.district_name} • ${item.neighborhood_name}
+                                ${item.residential_area > 0 ? ` • ${item.residential_area} m² yashash` : ''}
+                                ${item.area_hectare > 0 ? ` • ${item.area_hectare} ga` : ''}</span>
+                                <button class="zoom-btn" onclick="event.stopPropagation(); window.kmzSearchManager.zoomToItem('${item.id}')">
+                                    <i class="fas fa-search-plus"></i> Zoom
+                                </button>
+                            </div>
+                        </div>
+                    `).join('');
+
+                    this.resultsContainer.innerHTML = html;
+                }
+
+                selectAndZoom(itemId) {
+                    const item = this.kmzData.find(d => d.id === itemId);
+                    if (!item) return;
+
+                    // Zoom to the layer
+                    this.zoomToItem(itemId);
+
+                    // Show popup if available
+                    if (item.layer && typeof item.layer.openPopup === 'function') {
+                        setTimeout(() => {
+                            try {
+                                item.layer.openPopup();
+                            } catch (error) {
+                                // Ignore popup errors
+                            }
+                        }, 500);
+                    }
+
+                    // Hide search results
+                    this.hideResults();
+
+                    // Clear search input
+                    if (this.searchInput) {
+                        this.searchInput.value = '';
+                    }
+
+                    // Show toast notification
+                    if (this.addToast) {
+                        this.addToast(`${item.property_name} ga o'tildi`, 'success');
+                    }
+                }
+
+                zoomToItem(itemId) {
+                    console.log('🔍 zoomToItem called with itemId:', itemId, 'type:', typeof itemId);
+
+                    // Convert itemId to string for comparison since HTML attributes are always strings
+                    const searchId = String(itemId);
+
+                    const item = this.kmzData.find(d => String(d.id) === searchId);
+                    if (!item) {
+                        console.error('❌ Item not found with id:', itemId);
+                        console.log('Available items IDs and types:');
+                        this.kmzData.slice(0, 10).forEach((d, i) => {
+                            console.log(`${i}: id="${d.id}" (${typeof d.id}), name="${d.property_name}"`);
+                        });
+                        return;
+                    }
+
+                    if (!item.layer) {
+                        console.error('❌ No layer found for item:', item.property_name);
+                        return;
+                    }
+
+                    const map = window.mapInstanceRef?.current;
+                    if (!map) {
+                        console.error('❌ Map instance not available');
+                        return;
+                    }
+
+                    console.log('✅ Found item:', item.property_name);
+                    console.log('✅ Layer type:', item.layer.constructor.name);
+                    console.log('✅ Layer object:', item.layer);
+
+                    try {
+                        let zoomSuccess = false;
+
+                        // Method 1: Try getBounds (for polygons and complex shapes)
+                        if (typeof item.layer.getBounds === 'function') {
+                            console.log('🔄 Trying getBounds method...');
+                            try {
+                                const bounds = item.layer.getBounds();
+                                console.log('📍 Bounds:', bounds);
+                                if (bounds && bounds.isValid && bounds.isValid()) {
+                                    map.fitBounds(bounds, { padding: [50, 50], maxZoom: 16 });
+                                    console.log('✅ Zoom successful with getBounds');
+                                    zoomSuccess = true;
+                                } else if (bounds && bounds._southWest && bounds._northEast) {
+                                    // Try even if isValid is not available
+                                    map.fitBounds(bounds, { padding: [50, 50], maxZoom: 16 });
+                                    console.log('✅ Zoom successful with getBounds (no validation)');
+                                    zoomSuccess = true;
+                                } else {
+                                    console.log('⚠️ Invalid bounds returned');
+                                }
+                            } catch (e) {
+                                console.log('❌ getBounds failed:', e.message);
+                            }
+                        }
+
+                        // Method 2: Try getLatLng (for markers)
+                        if (!zoomSuccess && typeof item.layer.getLatLng === 'function') {
+                            console.log('🔄 Trying getLatLng method...');
+                            try {
+                                const latlng = item.layer.getLatLng();
+                                console.log('📍 LatLng:', latlng);
+                                if (latlng && latlng.lat && latlng.lng) {
+                                    map.setView([latlng.lat, latlng.lng], 16);
+                                    console.log('✅ Zoom successful with getLatLng');
+                                    zoomSuccess = true;
+                                } else {
+                                    console.log('⚠️ Invalid LatLng returned');
+                                }
+                            } catch (e) {
+                                console.log('❌ getLatLng failed:', e.message);
+                            }
+                        }
+
+                        // Method 3: Try _latlng property (marker fallback)
+                        if (!zoomSuccess && item.layer._latlng) {
+                            console.log('🔄 Trying _latlng property...');
+                            try {
+                                console.log('📍 _latlng:', item.layer._latlng);
+                                map.setView([item.layer._latlng.lat, item.layer._latlng.lng], 16);
+                                console.log('✅ Zoom successful with _latlng');
+                                zoomSuccess = true;
+                            } catch (e) {
+                                console.log('❌ _latlng failed:', e.message);
+                            }
+                        }
+
+                        // Method 4: Try _latlngs property (polygon/polyline fallback)
+                        if (!zoomSuccess && item.layer._latlngs && Array.isArray(item.layer._latlngs)) {
+                            console.log('🔄 Trying _latlngs property...');
+                            try {
+                                console.log('📍 _latlngs:', item.layer._latlngs);
+                                let allLatLngs = [];
+
+                                // Flatten nested arrays (for complex polygons)
+                                const flattenLatLngs = (arr) => {
+                                    arr.forEach(item => {
+                                        if (Array.isArray(item)) {
+                                            flattenLatLngs(item);
+                                        } else if (item && item.lat !== undefined && item.lng !== undefined) {
+                                            allLatLngs.push([item.lat, item.lng]);
+                                        }
+                                    });
+                                };
+
+                                flattenLatLngs(item.layer._latlngs);
+                                console.log('📍 Flattened coordinates:', allLatLngs.length, 'points');
+
+                                if (allLatLngs.length > 0) {
+                                    const bounds = L.latLngBounds(allLatLngs);
+                                    console.log('📍 Calculated bounds:', bounds);
+                                    map.fitBounds(bounds, { padding: [50, 50], maxZoom: 16 });
+                                    console.log('✅ Zoom successful with _latlngs');
+                                    zoomSuccess = true;
+                                } else {
+                                    console.log('⚠️ No valid coordinates found in _latlngs');
+                                }
+                            } catch (e) {
+                                console.log('❌ _latlngs failed:', e.message);
+                            }
+                        }
+
+                        // Method 5: Try _bounds property
+                        if (!zoomSuccess && item.layer._bounds) {
+                            console.log('🔄 Trying _bounds property...');
+                            try {
+                                console.log('📍 _bounds:', item.layer._bounds);
+                                map.fitBounds(item.layer._bounds, { padding: [50, 50], maxZoom: 16 });
+                                console.log('✅ Zoom successful with _bounds');
+                                zoomSuccess = true;
+                            } catch (e) {
+                                console.log('❌ _bounds failed:', e.message);
+                            }
+                        }
+
+                        // Method 6: Try getCenter if it's a feature group or layer group
+                        if (!zoomSuccess && typeof item.layer.getCenter === 'function') {
+                            console.log('🔄 Trying getCenter method...');
+                            try {
+                                const center = item.layer.getCenter();
+                                console.log('📍 Center:', center);
+                                if (center) {
+                                    map.setView([center.lat, center.lng], 16);
+                                    console.log('✅ Zoom successful with getCenter');
+                                    zoomSuccess = true;
+                                } else {
+                                    console.log('⚠️ No center returned');
+                                }
+                            } catch (e) {
+                                console.log('❌ getCenter failed:', e.message);
+                            }
+                        }
+
+                        // Method 7: Check if it's a cluster with layers
+                        if (!zoomSuccess && item.layer._layers) {
+                            console.log('🔄 Trying _layers property (cluster)...');
+                            try {
+                                const layers = Object.values(item.layer._layers);
+                                console.log('📍 Found', layers.length, 'sub-layers');
+                                if (layers.length > 0) {
+                                    const firstLayer = layers[0];
+                                    console.log('📍 First sub-layer:', firstLayer);
+                                    if (firstLayer.getLatLng) {
+                                        const latlng = firstLayer.getLatLng();
+                                        console.log('📍 Sub-layer LatLng:', latlng);
+                                        map.setView([latlng.lat, latlng.lng], 16);
+                                        console.log('✅ Zoom successful with sub-layer getLatLng');
+                                        zoomSuccess = true;
+                                    } else if (firstLayer._latlng) {
+                                        console.log('📍 Sub-layer _latlng:', firstLayer._latlng);
+                                        map.setView([firstLayer._latlng.lat, firstLayer._latlng.lng], 16);
+                                        console.log('✅ Zoom successful with sub-layer _latlng');
+                                        zoomSuccess = true;
+                                    }
+                                } else {
+                                    console.log('⚠️ No sub-layers found');
+                                }
+                            } catch (e) {
+                                console.log('❌ _layers failed:', e.message);
+                            }
+                        }
+
+                        // Final fallback: Use default Tashkent center with higher zoom
+                        if (!zoomSuccess) {
+                            console.log('❌ All zoom methods failed, using fallback');
+                            console.log('📍 Available layer properties:', Object.keys(item.layer));
+                            console.log('📍 Layer prototype methods:', Object.getOwnPropertyNames(Object.getPrototypeOf(item.layer)));
+
+                            map.setView([41.311, 69.279], 14);
+                            if (this.addToast) {
+                                this.addToast('Объектга зум қилиб бўлмади, хаританинг марказига ўтилди', 'warning');
+                            }
+                        } else if (this.addToast) {
+                            this.addToast(`${item.property_name} га муваффақиятли ўтилди`, 'success');
+                        }
+
+                    } catch (error) {
+                        console.error('💥 Critical error during zoom operation:', error);
+                        console.error('💥 Error stack:', error.stack);
+
+                        // Complete fallback
+                        try {
+                            map.setView([41.311, 69.279], 14);
+                        } catch (fallbackError) {
+                            console.error('💥 Even fallback failed:', fallbackError);
+                        }
+
+                        if (this.addToast) {
+                            this.addToast(`Зум қилишда хатолик: ${error.message}`, 'error');
+                        }
+                    }
+                }
+
+                updateStats() {
+                    if (this.totalCountElement) {
+                        this.totalCountElement.textContent = this.kmzData.length;
+                    }
+                }
+
+                addKMZItem(data, layer) {
+                    const item = {
+                        id: data.id || `kmz-${Date.now()}-${this.kmzData.length}`,
+                        layer: layer,
+                        district_name: data.district_name || 'Noma\'lum tuman',
+                        neighborhood_name: data.neighborhood_name || 'Noma\'lum mahalla',
+                        residential_area: data.residential_area || 0,
+                        total_building_area: data.total_building_area || 0,
+                        property_name: data.property_name || data.neighborhood_name || 'KMZ Obyekt',
+                        area_hectare: data.area_hectare || 0,
+                        designated_floors: data.designated_floors || 0,
+                        proposed_floors: data.proposed_floors || 0,
+                        investor: data.investor || '',
+                        status: data.status || 'KMZ Ma\'lumot'
+                    };
+
+                    this.kmzData.push(item);
+                    this.updateStats();
+                }
+
+                clearData() {
+                    this.kmzData = [];
+                    this.filteredData = [];
+                    this.updateStats();
+                    if (this.resultsContainer) {
+                        this.resultsContainer.innerHTML = '<div class="loading-text">KMZ ma\'lumotlar yuklanmoqda...</div>';
+                    }
+                }
+            }
+            // Global KMZ Search Manager instance
+            window.kmzSearchManager = new KMZSearchManager();
 
             // Utility Functions
             const initProj4 = () => {
@@ -1329,32 +1903,16 @@
 
                 try {
                     const decodedUrl = decodeURIComponent(url);
-                    console.log("Processing URL:", decodedUrl);
 
                     // Handle Yandex Maps URLs
-                    if (
-                        decodedUrl.includes("yandex.uz/maps") ||
-                        decodedUrl.includes("yandex.com/maps")
-                    ) {
+                    if (decodedUrl.includes("yandex.uz/maps") || decodedUrl.includes("yandex.com/maps")) {
                         const llMatch = decodedUrl.match(/ll=([^&]+)/);
                         if (llMatch) {
-                            const coords = llMatch[1]
-                                .split("%2C")
-                                .join(",")
-                                .split(",");
+                            const coords = llMatch[1].split("%2C").join(",").split(",");
                             if (coords.length === 2) {
                                 const lng = parseFloat(coords[0]);
                                 const lat = parseFloat(coords[1]);
-                                if (
-                                    lat >= 39 &&
-                                    lat <= 43 &&
-                                    lng >= 68 &&
-                                    lng <= 71
-                                ) {
-                                    console.log(
-                                        "Extracted Yandex coordinates:",
-                                        [lat, lng]
-                                    );
+                                if (lat >= 39 && lat <= 43 && lng >= 68 && lng <= 71) {
                                     return [lat, lng];
                                 }
                             }
@@ -1363,17 +1921,11 @@
 
                     // Google Maps patterns - multiple formats
                     const googlePatterns = [
-                        // Format: @lat,lng,zoom
                         /@(-?\d+\.?\d*),(-?\d+\.?\d*),?\d*[mz]?/,
-                        // Format: decimal coordinates in URL
                         /(-?\d+\.\d{4,}),(-?\d+\.\d{4,})/,
-                        // Format: !3d!4d coordinates
                         /!3d(-?\d+\.?\d*)!4d(-?\d+\.?\d*)/,
-                        // Format: place coordinates
                         /\/place\/[^@]*@(-?\d+\.?\d*),(-?\d+\.?\d*)/,
-                        // Format: DMS coordinates converted
                         /%C2%B0(\d+)'(\d+)\.?(\d*)"N\+(\d+)%C2%B0(\d+)'(\d+)\.?(\d*)"E/,
-                        // Format: simple lat,lng
                         /(-?\d+\.?\d+),(-?\d+\.?\d+)/,
                     ];
 
@@ -1382,7 +1934,6 @@
                         if (match) {
                             let lat, lng;
 
-                            // Handle DMS (Degrees Minutes Seconds) format
                             if (pattern.source.includes("C2%B0")) {
                                 const latDeg = parseInt(match[1]);
                                 const latMin = parseInt(match[2]);
@@ -1398,17 +1949,7 @@
                                 lng = parseFloat(match[2]);
                             }
 
-                            // Validate coordinates are in Uzbekistan range
-                            if (
-                                lat >= 39 &&
-                                lat <= 43 &&
-                                lng >= 68 &&
-                                lng <= 71
-                            ) {
-                                console.log("Extracted Google coordinates:", [
-                                    lat,
-                                    lng,
-                                ]);
+                            if (lat >= 39 && lat <= 43 && lng >= 68 && lng <= 71) {
                                 return [lat, lng];
                             }
                         }
@@ -1418,25 +1959,13 @@
                     try {
                         const urlObj = new URL(decodedUrl);
                         const params = urlObj.searchParams;
-
                         const qParam = params.get("q");
                         if (qParam) {
-                            const qMatch = qParam.match(
-                                /(-?\d+\.?\d*),(-?\d+\.?\d*)/
-                            );
+                            const qMatch = qParam.match(/(-?\d+\.?\d*),(-?\d+\.?\d*)/);
                             if (qMatch) {
                                 const lat = parseFloat(qMatch[1]);
                                 const lng = parseFloat(qMatch[2]);
-                                if (
-                                    lat >= 39 &&
-                                    lat <= 43 &&
-                                    lng >= 68 &&
-                                    lng <= 71
-                                ) {
-                                    console.log(
-                                        "Extracted q parameter coordinates:",
-                                        [lat, lng]
-                                    );
+                                if (lat >= 39 && lat <= 43 && lng >= 68 && lng <= 71) {
                                     return [lat, lng];
                                 }
                             }
@@ -1445,52 +1974,13 @@
                         // URL parsing failed, continue
                     }
 
-                    // Fallback: any two decimal numbers that look like coordinates
-                    const allCoordMatches = decodedUrl.match(/(-?\d+\.\d+)/g);
-                    if (allCoordMatches && allCoordMatches.length >= 2) {
-                        for (let i = 0; i < allCoordMatches.length - 1; i++) {
-                            const coord1 = parseFloat(allCoordMatches[i]);
-                            const coord2 = parseFloat(allCoordMatches[i + 1]);
-
-                            // Try both orders (lat,lng and lng,lat)
-                            if (
-                                coord1 >= 39 &&
-                                coord1 <= 43 &&
-                                coord2 >= 68 &&
-                                coord2 <= 71
-                            ) {
-                                console.log(
-                                    "Extracted fallback coordinates (lat,lng):",
-                                    [coord1, coord2]
-                                );
-                                return [coord1, coord2];
-                            }
-                            if (
-                                coord2 >= 39 &&
-                                coord2 <= 43 &&
-                                coord1 >= 68 &&
-                                coord1 <= 71
-                            ) {
-                                console.log(
-                                    "Extracted fallback coordinates (lng,lat):",
-                                    [coord2, coord1]
-                                );
-                                return [coord2, coord1];
-                            }
-                        }
-                    }
-
-                    console.log("No valid coordinates found in URL");
                     return null;
                 } catch (error) {
-                    console.error(
-                        "Error extracting coordinates from URL:",
-                        url,
-                        error
-                    );
+                    console.error("Error extracting coordinates from URL:", url, error);
                     return null;
                 }
             };
+
             // Enhanced marker creation
             const createMarkerIcon = (type, size = 16) => {
                 const colors = {
@@ -1507,9 +1997,7 @@
                 };
 
                 return L.divIcon({
-                    html: `<div class="marker-icon marker-${type}" style="width:${size}px;height:${size}px;background:${
-                        colors[type] || colors.regular
-                    }"></div>`,
+                    html: `<div class="marker-icon marker-${type}" style="width:${size}px;height:${size}px;background:${colors[type] || colors.regular}"></div>`,
                     className: "custom-marker",
                     iconSize: [size + 6, size + 6],
                     iconAnchor: [(size + 6) / 2, (size + 6) / 2],
@@ -1517,16 +2005,11 @@
             };
 
             // Enhanced KMZ processing
-            // Enhanced KMZ processing
             const processKMZFile = async (fileUrl) => {
                 try {
-                    // Fix CORS issue by updating localhost URLs to match current origin
                     let correctedUrl = fileUrl;
                     if (fileUrl.includes("http://localhost/")) {
-                        correctedUrl = fileUrl.replace(
-                            "http://localhost/",
-                            "http://127.0.0.1:8000/"
-                        );
+                        correctedUrl = fileUrl.replace("http://localhost/", "http://127.0.0.1:8000/");
                     }
 
                     const response = await fetch(correctedUrl);
@@ -1543,14 +2026,9 @@
                         throw new Error("No KML file found in KMZ");
                     }
 
-                    const kmlContent = await contents.files[kmlFile].async(
-                        "string"
-                    );
+                    const kmlContent = await contents.files[kmlFile].async("string");
                     const parser = new DOMParser();
-                    const kmlDoc = parser.parseFromString(
-                        kmlContent,
-                        "text/xml"
-                    );
+                    const kmlDoc = parser.parseFromString(kmlContent, "text/xml");
 
                     const geoJSON = toGeoJSON.kml(kmlDoc);
                     return geoJSON;
@@ -1559,59 +2037,37 @@
                     throw error;
                 }
             };
+
             // Enhanced strategy color function with red lines support
             const getStrategyColor = (properties) => {
                 if (!properties) return STRATEGY_COLORS.default;
 
-                // Check for red lines first
-                const funksiya =
-                    properties.funksiya ||
-                    properties.function ||
-                    properties.type;
+                const funksiya = properties.funksiya || properties.function || properties.type;
                 if (funksiya === "Qizil_chiziqlar") {
                     return STRATEGY_COLORS.Qizil_chiziqlar;
                 }
 
-                // Check strategy
-                const strategy =
-                    properties.strategiya ||
-                    properties.strategy ||
-                    properties.type;
+                const strategy = properties.strategiya || properties.strategy || properties.type;
                 if (strategy) {
-                    const normalizedStrategy = strategy
-                        .toString()
-                        .toLowerCase();
+                    const normalizedStrategy = strategy.toString().toLowerCase();
 
-                    for (const [key, color] of Object.entries(
-                        STRATEGY_COLORS
-                    )) {
+                    for (const [key, color] of Object.entries(STRATEGY_COLORS)) {
                         if (key.toLowerCase() === normalizedStrategy) {
                             return color;
                         }
                     }
 
-                    if (
-                        normalizedStrategy.includes("konservat") ||
-                        normalizedStrategy.includes("консерв")
-                    ) {
+                    if (normalizedStrategy.includes("konservat") || normalizedStrategy.includes("консерв")) {
                         return STRATEGY_COLORS["Konservatsiya"];
                     }
-                    if (
-                        normalizedStrategy.includes("rekonstrukt") ||
-                        normalizedStrategy.includes("реконструк")
-                    ) {
+                    if (normalizedStrategy.includes("rekonstrukt") || normalizedStrategy.includes("реконструк")) {
                         return STRATEGY_COLORS["Rekonstruktsiya"];
                     }
-                    if (
-                        normalizedStrategy.includes("yangi") ||
-                        normalizedStrategy.includes("новое") ||
-                        normalizedStrategy.includes("строитель")
-                    ) {
+                    if (normalizedStrategy.includes("yangi") || normalizedStrategy.includes("новое") || normalizedStrategy.includes("строитель")) {
                         return STRATEGY_COLORS["Yangi_qurilish"];
                     }
                 }
 
-                // Check function if no strategy
                 if (funksiya) {
                     return FUNCTION_COLORS[funksiya] || FUNCTION_COLORS.default;
                 }
@@ -1662,6 +2118,60 @@
                 };
                 return functions[func] || func || "N/A";
             };
+
+            // KMZ Search Component - clean version without debug buttons
+            const KMZSearchControl = ({ addToast }) => {
+                const searchInputRef = useRef(null);
+                const resultsRef = useRef(null);
+                const statsRef = useRef(null);
+                const totalCountRef = useRef(null);
+
+                useEffect(() => {
+                    if (searchInputRef.current && resultsRef.current && statsRef.current && totalCountRef.current) {
+                        window.kmzSearchManager.init(
+                            searchInputRef.current,
+                            resultsRef.current,
+                            statsRef.current,
+                            totalCountRef.current,
+                            addToast
+                        );
+                    }
+                }, [addToast]);
+
+                return React.createElement(
+                    "div",
+                    { className: "control-panel kmz-search-control" },
+                    React.createElement(
+                        "div",
+                        { className: "search-title" },
+                        React.createElement("i", { className: "fas fa-search" }),
+                        TEXTS.kmzSearch
+                    ),
+                    React.createElement("input", {
+                        ref: searchInputRef,
+                        type: "text",
+                        className: "search-input",
+                        placeholder: "Tuman, mahalla yoki maydon bo'yicha qidiring..."
+                    }),
+                    React.createElement(
+                        "div",
+                        { ref: resultsRef, className: "results-container" },
+                        React.createElement(
+                            "div",
+                            { className: "loading-text" },
+                            "KMZ ma'lumotlar yuklanmoqda..."
+                        )
+                    ),
+                    React.createElement(
+                        "div",
+                        { ref: statsRef, className: "stats-info" },
+                        "Jami: ",
+                        React.createElement("span", { ref: totalCountRef }, "0"),
+                        " ta KMZ obyekt"
+                    )
+                );
+            };
+
             // Toast Component
             const Toast = ({ toasts, removeToast }) =>
                 React.createElement(
@@ -1725,9 +2235,7 @@
                     React.createElement(
                         "div",
                         { className: "legend-title" },
-                        React.createElement("i", {
-                            className: "fas fa-palette",
-                        }),
+                        React.createElement("i", { className: "fas fa-palette" }),
                         TEXTS.legend
                     ),
                     React.createElement(
@@ -1735,10 +2243,7 @@
                         { className: "legend-item" },
                         React.createElement("div", {
                             className: "legend-color",
-                            style: {
-                                backgroundColor:
-                                    STRATEGY_COLORS["Konservatsiya"],
-                            },
+                            style: { backgroundColor: STRATEGY_COLORS["Konservatsiya"] },
                         }),
                         React.createElement("span", null, TEXTS.conservation)
                     ),
@@ -1747,10 +2252,7 @@
                         { className: "legend-item" },
                         React.createElement("div", {
                             className: "legend-color",
-                            style: {
-                                backgroundColor:
-                                    STRATEGY_COLORS["Rekonstruktsiya"],
-                            },
+                            style: { backgroundColor: STRATEGY_COLORS["Rekonstruktsiya"] },
                         }),
                         React.createElement("span", null, TEXTS.reconstruction)
                     ),
@@ -1759,10 +2261,7 @@
                         { className: "legend-item" },
                         React.createElement("div", {
                             className: "legend-color",
-                            style: {
-                                backgroundColor:
-                                    STRATEGY_COLORS["Yangi_qurilish"],
-                            },
+                            style: { backgroundColor: STRATEGY_COLORS["Yangi_qurilish"] },
                         }),
                         React.createElement("span", null, TEXTS.newConstruction)
                     ),
@@ -1771,37 +2270,10 @@
                         { className: "legend-item" },
                         React.createElement("div", {
                             className: "legend-color",
-                            style: {
-                                backgroundColor:
-                                    STRATEGY_COLORS["Qizil_chiziqlar"],
-                            },
+                            style: { backgroundColor: STRATEGY_COLORS["Qizil_chiziqlar"] },
                         }),
                         React.createElement("span", null, TEXTS.redLines)
                     )
-                    // React.createElement(
-                    //     "div",
-                    //     { className: "legend-item" },
-                    //     React.createElement("div", {
-                    //         className: "legend-color",
-                    //         style: {
-                    //             backgroundColor:
-                    //                 FUNCTION_COLORS["Aholi_yashash_joyi"],
-                    //         },
-                    //     }),
-                    //     React.createElement("span", null, "Аҳоли яшаш жойи")
-                    // ),
-                    // React.createElement(
-                    //     "div",
-                    //     { className: "legend-item" },
-                    //     React.createElement("div", {
-                    //         className: "legend-color",
-                    //         style: {
-                    //             backgroundColor:
-                    //                 FUNCTION_COLORS["Savdo_xizmat"],
-                    //         },
-                    //     }),
-                    //     React.createElement("span", null, "Савдо-хизмат")
-                    // )
                 );
 
             // Enhanced Sidebar Component
@@ -1826,23 +2298,17 @@
                                     item?.["Манзил(МФЙ,кўча)"] ||
                                     TEXTS.objectDetails
                             ),
-                            (item?.district_name ||
-                                item?.district ||
-                                item?.["Туман"]) &&
+                            (item?.district_name || item?.district || item?.["Туман"]) &&
                                 React.createElement(
                                     "div",
                                     { className: "app-subtitle" },
-                                    item.district_name ||
-                                        item.district ||
-                                        item["Туман"]
+                                    item.district_name || item.district || item["Туман"]
                                 )
                         ),
                         React.createElement(
                             "button",
                             { className: "close-btn", onClick: onClose },
-                            React.createElement("i", {
-                                className: "fas fa-times",
-                            })
+                            React.createElement("i", { className: "fas fa-times" })
                         )
                     ),
                     React.createElement(
@@ -1859,9 +2325,7 @@
                                     React.createElement(
                                         "h3",
                                         { className: "section-title" },
-                                        React.createElement("i", {
-                                            className: "fas fa-info-circle",
-                                        }),
+                                        React.createElement("i", { className: "fas fa-info-circle" }),
                                         TEXTS.basicInfo
                                     ),
                                     React.createElement(
@@ -1874,11 +2338,7 @@
                                             React.createElement(
                                                 "tr",
                                                 null,
-                                                React.createElement(
-                                                    "td",
-                                                    null,
-                                                    TEXTS.name + ":"
-                                                ),
+                                                React.createElement("td", null, TEXTS.name + ":"),
                                                 React.createElement(
                                                     "td",
                                                     null,
@@ -1886,9 +2346,7 @@
                                                         item.neighborhood_name ||
                                                         item.mahalla_nomi ||
                                                         item["Объект_номи"] ||
-                                                        item[
-                                                            "Манзил_(МФЙ,_кўча)"
-                                                        ] ||
+                                                        item["Манзил_(МФЙ,_кўча)"] ||
                                                         item.funksiya ||
                                                         "N/A"
                                                 )
@@ -1897,11 +2355,7 @@
                                             React.createElement(
                                                 "tr",
                                                 null,
-                                                React.createElement(
-                                                    "td",
-                                                    null,
-                                                    TEXTS.strategy + ":"
-                                                ),
+                                                React.createElement("td", null, TEXTS.strategy + ":"),
                                                 React.createElement(
                                                     "td",
                                                     null,
@@ -1909,43 +2363,25 @@
                                                         "span",
                                                         {
                                                             className: `badge badge-${
-                                                                item.strategiya ===
-                                                                "Konservatsiya"
+                                                                item.strategiya === "Konservatsiya"
                                                                     ? "conservation"
-                                                                    : item.strategiya ===
-                                                                      "Rekonstruktsiya"
+                                                                    : item.strategiya === "Rekonstruktsiya"
                                                                     ? "reconstruction"
-                                                                    : item.strategiya ===
-                                                                      "Yangi_qurilish"
+                                                                    : item.strategiya === "Yangi_qurilish"
                                                                     ? "new-construction"
-                                                                    : item.funksiya ===
-                                                                      "Qizil_chiziqlar"
+                                                                    : item.funksiya === "Qizil_chiziqlar"
                                                                     ? "red-line"
-                                                                    : item[
-                                                                          "Таклиф_тури_(Реновация,_Инвестиция,_Аукцион)"
-                                                                      ] ===
-                                                                      "Реновация"
+                                                                    : item["Таклиф_тури_(Реновация,_Инвестиция,_Аукцион)"] === "Реновация"
                                                                     ? "renovation"
-                                                                    : item[
-                                                                          "Таклиф_тури_(Реновация,_Инвестиция,_Аукцион)"
-                                                                      ] ===
-                                                                      "Аукцион"
+                                                                    : item["Таклиф_тури_(Реновация,_Инвестиция,_Аукцион)"] === "Аукцион"
                                                                     ? "auction"
                                                                     : "investment"
                                                             }`,
                                                         },
-                                                        formatStrategy(
-                                                            item.strategiya
-                                                        ) ||
-                                                            formatStrategy(
-                                                                item.type
-                                                            ) ||
-                                                            item[
-                                                                "Таклиф_тури_(Реновация,_Инвестиция,_Аукцион)"
-                                                            ] ||
-                                                            formatFunction(
-                                                                item.funksiya
-                                                            ) ||
+                                                        formatStrategy(item.strategiya) ||
+                                                            formatStrategy(item.type) ||
+                                                            item["Таклиф_тури_(Реновация,_Инвестиция,_Аукцион)"] ||
+                                                            formatFunction(item.funksiya) ||
                                                             "N/A"
                                                     )
                                                 )
@@ -1955,28 +2391,14 @@
                                                 React.createElement(
                                                     "tr",
                                                     null,
-                                                    React.createElement(
-                                                        "td",
-                                                        null,
-                                                        TEXTS.function + ":"
-                                                    ),
-                                                    React.createElement(
-                                                        "td",
-                                                        null,
-                                                        formatFunction(
-                                                            item.funksiya
-                                                        )
-                                                    )
+                                                    React.createElement("td", null, TEXTS.function + ":"),
+                                                    React.createElement("td", null, formatFunction(item.funksiya))
                                                 ),
                                             // District/Region
                                             React.createElement(
                                                 "tr",
                                                 null,
-                                                React.createElement(
-                                                    "td",
-                                                    null,
-                                                    TEXTS.district + ":"
-                                                ),
+                                                React.createElement("td", null, TEXTS.district + ":"),
                                                 React.createElement(
                                                     "td",
                                                     null,
@@ -1991,33 +2413,20 @@
                                             React.createElement(
                                                 "tr",
                                                 null,
-                                                React.createElement(
-                                                    "td",
-                                                    null,
-                                                    TEXTS.area + ":"
-                                                ),
+                                                React.createElement("td", null, TEXTS.area + ":"),
                                                 React.createElement(
                                                     "td",
                                                     null,
                                                     item.area_hectare
                                                         ? `${item.area_hectare} га`
                                                         : item.maydoni
-                                                        ? formatArea(
-                                                              item.maydoni *
-                                                                  10000
-                                                          )
+                                                        ? formatArea(item.maydoni * 10000)
                                                         : item.land_area
                                                         ? `${item.land_area} га`
-                                                        : item[
-                                                              "Таклиф_Ер_майдони_(га)"
-                                                          ]
+                                                        : item["Таклиф_Ер_майдони_(га)"]
                                                         ? `${item["Таклиф_Ер_майдони_(га)"]} га`
                                                         : item["SHAPE__Area"]
-                                                        ? formatArea(
-                                                              item[
-                                                                  "SHAPE__Area"
-                                                              ]
-                                                          )
+                                                        ? formatArea(item["SHAPE__Area"])
                                                         : "N/A"
                                                 )
                                             ),
@@ -2026,106 +2435,33 @@
                                                 React.createElement(
                                                     "tr",
                                                     null,
-                                                    React.createElement(
-                                                        "td",
-                                                        null,
-                                                        "Умумий бино майдони:"
-                                                    ),
-                                                    React.createElement(
-                                                        "td",
-                                                        null,
-                                                        `${item.total_building_area} м²`
-                                                    )
+                                                    React.createElement("td", null, "Умумий бино майдони:"),
+                                                    React.createElement("td", null, `${item.total_building_area} м²`)
                                                 ),
                                             // Residential Area
-                                            (item.residential_area ||
-                                                item["Яшаш_майдон"]) &&
+                                            (item.residential_area || item["Яшаш_майдон"]) &&
                                                 React.createElement(
                                                     "tr",
                                                     null,
+                                                    React.createElement("td", null, "Яшаш майдони:"),
                                                     React.createElement(
                                                         "td",
                                                         null,
-                                                        "Яшаш майдони:"
-                                                    ),
-                                                    React.createElement(
-                                                        "td",
-                                                        null,
-                                                        `${
-                                                            item.residential_area ||
-                                                            item["Яшаш_майдон"]
-                                                        } м²`
+                                                        `${item.residential_area || item["Яшаш_майдон"]} м²`
                                                     )
                                                 ),
                                             // Floors
-                                            (item.designated_floors ||
-                                                item.proposed_floors ||
-                                                item["Этажность"]) &&
+                                            (item.designated_floors || item.proposed_floors || item["Этажность"]) &&
                                                 React.createElement(
                                                     "tr",
                                                     null,
-                                                    React.createElement(
-                                                        "td",
-                                                        null,
-                                                        "Қаватлар:"
-                                                    ),
+                                                    React.createElement("td", null, "Қаватлар:"),
                                                     React.createElement(
                                                         "td",
                                                         null,
                                                         item.designated_floors
-                                                            ? `${
-                                                                  item.designated_floors
-                                                              } (белгиланган) / ${
-                                                                  item.proposed_floors ||
-                                                                  "N/A"
-                                                              } (таклиф)`
-                                                            : item[
-                                                                  "Этажность"
-                                                              ] || "N/A"
-                                                    )
-                                                ),
-                                            // Population
-                                            (item.population ||
-                                                item["Ахоли_сони"]) &&
-                                                React.createElement(
-                                                    "tr",
-                                                    null,
-                                                    React.createElement(
-                                                        "td",
-                                                        null,
-                                                        "Аҳоли сони:"
-                                                    ),
-                                                    React.createElement(
-                                                        "td",
-                                                        null,
-                                                        Math.round(
-                                                            item.population ||
-                                                                item[
-                                                                    "Ахоли_сони"
-                                                                ]
-                                                        )
-                                                    )
-                                                ),
-                                            // Households
-                                            (item.household_count ||
-                                                item["хонадонлар_сони"]) &&
-                                                React.createElement(
-                                                    "tr",
-                                                    null,
-                                                    React.createElement(
-                                                        "td",
-                                                        null,
-                                                        "Хонадонлар:"
-                                                    ),
-                                                    React.createElement(
-                                                        "td",
-                                                        null,
-                                                        Math.round(
-                                                            item.household_count ||
-                                                                item[
-                                                                    "хонадонлар_сони"
-                                                                ]
-                                                        )
+                                                            ? `${item.designated_floors} (белгиланган) / ${item.proposed_floors || "N/A"} (таклиф)`
+                                                            : item["Этажность"] || "N/A"
                                                     )
                                                 ),
                                             // Investor
@@ -2133,208 +2469,24 @@
                                                 React.createElement(
                                                     "tr",
                                                     null,
-                                                    React.createElement(
-                                                        "td",
-                                                        null,
-                                                        "Инвестор:"
-                                                    ),
-                                                    React.createElement(
-                                                        "td",
-                                                        null,
-                                                        item.investor
-                                                    )
-                                                ),
-                                            // Decision Number
-                                            item.decision_number &&
-                                                React.createElement(
-                                                    "tr",
-                                                    null,
-                                                    React.createElement(
-                                                        "td",
-                                                        null,
-                                                        "Қарор рақами:"
-                                                    ),
-                                                    React.createElement(
-                                                        "td",
-                                                        null,
-                                                        item.decision_number
-                                                    )
-                                                ),
-                                            // Activity Type
-                                            item["Таклиф_Фаолият_тури"] &&
-                                                React.createElement(
-                                                    "tr",
-                                                    null,
-                                                    React.createElement(
-                                                        "td",
-                                                        null,
-                                                        "Фаолият тури:"
-                                                    ),
-                                                    React.createElement(
-                                                        "td",
-                                                        null,
-                                                        item[
-                                                            "Таклиф_Фаолият_тури"
-                                                        ]
-                                                    )
-                                                ),
-                                            // Construction Area
-                                            (item["Қурилиш_ости_майдони"] ||
-                                                item[
-                                                    "Бинонинг_умумий_майдони"
-                                                ]) &&
-                                                React.createElement(
-                                                    "tr",
-                                                    null,
-                                                    React.createElement(
-                                                        "td",
-                                                        null,
-                                                        "Қурилиш майдони:"
-                                                    ),
-                                                    React.createElement(
-                                                        "td",
-                                                        null,
-                                                        `${
-                                                            item[
-                                                                "Қурилиш_ости_майдони"
-                                                            ] ||
-                                                            item[
-                                                                "Бинонинг_умумий_майдони"
-                                                            ]
-                                                        } м²`
-                                                    )
-                                                ),
-                                            // Master Plan Status
-                                            item[
-                                                "Таклиф_Бош_режага_таклиф_киритилганлиги_(таклиф_берилган_лекин_киритилмаган_бўлас_КИРИТИЛМАГАН_хисобланади)"
-                                            ] &&
-                                                React.createElement(
-                                                    "tr",
-                                                    null,
-                                                    React.createElement(
-                                                        "td",
-                                                        null,
-                                                        "Бош режадаги ҳолати:"
-                                                    ),
-                                                    React.createElement(
-                                                        "td",
-                                                        null,
-                                                        React.createElement(
-                                                            "span",
-                                                            {
-                                                                className: `badge ${
-                                                                    item[
-                                                                        "Таклиф_Бош_режага_таклиф_киритилганлиги_(таклиф_берилган_лекин_киритилмаган_бўлас_КИРИТИЛМАГАН_хисобланади)"
-                                                                    ] ===
-                                                                    "Киритилган"
-                                                                        ? "badge-sold"
-                                                                        : "badge-auction"
-                                                                }`,
-                                                            },
-                                                            item[
-                                                                "Таклиф_Бош_режага_таклиф_киритилганлиги_(таклиф_берилган_лекин_киритилмаган_бўлас_КИРИТИЛМАГАН_хисобланади)"
-                                                            ]
-                                                        )
-                                                    )
+                                                    React.createElement("td", null, "Инвестор:"),
+                                                    React.createElement("td", null, item.investor)
                                                 ),
                                             // Price
-                                            (item.start_price ||
-                                                item.sold_price) &&
+                                            (item.start_price || item.sold_price) &&
                                                 React.createElement(
                                                     "tr",
                                                     null,
+                                                    React.createElement("td", null, TEXTS.price + ":"),
                                                     React.createElement(
                                                         "td",
                                                         null,
-                                                        TEXTS.price + ":"
-                                                    ),
-                                                    React.createElement(
-                                                        "td",
-                                                        null,
-                                                        `${Number(
-                                                            item.start_price ||
-                                                                item.sold_price
-                                                        ).toLocaleString(
-                                                            "uz-UZ"
-                                                        )} сум`
+                                                        `${Number(item.start_price || item.sold_price).toLocaleString("uz-UZ")} сум`
                                                     )
                                                 )
                                         )
                                     )
                                 ),
-
-                                // Technical Parameters Section
-                                (item.umn_coefficient ||
-                                    item.qmn_percentage ||
-                                    item["Хизмат_кўрсатиш_сохаси"]) &&
-                                    React.createElement(
-                                        "div",
-                                        { className: "section" },
-                                        React.createElement(
-                                            "h3",
-                                            { className: "section-title" },
-                                            React.createElement("i", {
-                                                className: "fas fa-cogs",
-                                            }),
-                                            "Техник параметрлар"
-                                        ),
-                                        React.createElement(
-                                            "table",
-                                            { className: "info-table" },
-                                            React.createElement(
-                                                "tbody",
-                                                null,
-                                                item.umn_coefficient &&
-                                                    React.createElement(
-                                                        "tr",
-                                                        null,
-                                                        React.createElement(
-                                                            "td",
-                                                            null,
-                                                            "УМН коэффициенти:"
-                                                        ),
-                                                        React.createElement(
-                                                            "td",
-                                                            null,
-                                                            item.umn_coefficient
-                                                        )
-                                                    ),
-                                                item.qmn_percentage &&
-                                                    React.createElement(
-                                                        "tr",
-                                                        null,
-                                                        React.createElement(
-                                                            "td",
-                                                            null,
-                                                            "ҚМН фоизи:"
-                                                        ),
-                                                        React.createElement(
-                                                            "td",
-                                                            null,
-                                                            `${item.qmn_percentage}%`
-                                                        )
-                                                    ),
-                                                item[
-                                                    "Хизмат_кўрсатиш_сохаси"
-                                                ] &&
-                                                    React.createElement(
-                                                        "tr",
-                                                        null,
-                                                        React.createElement(
-                                                            "td",
-                                                            null,
-                                                            "Хизмат кўрсатиш:"
-                                                        ),
-                                                        React.createElement(
-                                                            "td",
-                                                            null,
-                                                            `${item["Хизмат_кўрсатиш_сохаси"]} м²`
-                                                        )
-                                                    )
-                                            )
-                                        )
-                                    ),
-
                                 // Image Section
                                 item.main_image &&
                                     React.createElement(
@@ -2343,28 +2495,20 @@
                                         React.createElement(
                                             "h3",
                                             { className: "section-title" },
-                                            React.createElement("i", {
-                                                className: "fas fa-image",
-                                            }),
+                                            React.createElement("i", { className: "fas fa-image" }),
                                             TEXTS.image
                                         ),
                                         React.createElement("img", {
                                             src: item.main_image,
-                                            alt:
-                                                item.property_name ||
-                                                item.neighborhood_name ||
-                                                "Property",
+                                            alt: item.property_name || item.neighborhood_name || "Property",
                                             style: {
                                                 width: "100%",
                                                 maxHeight: "200px",
                                                 objectFit: "cover",
-                                                borderRadius:
-                                                    "var(--border-radius)",
+                                                borderRadius: "var(--border-radius)",
                                                 boxShadow: "var(--shadow)",
                                             },
-                                            onError: (e) =>
-                                                (e.target.style.display =
-                                                    "none"),
+                                            onError: (e) => (e.target.style.display = "none"),
                                         })
                                     )
                             )
@@ -2379,20 +2523,15 @@
                     React.createElement(
                         "h3",
                         { className: "control-title" },
-                        React.createElement("i", {
-                            className: "fas fa-layer-group",
-                        }),
+                        React.createElement("i", { className: "fas fa-layer-group" }),
                         TEXTS.mapLayers
                     ),
-
                     Object.entries(layers).map(([key, layer]) =>
                         React.createElement(
                             "button",
                             {
                                 key: key,
-                                className: `layer-button ${
-                                    layer.visible ? "active" : ""
-                                }`,
+                                className: `layer-button ${layer.visible ? "active" : ""}`,
                                 onClick: () => onToggle(key),
                             },
                             React.createElement(
@@ -2401,20 +2540,13 @@
                                 React.createElement(
                                     "div",
                                     { className: "layer-icon" },
-                                    React.createElement("i", {
-                                        className: layer.icon,
-                                    })
+                                    React.createElement("i", { className: layer.icon })
                                 ),
                                 React.createElement("span", null, layer.name)
                             ),
-                            React.createElement(
-                                "span",
-                                { className: "count-badge" },
-                                counts[key] || 0
-                            )
+                            React.createElement("span", { className: "count-badge" }, counts[key] || 0)
                         )
                     ),
-
                     React.createElement(Legend)
                 );
 
@@ -2429,15 +2561,12 @@
                         React.createElement("i", { className: "fas fa-map" }),
                         TEXTS.mapStyle
                     ),
-
                     Object.entries(MAP_STYLES).map(([key, style]) =>
                         React.createElement(
                             "button",
                             {
                                 key: key,
-                                className: `style-button ${
-                                    currentStyle === key ? "active" : ""
-                                }`,
+                                className: `style-button ${currentStyle === key ? "active" : ""}`,
                                 onClick: () => onStyleChange(key),
                             },
                             style.name
@@ -2462,12 +2591,9 @@
                     React.createElement(
                         "h3",
                         { className: "control-title" },
-                        React.createElement("i", {
-                            className: "fas fa-file-code",
-                        }),
+                        React.createElement("i", { className: "fas fa-file-code" }),
                         TEXTS.geojsonManager
                     ),
-
                     React.createElement(
                         "div",
                         { className: "file-input-group" },
@@ -2484,82 +2610,52 @@
                             React.createElement(
                                 "button",
                                 { className: "primary-btn", onClick: onLoad },
-                                React.createElement("i", {
-                                    className: "fas fa-upload",
-                                }),
+                                React.createElement("i", { className: "fas fa-upload" }),
                                 TEXTS.load
                             ),
                             React.createElement(
                                 "button",
-                                {
-                                    className: "secondary-btn",
-                                    onClick: onClear,
-                                },
-                                React.createElement("i", {
-                                    className: "fas fa-trash",
-                                }),
+                                { className: "secondary-btn", onClick: onClear },
+                                React.createElement("i", { className: "fas fa-trash" }),
                                 TEXTS.clearAll
                             )
                         )
                     ),
-
-                    status &&
-                        React.createElement(
-                            "div",
-                            { className: "status-text" },
-                            status
-                        ),
-
+                    status && React.createElement("div", { className: "status-text" }, status),
                     geoJsonLayers.size > 0 &&
                         React.createElement(
                             "div",
                             { className: "layer-list" },
-                            Array.from(geoJsonLayers.entries()).map(
-                                ([layerId, layerData]) =>
+                            Array.from(geoJsonLayers.entries()).map(([layerId, layerData]) =>
+                                React.createElement(
+                                    "div",
+                                    { key: layerId, className: "layer-item" },
+                                    React.createElement(
+                                        "span",
+                                        { className: "layer-name", title: layerId },
+                                        layerId
+                                    ),
                                     React.createElement(
                                         "div",
-                                        {
-                                            key: layerId,
-                                            className: "layer-item",
-                                        },
+                                        { className: "layer-actions" },
                                         React.createElement(
-                                            "span",
+                                            "button",
                                             {
-                                                className: "layer-name",
-                                                title: layerId,
+                                                className: `action-btn toggle-btn ${layerData.visible ? "" : "hidden"}`,
+                                                onClick: () => onToggle(layerId),
                                             },
-                                            layerId
+                                            layerData.visible ? TEXTS.show : TEXTS.hide
                                         ),
                                         React.createElement(
-                                            "div",
-                                            { className: "layer-actions" },
-                                            React.createElement(
-                                                "button",
-                                                {
-                                                    className: `action-btn toggle-btn ${
-                                                        layerData.visible
-                                                            ? ""
-                                                            : "hidden"
-                                                    }`,
-                                                    onClick: () =>
-                                                        onToggle(layerId),
-                                                },
-                                                layerData.visible
-                                                    ? TEXTS.show
-                                                    : TEXTS.hide
-                                            ),
-                                            React.createElement(
-                                                "button",
-                                                {
-                                                    className:
-                                                        "action-btn remove-btn",
-                                                    onClick: () =>
-                                                        onRemove(layerId),
-                                                },
-                                                TEXTS.remove
-                                            )
+                                            "button",
+                                            {
+                                                className: "action-btn remove-btn",
+                                                onClick: () => onRemove(layerId),
+                                            },
+                                            TEXTS.remove
                                         )
                                     )
+                                )
                             )
                         )
                 );
@@ -2572,21 +2668,11 @@
                 const [sidebarOpen, setSidebarOpen] = useState(false);
                 const [selectedItem, setSelectedItem] = useState(null);
                 const [currentMapStyle, setCurrentMapStyle] = useState("osm");
-                const [geoJsonFilepath, setGeoJsonFilepath] = useState(
-                    "http://127.0.0.1:8000/tashkent_master_plan.geojson"
-                );
-                const [geoJsonStatus, setGeoJsonStatus] = useState(
-                    "GeoJSON файллари учун тайёр..."
-                );
-                const [dragActive, setDragActive] = useState(false);
+                const [geoJsonFilepath, setGeoJsonFilepath] = useState("http://127.0.0.1:8000/tashkent_master_plan.geojson");
+                const [geoJsonStatus, setGeoJsonStatus] = useState("GeoJSON файллари учун тайёр...");
 
                 // Enhanced layer state
                 const [layers, setLayers] = useState({
-                    // aktivs: {
-                    //     name: TEXTS.apiData,
-                    //     icon: "fas fa-building",
-                    //     visible: true,
-                    // },
                     jsonData: {
                         name: TEXTS.jsonData,
                         icon: "fas fa-layer-group",
@@ -2624,21 +2710,21 @@
                 const layerGroupsRef = useRef({});
                 const geoJsonLayersRef = useRef(new Map());
 
+                // Make refs globally accessible
+                window.mapInstanceRef = mapInstanceRef;
+                window.layerGroupsRef = layerGroupsRef;
+
                 // Toast Management
                 const addToast = useCallback((message, type = "info") => {
                     const id = Date.now();
                     setToasts((prev) => [...prev, { id, message, type }]);
                     setTimeout(() => {
-                        setToasts((prev) =>
-                            prev.filter((toast) => toast.id !== id)
-                        );
+                        setToasts((prev) => prev.filter((toast) => toast.id !== id));
                     }, 5000);
                 }, []);
 
                 const removeToast = useCallback((id) => {
-                    setToasts((prev) =>
-                        prev.filter((toast) => toast.id !== id)
-                    );
+                    setToasts((prev) => prev.filter((toast) => toast.id !== id));
                 }, []);
 
                 // Map Initialization
@@ -2695,130 +2781,9 @@
                     initProj4();
                 }, [layers]);
 
-                // Data Fetching Functions
-                const fetchAktivsData = useCallback(async () => {
-                    try {
-                        const response = await fetch(API_ENDPOINTS.aktivs);
-                        if (!response.ok)
-                            throw new Error(
-                                `API request failed: ${response.status}`
-                            );
-
-                        const data = await response.json();
-                        const lots = data.lots || data || [];
-
-                        let processed = 0;
-                        let kmzProcessed = 0;
-                        const group = layerGroupsRef.current.aktivs;
-                        const kmzGroup = layerGroupsRef.current.kmz;
-
-                        for (const lot of lots) {
-                            if (!lot) continue;
-
-                            if (lot.lat && lot.lng) {
-                                const marker = L.marker(
-                                    [parseFloat(lot.lat), parseFloat(lot.lng)],
-                                    {
-                                        icon: createMarkerIcon("regular"),
-                                    }
-                                );
-
-                                const popup = `
-                                <div class="popup-header">${
-                                    lot.neighborhood_name || "Активс мулки"
-                                }</div>
-                                ${
-                                    lot.main_image
-                                        ? `<img src="${lot.main_image}" class="popup-image" onerror="this.style.display='none'">`
-                                        : ""
-                                }
-                                <div class="popup-details">
-                                    <p><strong>${TEXTS.district}:</strong> ${
-                                    lot.district_name || "N/A"
-                                }</p>
-                                    <p><strong>${TEXTS.area}:</strong> ${
-                                    lot.area_hectare || "N/A"
-                                } га</p>
-                                    <p><strong>Статус:</strong> <span class="badge badge-investment">Активс</span></p>
-                                </div>
-                                <button class="details-btn" onclick="window.showDetails('${
-                                    lot.id || processed
-                                }', 'aktivs')">
-                                    ${TEXTS.viewDetails}
-                                </button>
-                            `;
-
-                                marker.bindPopup(popup, { maxWidth: 300 });
-                                marker.lotData = lot;
-                                group.addLayer(marker);
-                                processed++;
-                            }
-
-                            // Process KMZ files
-                            if (lot.documents && Array.isArray(lot.documents)) {
-                                const kmzDocs = lot.documents.filter(
-                                    (doc) =>
-                                        doc.doc_type === "kmz-document" &&
-                                        doc.url
-                                );
-                                for (const kmzDoc of kmzDocs) {
-                                    console.log(kmzDoc.url);
-                                    try {
-                                        const geoJSON = await processKMZFile(
-                                            kmzDoc.url
-                                        );
-                                        if (geoJSON && geoJSON.features) {
-                                            geoJSON.features.forEach(
-                                                (feature) => {
-                                                    const layer =
-                                                        createKMZLayer(
-                                                            feature,
-                                                            lot
-                                                        );
-                                                    if (layer) {
-                                                        kmzGroup.addLayer(
-                                                            layer
-                                                        );
-                                                        kmzProcessed++;
-                                                    }
-                                                }
-                                            );
-                                        }
-                                    } catch (error) {
-                                        console.warn(
-                                            `Failed to process KMZ for lot ${lot.id}:`,
-                                            error
-                                        );
-                                    }
-                                }
-                            }
-                        }
-
-                        setCounts((prev) => ({
-                            ...prev,
-                            aktivs: processed,
-                            kmz: prev.kmz + kmzProcessed,
-                        }));
-                        if (processed > 0 || kmzProcessed > 0) {
-                            addToast(
-                                `${TEXTS.successLoaded}: ${processed} активс, ${kmzProcessed} KMZ`,
-                                "success"
-                            );
-                        }
-                        return processed > 0 || kmzProcessed > 0;
-                    } catch (error) {
-                        console.error("Error fetching aktivs data:", error);
-                        addToast(
-                            `${TEXTS.errorLoading}: Активс маълумотлар`,
-                            "error"
-                        );
-                        return false;
-                    }
-                }, [addToast]);
-
+                // Enhanced createKMZLayer function
                 const createKMZLayer = useCallback((feature, lotData) => {
-                    if (!feature.geometry || !feature.geometry.coordinates)
-                        return null;
+                    if (!feature.geometry || !feature.geometry.coordinates) return null;
 
                     const geomType = feature.geometry.type;
                     let layer = null;
@@ -2826,9 +2791,7 @@
                     try {
                         switch (geomType) {
                             case "Point":
-                                const coords = convertCoordinates(
-                                    feature.geometry.coordinates
-                                );
+                                const coords = convertCoordinates(feature.geometry.coordinates);
                                 if (!coords) return null;
                                 layer = L.marker(coords, {
                                     icon: createMarkerIcon("kmz"),
@@ -2838,11 +2801,7 @@
                             case "Polygon":
                                 const rings = feature.geometry.coordinates
                                     .map((ring) =>
-                                        ring
-                                            .map((coord) =>
-                                                convertCoordinates(coord)
-                                            )
-                                            .filter(Boolean)
+                                        ring.map((coord) => convertCoordinates(coord)).filter(Boolean)
                                     )
                                     .filter((ring) => ring.length > 0);
                                 if (rings.length === 0) return null;
@@ -2873,88 +2832,29 @@
 
                         if (layer) {
                             const popup = `
-        <div class="popup-header">KMZ: ${
-            lotData.neighborhood_name || "Объект"
-        }</div>
-        <div class="popup-details">
-            <p><strong>Тур:</strong> <span class="badge badge-renovation">KMZ маълумот</span></p>
-            <p><strong>${TEXTS.district}:</strong> ${
-                                lotData.district_name || "N/A"
-                            }</p>
-            <p><strong>${TEXTS.area}:</strong> ${
-                                lotData.area_hectare || "N/A"
-                            } га</p>
-            <p><strong>Умумий бино майдони:</strong> ${
-                lotData.total_building_area || "N/A"
-            } м²</p>
-            <p><strong>Яшаш майдони:</strong> ${
-                lotData.residential_area || "N/A"
-            } м²</p>
-            <p><strong>Қаватлар:</strong> ${
-                lotData.designated_floors || "N/A"
-            } (белгиланган) / ${lotData.proposed_floors || "N/A"} (таклиф)</p>
-            <p><strong>УМН коэффициенти:</strong> ${
-                lotData.umn_coefficient || "N/A"
-            }</p>
-            <p><strong>ҚМН фоизи:</strong> ${
-                lotData.qmn_percentage ? lotData.qmn_percentage + "%" : "N/A"
-            }</p>
-            <p><strong>Инвестор:</strong> ${lotData.investor || "N/A"}</p>
-            <p><strong>Қарор рақами:</strong> ${
-                lotData.decision_number || "N/A"
-            }</p>
-            <p><strong>Кадастр гувоҳномаси:</strong> ${
-                lotData.cadastre_certificate || "N/A"
-            }</p>
-            <p><strong>Ҳудуд стратегияси:</strong> ${
-                lotData.area_strategy || "N/A"
-            }</p>
-            <p><strong>Статус:</strong> ${lotData.status || "N/A"}</p>
-            ${
-                lotData.object_information
-                    ? `<p><strong>Объект маълумоти:</strong> ${lotData.object_information}</p>`
-                    : ""
-            }
-            ${
-                lotData.additional_information
-                    ? `<p><strong>Қўшимча маълумот:</strong> ${lotData.additional_information}</p>`
-                    : ""
-            }
-            ${
-                lotData.documents && lotData.documents.length > 0
-                    ? `
-                <div style="margin-top: 10px;">
-                    <strong>Ҳужжатлар:</strong>
-                    ${lotData.documents
-                        .map(
-                            (doc) => `
-                        <div style="margin: 5px 0;">
-                            <a href="${doc.url.replace(
-                                "http://localhost/",
-                                "http://127.0.0.1:8000/"
-                            )}"
-                               target="_blank"
-                               style="color: #2563eb; text-decoration: none; font-size: 12px;">
-                                ${
-                                    doc.doc_type === "pdf-document"
-                                        ? "📄"
-                                        : doc.doc_type === "kmz-document"
-                                        ? "🗺️"
-                                        : "📎"
-                                } ${doc.filename}
-                            </a>
-                        </div>
-                    `
-                        )
-                        .join("")}
-                </div>
-            `
-                    : ""
-            }
-        </div>
-    `;
+                                <div class="popup-header">KMZ: ${lotData.neighborhood_name || "Объект"}</div>
+                                <div class="popup-details">
+                                    <p><strong>Тур:</strong> <span class="badge badge-renovation">KMZ маълумот</span></p>
+                                    <p><strong>${TEXTS.district}:</strong> ${lotData.district_name || "N/A"}</p>
+                                    <p><strong>${TEXTS.area}:</strong> ${lotData.area_hectare || "N/A"} га</p>
+                                    <p><strong>Умумий бино майдони:</strong> ${lotData.total_building_area || "N/A"} м²</p>
+                                    <p><strong>Яшаш майдони:</strong> ${lotData.residential_area || "N/A"} м²</p>
+                                    <p><strong>Инвестор:</strong> ${lotData.investor || "N/A"}</p>
+                                </div>
+                            `;
                             layer.bindPopup(popup, { maxWidth: 450 });
                             layer.kmzData = { ...lotData, kmzFeature: feature };
+
+                            // IMMEDIATELY register with KMZ search manager
+                            if (window.kmzSearchManager && window.kmzSearchManager.isInitialized) {
+                                window.kmzSearchManager.addKMZItem(lotData, layer);
+                            } else {
+                                // Store for later pickup
+                                if (!window.pendingKMZItems) {
+                                    window.pendingKMZItems = [];
+                                }
+                                window.pendingKMZItems.push({ data: lotData, layer: layer });
+                            }
                         }
                         return layer;
                     } catch (error) {
@@ -2962,6 +2862,87 @@
                         return null;
                     }
                 }, []);
+
+                // Data Fetching Functions
+                const fetchAktivsData = useCallback(async () => {
+                    try {
+                        const response = await fetch(API_ENDPOINTS.aktivs);
+                        if (!response.ok) throw new Error(`API request failed: ${response.status}`);
+
+                        const data = await response.json();
+                        const lots = data.lots || data || [];
+
+                        let processed = 0;
+                        let kmzProcessed = 0;
+                        const group = layerGroupsRef.current.aktivs;
+                        const kmzGroup = layerGroupsRef.current.kmz;
+
+                        for (const lot of lots) {
+                            if (!lot) continue;
+
+                            if (lot.lat && lot.lng) {
+                                const marker = L.marker([parseFloat(lot.lat), parseFloat(lot.lng)], {
+                                    icon: createMarkerIcon("regular"),
+                                });
+
+                                const popup = `
+                                    <div class="popup-header">${lot.neighborhood_name || "Активс мулки"}</div>
+                                    ${lot.main_image ? `<img src="${lot.main_image}" class="popup-image" onerror="this.style.display='none'">` : ""}
+                                    <div class="popup-details">
+                                        <p><strong>${TEXTS.district}:</strong> ${lot.district_name || "N/A"}</p>
+                                        <p><strong>${TEXTS.area}:</strong> ${lot.area_hectare || "N/A"} га</p>
+                                        <p><strong>Статус:</strong> <span class="badge badge-investment">Активс</span></p>
+                                    </div>
+                                    <button class="details-btn" onclick="window.showDetails('${lot.id || processed}', 'aktivs')">
+                                        ${TEXTS.viewDetails}
+                                    </button>
+                                `;
+
+                                marker.bindPopup(popup, { maxWidth: 300 });
+                                marker.lotData = lot;
+                                group.addLayer(marker);
+                                processed++;
+                            }
+
+                            // Process KMZ files
+                            if (lot.documents && Array.isArray(lot.documents)) {
+                                const kmzDocs = lot.documents.filter(
+                                    (doc) => doc.doc_type === "kmz-document" && doc.url
+                                );
+                                for (const kmzDoc of kmzDocs) {
+                                    try {
+                                        const geoJSON = await processKMZFile(kmzDoc.url);
+                                        if (geoJSON && geoJSON.features) {
+                                            geoJSON.features.forEach((feature) => {
+                                                const layer = createKMZLayer(feature, lot);
+                                                if (layer) {
+                                                    kmzGroup.addLayer(layer);
+                                                    kmzProcessed++;
+                                                }
+                                            });
+                                        }
+                                    } catch (error) {
+                                        console.warn(`Failed to process KMZ for lot ${lot.id}:`, error);
+                                    }
+                                }
+                            }
+                        }
+
+                        setCounts((prev) => ({
+                            ...prev,
+                            aktivs: processed,
+                            kmz: prev.kmz + kmzProcessed,
+                        }));
+                        if (processed > 0 || kmzProcessed > 0) {
+                            addToast(`${TEXTS.successLoaded}: ${processed} активс, ${kmzProcessed} KMZ`, "success");
+                        }
+                        return processed > 0 || kmzProcessed > 0;
+                    } catch (error) {
+                        console.error("Error fetching aktivs data:", error);
+                        addToast(`${TEXTS.errorLoading}: Активс маълумотлар`, "error");
+                        return false;
+                    }
+                }, [addToast, createKMZLayer]);
 
                 const fetchJsonData = useCallback(async () => {
                     try {
@@ -2980,13 +2961,7 @@
                             );
                             if (!coordinates) return;
 
-                            const type =
-                                item[
-                                    "Таклиф_тури_(Реновация,_Инвестиция,_Аукцион)"
-                                ] ||
-                                item[
-                                    "Таклифтури(Реновация,Инвестиция,Аукцион)"
-                                ];
+                            const type = item["Таклиф_тури_(Реновация,_Инвестиция,_Аукцион)"] || item["Таклифтури(Реновация,Инвестиция,Аукцион)"];
                             let markerType = "investment";
                             if (type === "Реновация") markerType = "renovation";
                             else if (type === "Аукцион") markerType = "auction";
@@ -2996,87 +2971,14 @@
                             });
 
                             const popup = `
-    <div class="popup-header">${
-        item["Манзил_(МФЙ,_кўча)"] || item["Манзил(МФЙ,кўча)"] || "JSON объект"
-    }</div>
-    <div class="popup-details">
-        <p><strong>№:</strong> ${item["№"] || "N/A"}</p>
-        <p><strong>Тур:</strong> <span class="badge badge-${markerType}">${
-                                type || "Номаълум"
-                            }</span></p>
-        <p><strong>${TEXTS.district}:</strong> ${item["Туман"] || "N/A"}</p>
-        <p><strong>${TEXTS.area}:</strong> ${
-                                item["Таклиф_Ер_майдони_(га)"] ||
-                                item["ТаклифЕрмайдони(га)"] ||
-                                "N/A"
-                            } га</p>
-        <p><strong>Бош режадаги ҳолати:</strong> ${
-            item["Бош_режадаги_ҳолати_ва_қавати"] || "N/A"
-        }</p>
-        <p><strong>Таклиф қавати ва ҳудуд:</strong> ${
-            item["Таклиф_қавати_ва_ҳудуд"] || "N/A"
-        }</p>
-        <p><strong>Фаолият тури:</strong> ${
-            item["Таклиф_Фаолият_тури"] || "N/A"
-        }</p>
-        <p><strong>Фалияти филтир:</strong> ${
-            item["Таклиф_Фалияти_филтир_учун"] || "N/A"
-        }</p>
-        <p><strong>Этажность:</strong> ${item["Этажность"] || "N/A"}</p>
-        <p><strong>Қурилиш ости майдони:</strong> ${
-            item["Қурилиш_ости_майдони"]
-                ? item["Қурилиш_ости_майдони"] + " м²"
-                : "N/A"
-        }</p>
-        <p><strong>Бинонинг умумий майдони:</strong> ${
-            item["Бинонинг_умумий_майдони"]
-                ? item["Бинонинг_умумий_майдони"] + " м²"
-                : "N/A"
-        }</p>
-        <p><strong>Хизмат кўрсатиш сохаси:</strong> ${
-            item["Хизмат_кўрсатиш_сохаси"]
-                ? item["Хизмат_кўрсатиш_сохаси"] + " м²"
-                : "N/A"
-        }</p>
-        <p><strong>Яшаш майдон:</strong> ${
-            item["Яшаш_майдон"] ? item["Яшаш_майдон"] + " м²" : "N/A"
-        }</p>
-        <p><strong>Хонадонлар сони:</strong> ${
-            item["хонадонлар_сони"]
-                ? Math.round(item["хонадонлар_сони"])
-                : "N/A"
-        }</p>
-        <p><strong>Аҳоли сони:</strong> ${
-            item["Ахоли_сони"] ? Math.round(item["Ахоли_сони"]) : "N/A"
-        }</p>
-        <p><strong>Бош режага киритилганлиги:</strong>
-            <span class="badge ${
-                item[
-                    "Таклиф_Бош_режага_таклиф_киритилганлиги_(таклиф_берилган_лекин_киритилмаган_бўлас_КИРИТИЛМАГАН_хисобланади)"
-                ] === "Киритилган"
-                    ? "badge-sold"
-                    : "badge-auction"
-            }">
-                ${
-                    item[
-                        "Таклиф_Бош_режага_таклиф_киритилганлиги_(таклиф_берилган_лекин_киритилмаган_бўлас_КИРИТИЛМАГАН_хисобланади)"
-                    ] || "N/A"
-                }
-            </span>
-        </p>
-        ${
-            item["Таклиф_Харита"]
-                ? `
-            <div style="margin-top: 10px;">
-                <a href="${item["Таклиф_Харита"]}" target="_blank" style="color: #2563eb; text-decoration: none;">
-                    🗺️ Харитада кўриш
-                </a>
-            </div>
-        `
-                : ""
-        }
-    </div>
-`;
+                                <div class="popup-header">${item["Манзил_(МФЙ,_кўча)"] || item["Манзил(МФЙ,кўча)"] || "JSON объект"}</div>
+                                <div class="popup-details">
+                                    <p><strong>№:</strong> ${item["№"] || "N/A"}</p>
+                                    <p><strong>Тур:</strong> <span class="badge badge-${markerType}">${type || "Номаълум"}</span></p>
+                                    <p><strong>${TEXTS.district}:</strong> ${item["Туман"] || "N/A"}</p>
+                                    <p><strong>${TEXTS.area}:</strong> ${item["Таклиф_Ер_майдони_(га)"] || item["ТаклифЕрмайдони(га)"] || "N/A"} га</p>
+                                </div>
+                            `;
 
                             marker.bindPopup(popup, { maxWidth: 300 });
                             marker.itemData = item;
@@ -3085,11 +2987,7 @@
                         });
 
                         setCounts((prev) => ({ ...prev, jsonData: processed }));
-                        if (processed > 0)
-                            addToast(
-                                `${TEXTS.successLoaded}: ${processed} JSON объект`,
-                                "success"
-                            );
+                        if (processed > 0) addToast(`${TEXTS.successLoaded}: ${processed} JSON объект`, "success");
                         return processed > 0;
                     } catch (error) {
                         console.error("Error fetching JSON data:", error);
@@ -3111,71 +3009,20 @@
                         lots.forEach((lot, index) => {
                             if (!lot.lat || !lot.lng) return;
 
-                            const marker = L.marker(
-                                [parseFloat(lot.lat), parseFloat(lot.lng)],
-                                {
-                                    icon: createMarkerIcon("auction"),
-                                }
-                            );
+                            const marker = L.marker([parseFloat(lot.lat), parseFloat(lot.lng)], {
+                                icon: createMarkerIcon("auction"),
+                            });
 
                             const popup = `
-    <div class="popup-header">${lot.property_name || "Аукцион мулки"}</div>
-    ${
-        lot.main_image
-            ? `<img src="${lot.main_image}" class="popup-image" onerror="this.style.display='none'">`
-            : ""
-    }
-    <div class="popup-details">
-        <p><strong>Лот рақами:</strong> ${lot.lot_number || "N/A"}</p>
-        <p><strong>Бошланғич нарх:</strong> ${
-            lot.start_price
-                ? Number(lot.start_price).toLocaleString("uz-UZ") + " сум"
-                : "N/A"
-        }</p>
-        <p><strong>Аукцион санаси:</strong> ${lot.auction_date || "N/A"}</p>
-        <p><strong>Ариза мухлати:</strong> ${
-            lot.application_deadline || "N/A"
-        }</p>
-        <p><strong>Вилоят:</strong> ${lot.region || "N/A"}</p>
-        <p><strong>Ҳудуд:</strong> ${lot.area || "N/A"}</p>
-        <p><strong>Манзил:</strong> ${lot.address || "N/A"}</p>
-        <p><strong>${TEXTS.area}:</strong> ${lot.land_area || "N/A"} га</p>
-        <p><strong>Қурилиш майдони:</strong> ${
-            lot.building_area ? lot.building_area + " м²" : "N/A"
-        }</p>
-        <p><strong>Қурилиш турлари:</strong> ${lot.build_types || "N/A"}</p>
-        <p><strong>Ҳуқуқий тур:</strong> ${lot.law_type || "N/A"}</p>
-        <p><strong>Мулк гуруҳи:</strong> ${lot.property_group || "N/A"}</p>
-        <p><strong>Мулк категорияси:</strong> ${
-            lot.property_category || "N/A"
-        }</p>
-        <p><strong>Лот ҳолати:</strong> ${lot.lot_status || "N/A"}</p>
-        <p><strong>Тўлов тури:</strong> ${lot.payment_type || "N/A"}</p>
-        <p><strong>Савдо тури:</strong> ${lot.trade_type || "N/A"}</p>
-        ${
-            lot.contract_number
-                ? `<p><strong>Шартнома рақами:</strong> ${lot.contract_number}</p>`
-                : ""
-        }
-        ${
-            lot.contract_date
-                ? `<p><strong>Шартнома санаси:</strong> ${lot.contract_date}</p>`
-                : ""
-        }
-        <p><strong>Ҳолат:</strong> <span class="badge badge-auction">Аукцион</span></p>
-        ${
-            lot.lot_link
-                ? `
-            <div style="margin-top: 10px;">
-                <a href="${lot.lot_link}" target="_blank" style="color: #2563eb; text-decoration: none;">
-                    🔗 Лотни кўриш
-                </a>
-            </div>
-        `
-                : ""
-        }
-    </div>
-`;
+                                <div class="popup-header">${lot.property_name || "Аукцион мулки"}</div>
+                                ${lot.main_image ? `<img src="${lot.main_image}" class="popup-image" onerror="this.style.display='none'">` : ""}
+                                <div class="popup-details">
+                                    <p><strong>Лот рақами:</strong> ${lot.lot_number || "N/A"}</p>
+                                    <p><strong>Бошланғич нарх:</strong> ${lot.start_price ? Number(lot.start_price).toLocaleString("uz-UZ") + " сум" : "N/A"}</p>
+                                    <p><strong>${TEXTS.area}:</strong> ${lot.land_area || "N/A"} га</p>
+                                    <p><strong>Ҳолат:</strong> <span class="badge badge-auction">Аукцион</span></p>
+                                </div>
+                            `;
                             marker.bindPopup(popup, { maxWidth: 300 });
                             marker.auctionData = lot;
                             group.addLayer(marker);
@@ -3183,11 +3030,7 @@
                         });
 
                         setCounts((prev) => ({ ...prev, auction: processed }));
-                        if (processed > 0)
-                            addToast(
-                                `${TEXTS.successLoaded}: ${processed} аукцион мулки`,
-                                "success"
-                            );
+                        if (processed > 0) addToast(`${TEXTS.successLoaded}: ${processed} аукцион мулки`, "success");
                         return processed > 0;
                     } catch (error) {
                         console.error("Error fetching auction data:", error);
@@ -3209,64 +3052,20 @@
                         lots.forEach((lot, index) => {
                             if (!lot.lat || !lot.lng) return;
 
-                            const marker = L.marker(
-                                [parseFloat(lot.lat), parseFloat(lot.lng)],
-                                {
-                                    icon: createMarkerIcon("sold"),
-                                }
-                            );
+                            const marker = L.marker([parseFloat(lot.lat), parseFloat(lot.lng)], {
+                                icon: createMarkerIcon("sold"),
+                            });
 
                             const popup = `
-    <div class="popup-header">🏆 ${lot.property_name || "Сотилган мулк"}</div>
-    ${
-        lot.main_image
-            ? `<img src="${lot.main_image}" class="popup-image" onerror="this.style.display='none'">`
-            : ""
-    }
-    <div class="popup-details">
-        <p><strong>Лот рақами:</strong> ${lot.lot_number || "N/A"}</p>
-        <p><strong>Сотилди:</strong> ${
-            lot.sold_price
-                ? Number(lot.sold_price).toLocaleString("uz-UZ") + " сум"
-                : "N/A"
-        }</p>
-        <p><strong>Бошланғич нарх:</strong> ${
-            lot.start_price
-                ? Number(lot.start_price).toLocaleString("uz-UZ") + " сум"
-                : "N/A"
-        }</p>
-        <p><strong>Ғолиб:</strong> ${lot.winner_name || "N/A"}</p>
-        <p><strong>Ғолиб телефони:</strong> ${lot.winner_phone || "N/A"}</p>
-        <p><strong>Аукцион санаси:</strong> ${lot.auction_date || "N/A"}</p>
-        <p><strong>Аукцион санаси ҳолати:</strong> ${
-            lot.auction_date_status || "N/A"
-        }</p>
-        <p><strong>Майдон:</strong> ${lot.land_area || "N/A"} га</p>
-        <p><strong>Майдон изоҳи:</strong> ${lot.land_area_comment || "N/A"}</p>
-        <p><strong>Манзил:</strong> ${lot.address || "N/A"}</p>
-        <p><strong>Қурилиш тури:</strong> ${lot.building_type || "N/A"}</p>
-        <p><strong>Қурилиш тури изоҳи:</strong> ${
-            lot.building_type_comment || "N/A"
-        }</p>
-        <p><strong>Кадастр рақами:</strong> ${lot.kadastr_raqami || "N/A"}</p>
-        <p><strong>Зона:</strong> ${lot.zone || "N/A"}</p>
-        <p><strong>Тўлов тури:</strong> ${lot.payment_type || "N/A"}</p>
-        <p><strong>Фойдаланувчи:</strong> ${lot.user_name || "N/A"}</p>
-        <p><strong>Электрон почта:</strong> ${lot.user_email || "N/A"}</p>
-        <p><strong>Ҳолат:</strong> <span class="badge badge-sold">✅ Сотилган</span></p>
-        ${
-            lot.lot_link
-                ? `
-            <div style="margin-top: 10px;">
-                <a href="${lot.lot_link}" target="_blank" style="color: #2563eb; text-decoration: none;">
-                    🔗 Лотни кўриш
-                </a>
-            </div>
-        `
-                : ""
-        }
-    </div>
-`;
+                                <div class="popup-header">🏆 ${lot.property_name || "Сотилган мулк"}</div>
+                                ${lot.main_image ? `<img src="${lot.main_image}" class="popup-image" onerror="this.style.display='none'">` : ""}
+                                <div class="popup-details">
+                                    <p><strong>Лот рақами:</strong> ${lot.lot_number || "N/A"}</p>
+                                    <p><strong>Сотилди:</strong> ${lot.sold_price ? Number(lot.sold_price).toLocaleString("uz-UZ") + " сум" : "N/A"}</p>
+                                    <p><strong>Майдон:</strong> ${lot.land_area || "N/A"} га</p>
+                                    <p><strong>Ҳолат:</strong> <span class="badge badge-sold">✅ Сотилган</span></p>
+                                </div>
+                            `;
 
                             marker.bindPopup(popup, { maxWidth: 300 });
                             marker.soldData = lot;
@@ -3275,11 +3074,7 @@
                         });
 
                         setCounts((prev) => ({ ...prev, sold: processed }));
-                        if (processed > 0)
-                            addToast(
-                                `${TEXTS.successLoaded}: ${processed} сотилган мулк`,
-                                "success"
-                            );
+                        if (processed > 0) addToast(`${TEXTS.successLoaded}: ${processed} сотилган мулк`, "success");
                         return processed > 0;
                     } catch (error) {
                         console.error("Error fetching sold data:", error);
@@ -3346,117 +3141,73 @@
                 }, []);
 
                 // GeoJSON Functions
-                const loadGeoJSON = useCallback(
-                    async (filepath) => {
-                        if (!filepath.trim()) {
-                            addToast("Файл йўлини киритинг", "error");
-                            return;
+                const loadGeoJSON = useCallback(async (filepath) => {
+                    if (!filepath.trim()) {
+                        addToast("Файл йўлини киритинг", "error");
+                        return;
+                    }
+
+                    try {
+                        setGeoJsonStatus("GeoJSON юкланмоқда...");
+                        const response = await fetch(filepath);
+                        if (!response.ok) throw new Error(`HTTP ${response.status}: ${response.statusText}`);
+
+                        const data = await response.json();
+                        if (!data.features || !Array.isArray(data.features)) {
+                            throw new Error("Нотўғри GeoJSON формати");
                         }
 
-                        try {
-                            setGeoJsonStatus("GeoJSON юкланмоқда...");
-                            const response = await fetch(filepath);
-                            if (!response.ok)
-                                throw new Error(
-                                    `HTTP ${response.status}: ${response.statusText}`
-                                );
+                        const layerId = filepath.split("/").pop().replace(/\.[^/.]+$/, "");
 
-                            const data = await response.json();
-                            if (
-                                !data.features ||
-                                !Array.isArray(data.features)
-                            ) {
-                                throw new Error("Нотўғри GeoJSON формати");
-                            }
-
-                            const layerId = filepath
-                                .split("/")
-                                .pop()
-                                .replace(/\.[^/.]+$/, "");
-
-                            if (geoJsonLayersRef.current.has(layerId)) {
-                                const existingLayer =
-                                    geoJsonLayersRef.current.get(layerId);
-                                mapInstanceRef.current.removeLayer(
-                                    existingLayer.group
-                                );
-                                geoJsonLayersRef.current.delete(layerId);
-                            }
-
-                            const featureGroup = L.featureGroup();
-                            let featuresProcessed = 0;
-                            let redLinesCount = 0;
-
-                            data.features.forEach((feature) => {
-                                const layer = createGeoJSONLayer(feature);
-                                if (layer) {
-                                    addGeoJSONPopup(layer, feature.properties);
-                                    featureGroup.addLayer(layer);
-                                    featuresProcessed++;
-
-                                    if (
-                                        feature.properties?.funksiya ===
-                                        "Qizil_chiziqlar"
-                                    ) {
-                                        redLinesCount++;
-                                    }
-                                }
-                            });
-
-                            geoJsonLayersRef.current.set(layerId, {
-                                group: featureGroup,
-                                visible: true,
-                                count: featuresProcessed,
-                                redLines: redLinesCount,
-                            });
-
-                            mapInstanceRef.current.addLayer(featureGroup);
-                            setCounts((prev) => ({
-                                ...prev,
-                                geojson: prev.geojson + featuresProcessed,
-                            }));
-
-                            if (geoJsonLayersRef.current.size === 1) {
-                                try {
-                                    mapInstanceRef.current.fitBounds(
-                                        featureGroup.getBounds(),
-                                        { padding: [20, 20] }
-                                    );
-                                } catch (e) {
-                                    console.warn("Could not fit bounds:", e);
-                                }
-                            }
-
-                            setGeoJsonStatus(
-                                `${featuresProcessed} объект юкланди ${
-                                    redLinesCount > 0
-                                        ? `(${redLinesCount} қизил чизиқ)`
-                                        : ""
-                                }`
-                            );
-                            addToast(
-                                `GeoJSON муваффақиятли юкланди: ${featuresProcessed} объект${
-                                    redLinesCount > 0
-                                        ? `, ${redLinesCount} қизил чизиқ`
-                                        : ""
-                                }`,
-                                "success"
-                            );
-                        } catch (error) {
-                            console.error("Error loading GeoJSON:", error);
-                            setGeoJsonStatus(`Хатолик: ${error.message}`);
-                            addToast(
-                                `GeoJSON юклашда хатолик: ${error.message}`,
-                                "error"
-                            );
+                        if (geoJsonLayersRef.current.has(layerId)) {
+                            const existingLayer = geoJsonLayersRef.current.get(layerId);
+                            mapInstanceRef.current.removeLayer(existingLayer.group);
+                            geoJsonLayersRef.current.delete(layerId);
                         }
-                    },
-                    [addToast]
-                );
+
+                        const featureGroup = L.featureGroup();
+                        let featuresProcessed = 0;
+
+                        data.features.forEach((feature) => {
+                            const layer = createGeoJSONLayer(feature);
+                            if (layer) {
+                                addGeoJSONPopup(layer, feature.properties);
+                                featureGroup.addLayer(layer);
+                                featuresProcessed++;
+                            }
+                        });
+
+                        geoJsonLayersRef.current.set(layerId, {
+                            group: featureGroup,
+                            visible: true,
+                            count: featuresProcessed,
+                        });
+
+                        mapInstanceRef.current.addLayer(featureGroup);
+                        setCounts((prev) => ({
+                            ...prev,
+                            geojson: prev.geojson + featuresProcessed,
+                        }));
+
+                        if (geoJsonLayersRef.current.size === 1) {
+                            try {
+                                mapInstanceRef.current.fitBounds(featureGroup.getBounds(), { padding: [20, 20] });
+                            } catch (e) {
+                                console.warn("Could not fit bounds:", e);
+                            }
+                        }
+
+                        setGeoJsonStatus(`${featuresProcessed} объект юкланди`);
+                        addToast(`GeoJSON муваффақиятли юкланди: ${featuresProcessed} объект`, "success");
+                    } catch (error) {
+                        console.error("Error loading GeoJSON:", error);
+                        setGeoJsonStatus(`Хатолик: ${error.message}`);
+                        addToast(`GeoJSON юклашда хатолик: ${error.message}`, "error");
+                    }
+                }, [addToast]);
 
                 const createGeoJSONLayer = useCallback((feature) => {
-                    if (!feature.geometry || !feature.geometry.coordinates)
-                        return null;
+                    if (!feature.geometry || !feature.geometry.coordinates) return null;
 
                     const geomType = feature.geometry.type;
                     const coords = feature.geometry.coordinates;
@@ -3467,100 +3218,56 @@
                             case "Point":
                                 const latLng = convertCoordinates(coords);
                                 if (!latLng) return null;
-
-                                const isRedLine =
-                                    properties.funksiya === "Qizil_chiziqlar";
-
                                 return L.circleMarker(latLng, {
-                                    radius: isRedLine ? 8 : 6,
+                                    radius: 6,
                                     fillColor: getStrategyColor(properties),
-                                    color: isRedLine ? "#ffffff" : "#fff",
-                                    weight: isRedLine ? 3 : 2,
+                                    color: "#fff",
+                                    weight: 2,
                                     opacity: 1,
-                                    fillOpacity: isRedLine ? 1 : 0.8,
+                                    fillOpacity: 0.8,
                                 });
 
                             case "LineString":
-                                const latLngs = coords
-                                    .map((coord) => convertCoordinates(coord))
-                                    .filter(Boolean);
+                                const latLngs = coords.map((coord) => convertCoordinates(coord)).filter(Boolean);
                                 if (latLngs.length === 0) return null;
-
-                                const isRedLineString =
-                                    properties.funksiya === "Qizil_chiziqlar";
-
                                 return L.polyline(latLngs, {
                                     color: getStrategyColor(properties),
-                                    weight: isRedLineString ? 5 : 3,
-                                    opacity: isRedLineString ? 0.9 : 0.8,
-                                    dashArray: isRedLineString
-                                        ? "10, 10"
-                                        : null,
+                                    weight: 3,
+                                    opacity: 0.8,
                                 });
 
                             case "Polygon":
                                 const rings = coords
-                                    .map((ring) =>
-                                        ring
-                                            .map((coord) =>
-                                                convertCoordinates(coord)
-                                            )
-                                            .filter(Boolean)
-                                    )
+                                    .map((ring) => ring.map((coord) => convertCoordinates(coord)).filter(Boolean))
                                     .filter((ring) => ring.length > 0);
                                 if (rings.length === 0) return null;
-
-                                const isRedPolygon =
-                                    properties.funksiya === "Qizil_chiziqlar";
-
                                 return L.polygon(rings, {
                                     fillColor: getStrategyColor(properties),
-                                    weight: isRedPolygon ? 3 : 1.5,
-                                    opacity: isRedPolygon ? 1 : 0.8,
-                                    color: isRedPolygon ? "#dc2626" : "#ffffff",
-                                    fillOpacity: isRedPolygon ? 0.3 : 0.7,
-                                    dashArray: isRedPolygon ? "5, 5" : null,
+                                    weight: 1.5,
+                                    opacity: 0.8,
+                                    color: "#ffffff",
+                                    fillOpacity: 0.7,
                                 });
 
                             case "MultiPolygon":
                                 const multiLatLngs = coords
                                     .map((polygon) =>
                                         polygon
-                                            .map((ring) =>
-                                                ring
-                                                    .map((coord) =>
-                                                        convertCoordinates(
-                                                            coord
-                                                        )
-                                                    )
-                                                    .filter(Boolean)
-                                            )
+                                            .map((ring) => ring.map((coord) => convertCoordinates(coord)).filter(Boolean))
                                             .filter((ring) => ring.length > 0)
                                     )
                                     .filter((polygon) => polygon.length > 0);
                                 if (multiLatLngs.length === 0) return null;
-
-                                const isRedMultiPolygon =
-                                    properties.funksiya === "Qizil_chiziqlar";
-
                                 return L.polygon(multiLatLngs, {
                                     fillColor: getStrategyColor(properties),
-                                    weight: isRedMultiPolygon ? 3 : 1.5,
-                                    opacity: isRedMultiPolygon ? 1 : 0.8,
-                                    color: isRedMultiPolygon
-                                        ? "#dc2626"
-                                        : "#ffffff",
-                                    fillOpacity: isRedMultiPolygon ? 0.3 : 0.7,
-                                    dashArray: isRedMultiPolygon
-                                        ? "5, 5"
-                                        : null,
+                                    weight: 1.5,
+                                    opacity: 0.8,
+                                    color: "#ffffff",
+                                    fillOpacity: 0.7,
                                 });
 
                             default:
-                                console.warn(
-                                    "Unsupported geometry type:",
-                                    geomType
-                                );
+                                console.warn("Unsupported geometry type:", geomType);
                                 return null;
                         }
                     } catch (error) {
@@ -3572,108 +3279,30 @@
                 const addGeoJSONPopup = useCallback((layer, properties) => {
                     if (!properties) return;
 
-                    const title =
-                        properties.mahalla_nomi ||
-                        properties.name ||
-                        "GeoJSON объект";
-                    const strategy =
-                        properties.strategiya ||
-                        properties.strategy ||
-                        properties.funksiya ||
-                        "Номаълум";
-                    const isRedLine = properties.funksiya === "Qizil_chiziqlar";
+                    const title = properties.mahalla_nomi || properties.name || "GeoJSON объект";
+                    const strategy = properties.strategiya || properties.strategy || properties.funksiya || "Номаълум";
 
                     layer.bindPopup(
                         () => {
                             let content = `
-                <div class="popup-header">${title}</div>
-                <div class="popup-details">
-                    <p><strong>${isRedLine ? "Тур" : "Стратегия"}:</strong>
-                        <span class="badge badge-${
-                            isRedLine
-                                ? "red-line"
-                                : strategy === "Konservatsiya"
-                                ? "conservation"
-                                : strategy === "Rekonstruktsiya"
-                                ? "reconstruction"
-                                : strategy === "Yangi_qurilish"
-                                ? "new-construction"
-                                : "investment"
-                        }">${
-                                isRedLine
-                                    ? TEXTS.redLines
-                                    : formatStrategy(strategy)
-                            }</span>
-                    </p>
-            `;
+                                <div class="popup-header">${title}</div>
+                                <div class="popup-details">
+                                    <p><strong>Стратегия:</strong>
+                                        <span class="badge badge-${
+                                            strategy === "Konservatsiya"
+                                                ? "conservation"
+                                                : strategy === "Rekonstruktsiya"
+                                                ? "reconstruction"
+                                                : strategy === "Yangi_qurilish"
+                                                ? "new-construction"
+                                                : "investment"
+                                        }">${formatStrategy(strategy)}</span>
+                                    </p>
+                            `;
 
-                            // Show all available properties with proper formatting
-                            if (properties.layerId)
-                                content += `<p><strong>Қатлам ID:</strong> ${properties.layerId}</p>`;
-                            if (properties.layerName)
-                                content += `<p><strong>Қатлам номи:</strong> ${properties.layerName}</p>`;
-                            if (properties.code)
-                                content += `<p><strong>Код:</strong> ${properties.code}</p>`;
-                            if (properties.objectid)
-                                content += `<p><strong>Объект ID:</strong> ${properties.objectid}</p>`;
-                            if (properties.globalid)
-                                content += `<p><strong>Глобал ID:</strong> ${properties.globalid}</p>`;
-                            if (properties.district)
-                                content += `<p><strong>${TEXTS.district}:</strong> ${properties.district}</p>`;
-                            if (properties.region_name)
-                                content += `<p><strong>Регион:</strong> ${properties.region_name}</p>`;
-                            if (properties.maydoni)
-                                content += `<p><strong>${TEXTS.area}:</strong> ${properties.maydoni} га</p>`;
-                            if (properties.SHAPE__Area)
-                                content += `<p><strong>Шакл майдони:</strong> ${properties.SHAPE__Area.toFixed(
-                                    2
-                                )} м²</p>`;
-                            if (properties.SHAPE__Length)
-                                content += `<p><strong>Шакл узунлиги:</strong> ${properties.SHAPE__Length.toFixed(
-                                    2
-                                )} м</p>`;
-                            if (properties.qavatlilik)
-                                content += `<p><strong>Қаватлилик:</strong> ${properties.qavatlilik}</p>`;
-                            if (properties.funksiya)
-                                content += `<p><strong>Функция:</strong> ${properties.funksiya}</p>`;
-                            if (properties.seysmologik_zonasi)
-                                content += `<p><strong>Сейсмик зона:</strong> ${properties.seysmologik_zonasi}</p>`;
-                            if (properties.hudud)
-                                content += `<p><strong>Ҳудуд:</strong> ${properties.hudud}</p>`;
-                            if (properties.strategiya_ishlari_turi)
-                                content += `<p><strong>Стратегия иши тури:</strong> ${properties.strategiya_ishlari_turi}</p>`;
-                            if (properties.mahalla_id)
-                                content += `<p><strong>Маҳалла ID:</strong> ${properties.mahalla_id}</p>`;
-                            if (properties.parent_code)
-                                content += `<p><strong>Ота код:</strong> ${properties.parent_code}</p>`;
-                            if (
-                                properties.umumiy_maydonning_yer_maydoniga !==
-                                undefined
-                            )
-                                content += `<p><strong>Умумий майдоннинг ер майдонига нисбати:</strong> ${properties.umumiy_maydonning_yer_maydoniga}</p>`;
-                            if (
-                                properties.qurilish_maydonining_yer_maydon !==
-                                undefined
-                            )
-                                content += `<p><strong>Қурилиш майдонининг ер майдонига нисбати:</strong> ${properties.qurilish_maydonining_yer_maydon}</p>`;
-                            if (properties.created_user)
-                                content += `<p><strong>Яратувчи:</strong> ${properties.created_user}</p>`;
-                            if (properties.last_edited_user)
-                                content += `<p><strong>Охирги таҳрирчи:</strong> ${properties.last_edited_user}</p>`;
-                            if (properties.created_date)
-                                content += `<p><strong>Яратилган сана:</strong> ${new Date(
-                                    properties.created_date
-                                ).toLocaleDateString("uz-UZ")}</p>`;
-                            if (properties.last_edited_date)
-                                content += `<p><strong>Охирги таҳрир санаси:</strong> ${new Date(
-                                    properties.last_edited_date
-                                ).toLocaleDateString("uz-UZ")}</p>`;
-                            if (properties.tekshirildi)
-                                content += `<p><strong>Текширилди:</strong> ${properties.tekshirildi}</p>`;
-                            if (properties.id_raqami)
-                                content += `<p><strong>ID рақами:</strong> ${properties.id_raqami}</p>`;
-                            if (isRedLine)
-                                content += `<p><strong>Маълумот:</strong> Қизил чизиқлар - муҳофаза қилинадиган ҳудудлар</p>`;
+                            if (properties.district) content += `<p><strong>${TEXTS.district}:</strong> ${properties.district}</p>`;
+                            if (properties.maydoni) content += `<p><strong>${TEXTS.area}:</strong> ${properties.maydoni} га</p>`;
+                            if (properties.funksiya) content += `<p><strong>Функция:</strong> ${properties.funksiya}</p>`;
 
                             content += `</div>`;
                             return content;
@@ -3681,6 +3310,7 @@
                         { maxWidth: 400, className: "geojson-popup" }
                     );
                 }, []);
+
                 const toggleGeoJSONLayer = useCallback((layerId) => {
                     const layerData = geoJsonLayersRef.current.get(layerId);
                     if (!layerData) return;
@@ -3707,10 +3337,7 @@
                         geoJsonLayersRef.current.delete(layerId);
                         setCounts((prev) => ({
                             ...prev,
-                            geojson: Math.max(
-                                0,
-                                prev.geojson - layerData.count
-                            ),
+                            geojson: Math.max(0, prev.geojson - layerData.count),
                         }));
                         addToast(`${layerId} қатлам ўчирилди`, "info");
                     },
@@ -3733,11 +3360,7 @@
                     const groups = layerGroupsRef.current;
                     if (groups[type]) {
                         groups[type].eachLayer((layer) => {
-                            if (
-                                layer.lotData &&
-                                (layer.lotData.id == id ||
-                                    layer.lotData.id === `lot-${id}`)
-                            ) {
+                            if (layer.lotData && (layer.lotData.id == id || layer.lotData.id === `lot-${id}`)) {
                                 item = layer.lotData;
                             } else if (layer.itemData) {
                                 item = layer.itemData;
@@ -3757,19 +3380,6 @@
                     }
                 }, []);
 
-                window.showGeoJSONDetails = useCallback((propertiesJson) => {
-                    try {
-                        const properties = JSON.parse(propertiesJson);
-                        setSelectedItem(properties);
-                        setSidebarOpen(true);
-                    } catch (error) {
-                        console.error(
-                            "Error parsing GeoJSON properties:",
-                            error
-                        );
-                    }
-                }, []);
-
                 // Data Loading Effect
                 useEffect(() => {
                     const loadAllData = async () => {
@@ -3786,9 +3396,7 @@
                             ]);
 
                             const successCount = results.filter(
-                                (result) =>
-                                    result.status === "fulfilled" &&
-                                    result.value
+                                (result) => result.status === "fulfilled" && result.value
                             ).length;
 
                             if (successCount > 0) {
@@ -3796,31 +3404,16 @@
                                     loadGeoJSON(API_ENDPOINTS.geoJsonStrategy);
                                 }, 1000);
 
-                                mapInstanceRef.current.setView(
-                                    [41.311, 69.279],
-                                    11
-                                );
-                                addToast(
-                                    `Маълумотлар муваффақиятли юкланди`,
-                                    "success"
-                                );
+                                mapInstanceRef.current.setView([41.311, 69.279], 11);
+                                addToast(`Маълумотлар муваффақиятли юкланди`, "success");
                             } else {
-                                addToast(
-                                    "Ҳеч қандай маълумот юкланмади. Серверни текширинг.",
-                                    "warning"
-                                );
-                                mapInstanceRef.current.setView(
-                                    [41.311, 69.279],
-                                    11
-                                );
+                                addToast("Ҳеч қандай маълумот юкланмади. Серверни текширинг.", "warning");
+                                mapInstanceRef.current.setView([41.311, 69.279], 11);
                             }
                         } catch (error) {
                             console.error("Error during data loading:", error);
                             addToast("Ишга туширишда хатолик", "error");
-                            mapInstanceRef.current.setView(
-                                [41.311, 69.279],
-                                11
-                            );
+                            mapInstanceRef.current.setView([41.311, 69.279], 11);
                         } finally {
                             setLoading(false);
                         }
@@ -3841,6 +3434,11 @@
                 ]);
 
                 // Memoized components
+                const memoizedKMZSearchControl = useMemo(
+                    () => React.createElement(KMZSearchControl, { addToast }),
+                    [addToast]
+                );
+
                 const memoizedLayerControls = useMemo(
                     () =>
                         React.createElement(LayerControls, {
@@ -3895,23 +3493,13 @@
                             React.createElement(
                                 "div",
                                 { className: "logo-icon" },
-                                React.createElement("i", {
-                                    className: "fas fa-map-marked-alt",
-                                })
+                                React.createElement("i", { className: "fas fa-map-marked-alt" })
                             ),
                             React.createElement(
                                 "div",
                                 null,
-                                React.createElement(
-                                    "div",
-                                    { className: "app-title" },
-                                    TEXTS.appTitle
-                                ),
-                                React.createElement(
-                                    "div",
-                                    { className: "app-subtitle" },
-                                    TEXTS.appSubtitle
-                                )
+                                React.createElement("div", { className: "app-title" }, TEXTS.appTitle),
+                                React.createElement("div", { className: "app-subtitle" }, TEXTS.appSubtitle)
                             )
                         ),
                         React.createElement(
@@ -3920,26 +3508,12 @@
                             React.createElement(
                                 "div",
                                 { className: "lang-switcher" },
-                                React.createElement(
-                                    "button",
-                                    { className: "lang-btn active" },
-                                    "УЗ"
-                                ),
-                                React.createElement(
-                                    "button",
-                                    { className: "lang-btn" },
-                                    "RU"
-                                ),
-                                React.createElement(
-                                    "button",
-                                    { className: "lang-btn" },
-                                    "EN"
-                                )
+                                React.createElement("button", { className: "lang-btn active" }, "УЗ"),
+                                React.createElement("button", { className: "lang-btn" }, "RU"),
+                                React.createElement("button", { className: "lang-btn" }, "EN")
                             )
                         ),
-                        React.createElement("div", {
-                            className: "uzbek-flag-stripe",
-                        })
+                        React.createElement("div", { className: "uzbek-flag-stripe" })
                     ),
 
                     // Main Content
@@ -3950,13 +3524,11 @@
                             "div",
                             { className: "map-container" },
                             // Map
-                            React.createElement("div", {
-                                ref: mapRef,
-                                id: "map",
-                            }),
+                            React.createElement("div", { ref: mapRef, id: "map" }),
 
                             // Control Panels
                             memoizedMapStyleControls,
+                            memoizedKMZSearchControl,
                             memoizedLayerControls,
                             memoizedGeoJSONControls
                         ),
@@ -3973,10 +3545,7 @@
                     React.createElement(Loading, { show: loading }),
 
                     // Toast Notifications
-                    React.createElement(Toast, {
-                        toasts: toasts,
-                        removeToast: removeToast,
-                    })
+                    React.createElement(Toast, { toasts: toasts, removeToast: removeToast })
                 );
             };
 
