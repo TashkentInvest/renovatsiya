@@ -20,6 +20,13 @@ Route::post('/login', [ApiAuthController::class, 'login']);
 Route::get('/aktivs', [AktivController::class, 'getLots']);
 Route::get('/taklif/aktivs', [AktivController::class, 'getTaklifLots']);
 
+ Route::get('/aktivs/filter', [AktivController::class, 'apiFilter']);
+
+    // Get statistics for dashboard
+    Route::get('/aktivs/statistics', [AktivController::class, 'apiStatistics']);
+
+    // Get single aktiv details
+    Route::get('/aktivs/{aktiv}', [AktivController::class, 'show']);
 
 Route::group(['middleware' => 'api-auth'], function () {
     Route::post('/me', [ApiAuthController::class, 'me']);

@@ -12,71 +12,19 @@ use Illuminate\Http\Request;
 use Maatwebsite\Excel\Facades\Excel;
 use Illuminate\Support\Facades\Log;
 use Illuminate\Support\Facades\Cache;
-
+use Illuminate\Support\Facades\Storage;
 
 class AktivController extends Controller
 {
 
-    public function getData(Aktiv $aktiv)
-    {
-        // Load the relationships
-        $aktiv->load(['user', 'street', 'subStreet.district']);
-
-        return response()->json($aktiv);
-    }
-    public function dashboard(Request $request)
-    {
-        $district_id = $request->input('district_id');
-        $userRole = auth()->user()->roles->first()->name;
-
-        // Initialize the query builder for Aktivs
-        $query = Aktiv::query();
-
-        // Apply district filter if provided
-        if ($district_id) {
-            $query->whereHas('user', function ($q) use ($district_id) {
-                $q->where('district_id', $district_id);
-            });
-        }
-
-        // Get the aktivs and necessary statistics
-        $aktivs = $query->orderBy('created_at', 'desc')
-            ->with('files') // eager load files
-            ->paginate(10)
-            ->appends($request->query());
-
-        // Get statistics (for example: counts, sums, averages)
-        if ($district_id) {
-            $totalAktivs = $query->count();
-            $totalTurarJoy = $query->sum('turar_joy_maydoni');
-            $totalNoturarJoy = $query->sum('noturar_joy_maydoni');
-        } else {
-            $totalAktivs = Aktiv::count();
-            $totalTurarJoy = Aktiv::sum('turar_joy_maydoni');
-            $totalNoturarJoy = Aktiv::sum('noturar_joy_maydoni');
-        }
-
-        $parkingData = [
-            'vaqtinchalik' => Aktiv::whereNotNull('vaqtinchalik_parking_info')->count(),
-            'doimiy' => Aktiv::whereNotNull('doimiy_parking_info')->count(),
-        ];
-
-        // Get monthly data for line chart
-        $monthlyData = Aktiv::selectRaw('MONTH(created_at) as month, COUNT(*) as count')
-            ->groupBy('month')
-            ->orderBy('month')
-            ->pluck('count', 'month')->toArray();
-
-        // Get district data for filters
-        $districts = Districts::all();
-
-        // Return data to the Blade view
-        return view('pages.aktiv.dashboard', compact('aktivs', 'totalAktivs', 'totalTurarJoy', 'totalNoturarJoy', 'parkingData', 'monthlyData', 'districts'));
-    }
     public function index(Request $request)
     {
         $user_id = $request->input('user_id');
-        $district_id = $request->input('district_id');  // Fixed typo here
+        $district_id = $request->input('district_id');
+        $search = $request->input('search');
+        $status = $request->input('status');
+        $date_from = $request->input('date_from');
+        $date_to = $request->input('date_to');
         $userRole = auth()->user()->roles->first()->name;
 
         // Initialize the query builder for Aktivs
@@ -85,11 +33,9 @@ class AktivController extends Controller
         // Only Super Admins and Managers can filter by user_id
         if ($userRole == 'Super Admin' || $userRole == 'Manager') {
             if ($user_id) {
-                // Show aktivs for the specified user
                 $query->where('user_id', $user_id);
             }
 
-            // Apply district filter if provided
             if ($district_id) {
                 $query->whereHas('user', function ($q) use ($district_id) {
                     $q->where('district_id', $district_id);
@@ -100,75 +46,440 @@ class AktivController extends Controller
             $query->where('user_id', auth()->id());
         }
 
+        // Apply search filter
+        if ($search) {
+            $query->where(function ($q) use ($search) {
+                $q->where('district_name', 'like', "%{$search}%")
+                  ->orWhere('neighborhood_name', 'like', "%{$search}%")
+                  ->orWhere('investor', 'like', "%{$search}%");
+            });
+        }
+
+        // Apply status filter
+        if ($status) {
+            if ($status == 'active') {
+                $query->where('status', '>=', 8);
+            } elseif ($status == 'inactive') {
+                $query->where('status', '<', 5);
+            } elseif ($status == 'pending') {
+                $query->whereBetween('status', [5, 7]);
+            }
+        }
+
+        // Apply date filters
+        if ($date_from) {
+            $query->whereDate('created_at', '>=', $date_from);
+        }
+
+        if ($date_to) {
+            $query->whereDate('created_at', '<=', $date_to);
+        }
+
         // Order the results by created_at and paginate
         $aktivs = $query->orderBy('created_at', 'desc')
-            ->with('files') // eager load the files relationship
-            ->paginate(10)
+            ->with(['files', 'polygons']) // eager load relationships
+            ->paginate(15)
             ->appends($request->query()); // Keep query parameters in pagination links
 
         return view('pages.aktiv.index', compact('aktivs'));
     }
 
-    public function userTumanlarCounts(Request $request)
+    /**
+     * API endpoint to get all aktivs data
+     */
+    public function apiIndex(Request $request)
     {
-        $user_id = $request->input('user_id');
-        $district_id = $request->input('district_id');
-        $userRole = auth()->user()->roles->first()->name;
+        try {
+            $userRole = auth()->user()->roles->first()->name ?? 'User';
 
-        // Only Super Admins and Managers can filter by user_id or district_id
-        if ($userRole != 'Super Admin' && $userRole != 'Manager') {
-            abort(403, 'Unauthorized access.');
-        }
+            // Initialize the query builder for Aktivs
+            $query = Aktiv::query();
 
-        // Initialize the query builder for Aktivs
-        $query = Aktiv::query();
-
-        // Only Super Admins and Managers can filter by user_id
-        if ($userRole == 'Super Admin' || $userRole == 'Manager') {
-            if ($user_id) {
-                // Filter aktivs by the specified user_id
-                $query->where('user_id', $user_id);
+            // Apply role-based filtering
+            if (!in_array($userRole, ['Super Admin', 'Manager'])) {
+                $query->where('user_id', auth()->id());
             }
 
-            // Apply district filter if provided
-            if ($district_id) {
-                $query->whereHas('user', function ($q) use ($district_id) {
-                    $q->where('district_id', $district_id);
+            // Get all aktivs with related data
+            $aktivs = $query->with(['files', 'polygons'])
+                ->orderBy('created_at', 'desc')
+                ->get();
+
+            // Transform the data to match the expected API format
+            $transformedData = $aktivs->map(function ($aktiv) {
+                return [
+                    'id' => $aktiv->id,
+                    'district_name' => $aktiv->district_name,
+                    'neighborhood_name' => $aktiv->neighborhood_name,
+                    'lat' => $aktiv->lat,
+                    'lng' => $aktiv->lng,
+                    'area_hectare' => $aktiv->area_hectare,
+                    'total_building_area' => $aktiv->total_building_area,
+                    'residential_area' => $aktiv->residential_area,
+                    'non_residential_area' => $aktiv->non_residential_area,
+                    'adjacent_area' => $aktiv->adjacent_area,
+                    'object_information' => $aktiv->object_information,
+                    'umn_coefficient' => $aktiv->umn_coefficient,
+                    'qmn_percentage' => $aktiv->qmn_percentage,
+                    'designated_floors' => $aktiv->designated_floors,
+                    'proposed_floors' => $aktiv->proposed_floors,
+                    'decision_number' => $aktiv->decision_number,
+                    'cadastre_certificate' => $aktiv->cadastre_certificate,
+                    'area_strategy' => $aktiv->area_strategy,
+                    'investor' => $aktiv->investor,
+                    'status' => $aktiv->status,
+                    'population' => $aktiv->population,
+                    'household_count' => $aktiv->household_count,
+                    'additional_information' => $aktiv->additional_information,
+                    'main_image' => $aktiv->main_image ? asset($aktiv->main_image) : null,
+                    'polygons' => $aktiv->polygons ? $aktiv->polygons->map(function ($polygon) {
+                        return [
+                            'id' => $polygon->id,
+                            'coordinates' => $polygon->coordinates,
+                            'type' => $polygon->type,
+                        ];
+                    }) : [],
+                    'documents' => $aktiv->files ? $aktiv->files->map(function ($file) {
+                        return [
+                            'id' => $file->id,
+                            'doc_type' => $file->file_type ?? 'document',
+                            'path' => $file->file_path,
+                            'url' => asset($file->file_path),
+                            'filename' => basename($file->file_path),
+                        ];
+                    }) : [],
+                ];
+            });
+
+            return response()->json([
+                'success' => true,
+                'lots' => $transformedData,
+                'total' => $aktivs->count(),
+                'message' => 'Активлар муваффақиятли юкланди'
+            ]);
+
+        } catch (\Exception $e) {
+            return response()->json([
+                'success' => false,
+                'message' => 'Маълумотларни юклашда хатолик: ' . $e->getMessage(),
+                'lots' => [],
+                'total' => 0
+            ], 500);
+        }
+    }
+
+    /**
+     * API endpoint for filtered data
+     */
+    public function apiFilter(Request $request)
+    {
+        try {
+            $userRole = auth()->user()->roles->first()->name ?? 'User';
+
+            // Initialize the query builder
+            $query = Aktiv::query();
+
+            // Apply role-based filtering
+            if (!in_array($userRole, ['Super Admin', 'Manager'])) {
+                $query->where('user_id', auth()->id());
+            }
+
+            // Apply filters
+            if ($request->has('search') && !empty($request->search)) {
+                $search = $request->search;
+                $query->where(function ($q) use ($search) {
+                    $q->where('district_name', 'like', "%{$search}%")
+                      ->orWhere('neighborhood_name', 'like', "%{$search}%")
+                      ->orWhere('investor', 'like', "%{$search}%");
                 });
             }
-        } else {
-            // If not Super Admin or Manager, show only the logged-in user's aktivs
-            $query->where('user_id', auth()->id());
+
+            if ($request->has('district_name') && !empty($request->district_name)) {
+                $query->where('district_name', $request->district_name);
+            }
+
+            if ($request->has('status') && !empty($request->status)) {
+                $status = $request->status;
+                if ($status == 'active') {
+                    $query->where('status', '>=', 8);
+                } elseif ($status == 'inactive') {
+                    $query->where('status', '<', 5);
+                } elseif ($status == 'pending') {
+                    $query->whereBetween('status', [5, 7]);
+                }
+            }
+
+            if ($request->has('investor') && !empty($request->investor)) {
+                $query->where('investor', 'like', "%{$request->investor}%");
+            }
+
+            // Pagination
+            $page = $request->get('page', 1);
+            $perPage = $request->get('per_page', 15);
+
+            $aktivs = $query->with(['files', 'polygons'])
+                ->orderBy('created_at', 'desc')
+                ->paginate($perPage, ['*'], 'page', $page);
+
+            // Transform data
+            $transformedData = $aktivs->getCollection()->map(function ($aktiv) {
+                return [
+                    'id' => $aktiv->id,
+                    'district_name' => $aktiv->district_name,
+                    'neighborhood_name' => $aktiv->neighborhood_name,
+                    'lat' => $aktiv->lat,
+                    'lng' => $aktiv->lng,
+                    'area_hectare' => $aktiv->area_hectare,
+                    'total_building_area' => $aktiv->total_building_area,
+                    'residential_area' => $aktiv->residential_area,
+                    'non_residential_area' => $aktiv->non_residential_area,
+                    'adjacent_area' => $aktiv->adjacent_area,
+                    'object_information' => $aktiv->object_information,
+                    'umn_coefficient' => $aktiv->umn_coefficient,
+                    'qmn_percentage' => $aktiv->qmn_percentage,
+                    'designated_floors' => $aktiv->designated_floors,
+                    'proposed_floors' => $aktiv->proposed_floors,
+                    'decision_number' => $aktiv->decision_number,
+                    'cadastre_certificate' => $aktiv->cadastre_certificate,
+                    'area_strategy' => $aktiv->area_strategy,
+                    'investor' => $aktiv->investor,
+                    'status' => $aktiv->status,
+                    'population' => $aktiv->population,
+                    'household_count' => $aktiv->household_count,
+                    'additional_information' => $aktiv->additional_information,
+                    'main_image' => $aktiv->main_image ? asset($aktiv->main_image) : null,
+                    'polygons' => $aktiv->polygons ? $aktiv->polygons->map(function ($polygon) {
+                        return [
+                            'id' => $polygon->id,
+                            'coordinates' => $polygon->coordinates,
+                            'type' => $polygon->type,
+                        ];
+                    }) : [],
+                    'documents' => $aktiv->files ? $aktiv->files->map(function ($file) {
+                        return [
+                            'id' => $file->id,
+                            'doc_type' => $file->file_type ?? 'document',
+                            'path' => $file->file_path,
+                            'url' => asset($file->file_path),
+                            'filename' => basename($file->file_path),
+                        ];
+                    }) : [],
+                ];
+            });
+
+            return response()->json([
+                'success' => true,
+                'lots' => $transformedData,
+                'current_page' => $aktivs->currentPage(),
+                'last_page' => $aktivs->lastPage(),
+                'per_page' => $aktivs->perPage(),
+                'total' => $aktivs->total(),
+                'from' => $aktivs->firstItem(),
+                'to' => $aktivs->lastItem(),
+            ]);
+
+        } catch (\Exception $e) {
+            return response()->json([
+                'success' => false,
+                'message' => 'Филтрлашда хатолик: ' . $e->getMessage(),
+                'lots' => [],
+                'total' => 0
+            ], 500);
+        }
+    }
+
+    /**
+     * Get statistics for dashboard
+     */
+    public function apiStatistics(Request $request)
+    {
+        try {
+            $userRole = auth()->user()->roles->first()->name ?? 'User';
+
+            $query = Aktiv::query();
+
+            // Apply role-based filtering
+            if (!in_array($userRole, ['Super Admin', 'Manager'])) {
+                $query->where('user_id', auth()->id());
+            }
+
+            $aktivs = $query->get();
+
+            $statistics = [
+                'total_aktivs' => $aktivs->count(),
+                'total_residential_area' => $aktivs->sum('residential_area'),
+                'total_non_residential_area' => $aktivs->sum('non_residential_area'),
+                'total_building_area' => $aktivs->sum('total_building_area'),
+                'total_population' => $aktivs->sum('population'),
+                'total_area_hectare' => $aktivs->sum('area_hectare'),
+                'total_household_count' => $aktivs->sum('household_count'),
+                'status_distribution' => [
+                    'active' => $aktivs->where('status', '>=', 8)->count(),
+                    'pending' => $aktivs->whereBetween('status', [5, 7])->count(),
+                    'inactive' => $aktivs->where('status', '<', 5)->count(),
+                ],
+                'district_distribution' => $aktivs->groupBy('district_name')
+                    ->map(function ($group) {
+                        return $group->count();
+                    })->toArray(),
+                'monthly_additions' => $this->getMonthlyStatistics($aktivs),
+            ];
+
+            return response()->json([
+                'success' => true,
+                'statistics' => $statistics,
+                'message' => 'Статистика муваффақиятли юкланди'
+            ]);
+
+        } catch (\Exception $e) {
+            return response()->json([
+                'success' => false,
+                'message' => 'Статистикани юклашда хатолик: ' . $e->getMessage(),
+                'statistics' => null
+            ], 500);
+        }
+    }
+
+    /**
+     * Export aktivs to Excel/CSV
+     */
+    public function export(Request $request)
+    {
+        try {
+            $userRole = auth()->user()->roles->first()->name ?? 'User';
+
+            $query = Aktiv::query();
+
+            // Apply role-based filtering
+            if (!in_array($userRole, ['Super Admin', 'Manager'])) {
+                $query->where('user_id', auth()->id());
+            }
+
+            // Apply any filters from request
+            if ($request->has('search') && !empty($request->search)) {
+                $search = $request->search;
+                $query->where(function ($q) use ($search) {
+                    $q->where('district_name', 'like', "%{$search}%")
+                      ->orWhere('neighborhood_name', 'like', "%{$search}%")
+                      ->orWhere('investor', 'like', "%{$search}%");
+                });
+            }
+
+            if ($request->has('district_name') && !empty($request->district_name)) {
+                $query->where('district_name', $request->district_name);
+            }
+
+            if ($request->has('status') && !empty($request->status)) {
+                $status = $request->status;
+                if ($status == 'active') {
+                    $query->where('status', '>=', 8);
+                } elseif ($status == 'inactive') {
+                    $query->where('status', '<', 5);
+                } elseif ($status == 'pending') {
+                    $query->whereBetween('status', [5, 7]);
+                }
+            }
+
+            $aktivs = $query->orderBy('created_at', 'desc')->get();
+
+            // Create CSV content
+            $headers = [
+                '№',
+                'Туман',
+                'Маҳалла',
+                'Ҳудуд майдони (га)',
+                'Қурилиш майдони (м²)',
+                'Турар жой майдони (м²)',
+                'Нотурар жой майдони (м²)',
+                'Туташ ҳудуд (м²)',
+                'Инвестор',
+                'Ҳолат',
+                'Аҳоли сони',
+                'Уй хўжаликлари',
+                'УМН коэффициент',
+                'ҚМН фоизи',
+                'Белгиланган қаватлар',
+                'Таклиф этилган қаватлар',
+                'Қарор рақами',
+                'Яратилган сана'
+            ];
+
+            $filename = 'aktivlar_' . date('Y-m-d_H-i-s') . '.csv';
+            $file = fopen('php://output', 'w');
+
+            // Set headers for download
+            header('Content-Type: text/csv; charset=utf-8');
+            header('Content-Disposition: attachment; filename="' . $filename . '"');
+            header('Pragma: no-cache');
+            header('Expires: 0');
+
+            // Add BOM for UTF-8
+            fprintf($file, chr(0xEF).chr(0xBB).chr(0xBF));
+
+            // Write headers
+            fputcsv($file, $headers);
+
+            // Write data
+            foreach ($aktivs as $index => $aktiv) {
+                $status = '';
+                if ($aktiv->status >= 8) {
+                    $status = 'Актив';
+                } elseif ($aktiv->status >= 5) {
+                    $status = 'Кутилмоқда';
+                } else {
+                    $status = 'Ноактив';
+                }
+
+                fputcsv($file, [
+                    $index + 1,
+                    $aktiv->district_name ?? '',
+                    $aktiv->neighborhood_name ?? '',
+                    number_format($aktiv->area_hectare ?? 0, 2),
+                    number_format($aktiv->total_building_area ?? 0, 2),
+                    number_format($aktiv->residential_area ?? 0, 2),
+                    number_format($aktiv->non_residential_area ?? 0, 2),
+                    number_format($aktiv->adjacent_area ?? 0, 2),
+                    $aktiv->investor ?? '',
+                    $status,
+                    $aktiv->population ?? 0,
+                    $aktiv->household_count ?? 0,
+                    $aktiv->umn_coefficient ?? '',
+                    $aktiv->qmn_percentage ?? '',
+                    $aktiv->designated_floors ?? '',
+                    $aktiv->proposed_floors ?? '',
+                    $aktiv->decision_number ?? '',
+                    $aktiv->created_at ? $aktiv->created_at->format('Y-m-d H:i:s') : ''
+                ]);
+            }
+
+            fclose($file);
+            exit;
+
+        } catch (\Exception $e) {
+            return back()->with('error', 'Экспорт қилишда хатолик: ' . $e->getMessage());
+        }
+    }
+
+    /**
+     * Get monthly statistics for charts
+     */
+    private function getMonthlyStatistics($aktivs)
+    {
+        $monthlyData = [];
+        $currentYear = date('Y');
+
+        for ($i = 1; $i <= 12; $i++) {
+            $monthName = date('M', mktime(0, 0, 0, $i, 1));
+            $count = $aktivs->filter(function ($aktiv) use ($i, $currentYear) {
+                return $aktiv->created_at &&
+                       $aktiv->created_at->year == $currentYear &&
+                       $aktiv->created_at->month == $i;
+            })->count();
+
+            $monthlyData[$monthName] = $count;
         }
 
-        // Get distinct districts by joining with users and selecting the distinct district_id
-        $districts = Districts::select('districts.id', 'districts.name_uz') // select relevant columns
-            ->distinct()
-            ->join('users', 'districts.id', '=', 'users.district_id') // join with users table
-            ->join('aktivs', 'users.id', '=', 'aktivs.user_id') // join with aktivs table
-            ->whereIn('aktivs.id', $query->pluck('id')) // filter the aktivs based on the query
-            ->get();
-
-        // Manually count aktivs for each district
-        foreach ($districts as $district) {
-            $aktivCount = Aktiv::query()
-                ->whereHas('user', function ($q) use ($district, $user_id) {
-                    // Apply district filter if needed
-                    $q->where('district_id', $district->id);
-
-                    // Apply user_id filter if provided
-                    if ($user_id) {
-                        $q->where('user_id', $user_id);
-                    }
-                })
-                ->count(); // Get the count of aktivs for the current district
-
-            // Add the count to the district object
-            $district->aktiv_count = $aktivCount;
-        }
-
-        // Return the view with districts data
-        return view('pages.aktiv.tuman_counts', compact('districts'));
+        return $monthlyData;
     }
 
 
@@ -421,7 +732,7 @@ class AktivController extends Controller
             foreach ($request->delete_files as $fileId) {
                 $file = $aktiv->files()->find($fileId);
                 if ($file) {
-                    \Storage::disk('public')->delete($file->path);
+                    Storage::disk('public')->delete($file->path);
                     $file->delete();
                 }
             }
@@ -433,7 +744,7 @@ class AktivController extends Controller
             foreach ($request->delete_docs as $docId) {
                 $doc = $aktiv->docs()->find($docId);
                 if ($doc) {
-                    \Storage::disk('public')->delete($doc->path);
+                    Storage::disk('public')->delete($doc->path);
                     $doc->delete();
                 }
             }
@@ -545,7 +856,7 @@ class AktivController extends Controller
         $this->authorizeView($aktiv); // Check if the user can delete this Aktiv
 
         foreach ($aktiv->files as $file) {
-            \Storage::disk('public')->delete($file->path);
+            Storage::disk('public')->delete($file->path);
             $file->delete();
         }
 
@@ -594,11 +905,6 @@ class AktivController extends Controller
     }
 
 
-    public function export()
-    {
-        // dd('daw');
-        return Excel::download(new AktivsExport, 'aktivs.xlsx');
-    }
 
     public function myMap()
     {
