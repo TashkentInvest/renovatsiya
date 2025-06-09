@@ -1619,7 +1619,8 @@
                 legend: "Шартли белгилар",
                 conservation: "Консервация",
                 reconstruction: "Реконструкция",
-                newConstruction: "Янги қурилиш (Реновация)",
+                newConstruction: "Генплан (Реновация)",
+                investConstruction: "TIC (Реновация)",
                 statistics: "Статистика",
                 renovation: "Реновация",
                 investment: "Инвестиция",
@@ -1678,6 +1679,7 @@
                 Konservatsiya: "#0277bd",
                 Rekonstruktsiya: "#f57c00",
                 Yangi_qurilish: "#8e24aa",
+                Invest_qurilish: "#059669",
                 Rekonstruksiya: "#f57c00",
                 "Новое строительство": "#8e24aa",
                 Реконструкция: "#f57c00",
@@ -2517,6 +2519,7 @@
                     Konservatsiya: TEXTS.conservation,
                     Rekonstruktsiya: TEXTS.reconstruction,
                     Yangi_qurilish: TEXTS.newConstruction,
+                    Invest_qurilish: TEXTS.investConstruction,
                     Rekonstruksiya: TEXTS.reconstruction,
                     Qizil_chiziqlar: TEXTS.redLines,
                 };
@@ -2713,6 +2716,18 @@
                             className: "legend-color",
                             style: {
                                 backgroundColor:
+                                    STRATEGY_COLORS["Invest_qurilish"],
+                            },
+                        }),
+                        React.createElement("span", null, TEXTS.investConstruction)
+                    ),
+                    React.createElement(
+                        "div",
+                        { className: "legend-item" },
+                        React.createElement("div", {
+                            className: "legend-color",
+                            style: {
+                                backgroundColor:
                                     STRATEGY_COLORS["Qizil_chiziqlar"],
                             },
                         }),
@@ -2833,6 +2848,9 @@
                                                                     ? "reconstruction"
                                                                     : item.strategiya ===
                                                                       "Yangi_qurilish"
+                                                                    ? "new-construction"
+                                                                    : item.strategiya ===
+                                                                      "Invest_qurilish"
                                                                     ? "new-construction"
                                                                     : item.funksiya ===
                                                                       "Qizil_chiziqlar"
