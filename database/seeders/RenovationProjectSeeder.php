@@ -228,8 +228,9 @@ class RenovationProjectSeeder extends Seeder
                         $linkedDocs = $this->linkPdfDocumentsToAktiv($aktiv->id, $neighborhood_name, $pdfFiles, $area_hectare);
                         $docsLinked += $linkedDocs;
 
-                        // Match and link KMZ files with the neighborhood name
-                        $linkedKmz = $this->linkKmzDocumentsToAktiv($aktiv->id, $neighborhood_name, $kmzFiles, $investor, $area_hectare);
+                        // Pass the row number (Т/р) for better KMZ matching
+                        $rowNumber = $row - 1; // Subtract 1 because we start from row 2
+                        $linkedKmz = $this->linkKmzDocumentsToAktiv($aktiv->id, $neighborhood_name, $kmzFiles, $investor, $area_hectare, $rowNumber);
                         $kmzLinked += $linkedKmz;
                     }
 
@@ -337,7 +338,8 @@ class RenovationProjectSeeder extends Seeder
                             'full_path' => $file->getPathname(),
                             'filename' => $filename,
                             'neighborhood_name' => $nameInFile,
-                            'original_path' => str_replace('\\', '/', $file->getPathname())
+                            'original_path' => str_replace('\\', '/', $file->getPathname()),
+                            'order_number' => $this->extractOrderNumber($filename)
                         ];
                     } else {
                         // If no match, still add the file with the raw filename as neighborhood name
@@ -345,7 +347,8 @@ class RenovationProjectSeeder extends Seeder
                             'full_path' => $file->getPathname(),
                             'filename' => $filename,
                             'neighborhood_name' => pathinfo($filename, PATHINFO_FILENAME),
-                            'original_path' => str_replace('\\', '/', $file->getPathname())
+                            'original_path' => str_replace('\\', '/', $file->getPathname()),
+                            'order_number' => $this->extractOrderNumber($filename)
                         ];
                     }
                 }
@@ -358,7 +361,7 @@ class RenovationProjectSeeder extends Seeder
     }
 
     /**
-     * Scan the KMZ directory and return all KMZ files
+     * Scan the KMZ directory and return all KMZ files with improved pattern matching
      */
     private function scanKmzDirectory($directory)
     {
@@ -376,9 +379,27 @@ class RenovationProjectSeeder extends Seeder
                 if (strtolower($file->getExtension()) === 'kmz') {
                     $filename = $file->getFilename();
 
-                    // Regex patterns for different filename formats
+                    // Updated regex patterns for different filename formats
                     $patterns = [
-                        // MFY_Name_area format: "1.МФЙ Кашгар_0,12 га.kmz"
+                        // Pattern 1: "1.Кашгар_0,12 га.kmz" (number.name_area format)
+                        '/^\d+\.(.+?)_([0-9,.]+)\s*га\.kmz$/i' => function ($matches) {
+                            return [
+                                'neighborhood_name' => trim($matches[1]),
+                                'investor' => null,
+                                'area' => str_replace(',', '.', $matches[2])
+                            ];
+                        },
+
+                        // Pattern 2: "2.Катта Козиробод-1_1,52 га.kmz" (number.name-suffix_area format)
+                        '/^\d+\.(.+?)-(\d+)_([0-9,.]+)\s*га\.kmz$/i' => function ($matches) {
+                            return [
+                                'neighborhood_name' => trim($matches[1]) . '-' . $matches[2],
+                                'investor' => null,
+                                'area' => str_replace(',', '.', $matches[3])
+                            ];
+                        },
+
+                        // Pattern 3: With МФЙ prefix: "1.МФЙ Кашгар_0,12 га.kmz"
                         '/^\d+\.МФЙ\s+(.+?)_([0-9,.]+)\s*га\.kmz$/i' => function ($matches) {
                             return [
                                 'neighborhood_name' => trim($matches[1]),
@@ -386,7 +407,8 @@ class RenovationProjectSeeder extends Seeder
                                 'area' => str_replace(',', '.', $matches[2])
                             ];
                         },
-                        // MFY_Name_Investor_area format: "3.Катта Козиробод_Nur Hayat New Classic_2,13 га.kmz"
+
+                        // Pattern 4: With investor: "3.Катта Козиробод_Nur Hayat New Classic_2,13 га.kmz"
                         '/^\d+\.(.+?)_([^_]+)_([0-9,.]+)\s*га\.kmz$/i' => function ($matches) {
                             return [
                                 'neighborhood_name' => trim($matches[1]),
@@ -394,10 +416,22 @@ class RenovationProjectSeeder extends Seeder
                                 'area' => str_replace(',', '.', $matches[3])
                             ];
                         },
-                        // Simple format: just extract everything before .kmz
-                        '/^(.+)\.kmz$/i' => function ($matches) {
+
+                        // Pattern 5: Simple format with parentheses: "Name (area га).kmz"
+                        '/^(.+?)\s*\(([0-9,.]+)\s*га\)\.kmz$/i' => function ($matches) {
                             return [
                                 'neighborhood_name' => trim($matches[1]),
+                                'investor' => null,
+                                'area' => str_replace(',', '.', $matches[2])
+                            ];
+                        },
+
+                        // Pattern 6: Just extract everything before .kmz as fallback
+                        '/^(.+)\.kmz$/i' => function ($matches) {
+                            // Remove leading numbers and dots if present
+                            $name = preg_replace('/^\d+\./', '', trim($matches[1]));
+                            return [
+                                'neighborhood_name' => trim($name),
                                 'investor' => null,
                                 'area' => null
                             ];
@@ -410,6 +444,7 @@ class RenovationProjectSeeder extends Seeder
                     foreach ($patterns as $pattern => $processor) {
                         if (preg_match($pattern, $filename, $matches)) {
                             $fileInfo = $processor($matches);
+                            Log::info("KMZ Pattern matched for '$filename': " . json_encode($fileInfo));
                             break;
                         }
                     }
@@ -421,6 +456,7 @@ class RenovationProjectSeeder extends Seeder
                             'investor' => null,
                             'area' => null
                         ];
+                        Log::warning("No KMZ pattern matched for '$filename', using filename as neighborhood name");
                     }
 
                     $kmzFiles[] = [
@@ -429,7 +465,8 @@ class RenovationProjectSeeder extends Seeder
                         'neighborhood_name' => $fileInfo['neighborhood_name'],
                         'investor' => $fileInfo['investor'],
                         'area' => $fileInfo['area'],
-                        'original_path' => str_replace('\\', '/', $file->getPathname())
+                        'original_path' => str_replace('\\', '/', $file->getPathname()),
+                        'order_number' => $this->extractOrderNumber($filename)
                     ];
                 }
             }
@@ -441,9 +478,20 @@ class RenovationProjectSeeder extends Seeder
     }
 
     /**
-     * Link PDF documents to an Aktiv record based on neighborhood name
+     * Extract order number from filename (the number before the dot)
      */
-    private function linkPdfDocumentsToAktiv($aktivId, $neighborhoodName, $pdfFiles, $areaHectare = null)
+    private function extractOrderNumber($filename)
+    {
+        if (preg_match('/^(\d+)\./', $filename, $matches)) {
+            return (int)$matches[1];
+        }
+        return null;
+    }
+
+    /**
+     * Link PDF documents to an Aktiv record based on neighborhood name and order number
+     */
+    private function linkPdfDocumentsToAktiv($aktivId, $neighborhoodName, $pdfFiles, $areaHectare = null, $rowNumber = null)
     {
         $linkedDocs = 0;
         $neighborhoodName = trim($neighborhoodName);
@@ -461,7 +509,7 @@ class RenovationProjectSeeder extends Seeder
         }
 
         // Log info for debugging
-        Log::info("Matching PDF for Aktiv ID: $aktivId, Neighborhood: $neighborhoodName, Area: $areaString");
+        Log::info("Matching PDF for Aktiv ID: $aktivId, Row: $rowNumber, Neighborhood: $neighborhoodName, Area: $areaString");
 
         // Extract neighborhood name parts for better matching
         $cleanNeighborhoodName = preg_replace('/[^\p{L}\p{N}\s]/u', ' ', $neighborhoodName);
@@ -484,19 +532,25 @@ class RenovationProjectSeeder extends Seeder
                 continue;
             }
 
-            // 1. EXACT MATCH - Case-insensitive exact match with neighborhood name
-            if (mb_strtolower($pdfNeighborhood) === mb_strtolower($neighborhoodName)) {
+            // PRIORITY 1: Order number match (Т/р column matching)
+            if ($rowNumber && isset($pdfFile['order_number']) && $pdfFile['order_number'] == $rowNumber) {
                 $match = true;
-                $matchReason = "Exact match";
+                $matchReason = "Order number match (Т/р: $rowNumber)";
             }
 
-            // 2. NUMBER + NAME MATCH - If filename starts with a number followed by the neighborhood name
+            // 2. EXACT MATCH - Case-insensitive exact match with neighborhood name
+            if (!$match && mb_strtolower($pdfNeighborhood) === mb_strtolower($neighborhoodName)) {
+                $match = true;
+                $matchReason = "Exact neighborhood match";
+            }
+
+            // 3. NUMBER + NAME MATCH - If filename starts with a number followed by the neighborhood name
             if (!$match && preg_match('/^\d+\.\s*' . preg_quote($neighborhoodName, '/') . '/iu', $pdfFile['filename'])) {
                 $match = true;
                 $matchReason = "Number + name match";
             }
 
-            // 3. AREA BASED MATCH - Only if area hectare is specified and matches in the filename
+            // 4. AREA BASED MATCH - Only if area hectare is specified and matches in the filename
             if (!$match && $areaString && stripos($pdfFile['filename'], $neighborhoodName) !== false) {
                 // Make sure the area is also in the filename, with proper format checking
                 if (preg_match('/\(\s*' . preg_quote($areaString, '/') . '\s*га\)/iu', $pdfFile['filename'])) {
@@ -505,7 +559,7 @@ class RenovationProjectSeeder extends Seeder
                 }
             }
 
-            // 4. SIGNIFICANT WORD MATCH - If neighborhood has multiple words
+            // 5. SIGNIFICANT WORD MATCH - If neighborhood has multiple words
             if (!$match && count($neighborhoodParts) > 1) {
                 // For multi-word neighborhoods, check if significant words match
                 $pdfNameParts = array_filter(
@@ -564,20 +618,23 @@ class RenovationProjectSeeder extends Seeder
                 // Important: Remove this PDF from the array to prevent it from matching with other records
                 // This ensures each PDF is only linked to the most relevant Aktiv record
                 unset($pdfFiles[$key]);
+                break; // Only match one PDF per aktiv for now
             }
         }
 
         if ($linkedDocs > 0) {
             Log::info("Linked $linkedDocs PDF documents to Aktiv ID: $aktivId");
+        } else {
+            Log::warning("No PDF match found for Aktiv ID: $aktivId, Neighborhood: $neighborhoodName");
         }
 
         return $linkedDocs;
     }
 
     /**
-     * Link KMZ documents to an Aktiv record based on neighborhood name, investor and area
+     * Improved linkKmzDocumentsToAktiv method with better matching logic
      */
-    private function linkKmzDocumentsToAktiv($aktivId, $neighborhoodName, $kmzFiles, $investor = null, $areaHectare = null)
+    private function linkKmzDocumentsToAktiv($aktivId, $neighborhoodName, $kmzFiles, $investor = null, $areaHectare = null, $rowNumber = null)
     {
         $linkedDocs = 0;
         $neighborhoodName = trim($neighborhoodName);
@@ -590,33 +647,31 @@ class RenovationProjectSeeder extends Seeder
         // Prepare area string for matching if available
         $areaString = '';
         if ($areaHectare) {
-            // Convert area to string with comma as decimal separator for matching with filenames
             $areaString = str_replace('.', ',', (string)$areaHectare);
         }
 
-        // Log info for debugging
-        Log::info("Matching KMZ for Aktiv ID: $aktivId, Neighborhood: $neighborhoodName, Investor: $investor, Area: $areaString");
+        Log::info("Matching KMZ for Aktiv ID: $aktivId, Row: $rowNumber, Neighborhood: $neighborhoodName, Investor: $investor, Area: $areaString");
 
         // Extract neighborhood name parts for better matching
-        $cleanNeighborhoodName = preg_replace('/[^\p{L}\p{N}\s]/u', ' ', $neighborhoodName);
+        $cleanNeighborhoodName = preg_replace('/[^\p{L}\p{N}\s-]/u', ' ', $neighborhoodName);
         $neighborhoodParts = array_filter(
             explode(' ', $cleanNeighborhoodName),
             function ($part) {
-                return mb_strlen($part) > 2;
+                return mb_strlen(trim($part)) > 1;
             }
         );
 
         // Clean investor name for matching if it exists
         $cleanInvestorName = null;
-        if ($investor && $investor !== '0' && $investor !== 'N/A') {
+        if ($investor && $investor !== '0' && $investor !== 'N/A' && $investor !== '---') {
             $cleanInvestorName = trim(preg_replace('/[^\p{L}\p{N}\s]/u', ' ', $investor));
         }
 
         foreach ($kmzFiles as $key => $kmzFile) {
             $match = false;
             $matchReason = '';
+            $matchScore = 0;
 
-            // Clean up the KMZ neighborhood name for comparison
             $kmzNeighborhood = trim($kmzFile['neighborhood_name']);
 
             // Skip if KMZ neighborhood name is empty
@@ -624,49 +679,77 @@ class RenovationProjectSeeder extends Seeder
                 continue;
             }
 
-            // 1. EXACT MATCH - Case-insensitive exact match with neighborhood name
-            if (mb_strtolower($kmzNeighborhood) === mb_strtolower($neighborhoodName)) {
+            // PRIORITY 1: Order number match (Т/р column matching)
+            if ($rowNumber && $kmzFile['order_number'] && $kmzFile['order_number'] == $rowNumber) {
+                $match = true;
+                $matchReason = "Order number match (Т/р: $rowNumber)";
+                $matchScore = 100;
+            }
+
+            // PRIORITY 2: Exact neighborhood match
+            if (!$match && mb_strtolower($kmzNeighborhood) === mb_strtolower($neighborhoodName)) {
                 $match = true;
                 $matchReason = "Exact neighborhood match";
+                $matchScore = 90;
             }
 
-            // 2. INVESTOR MATCH - If investor is specified in both the aktiv and kmz
-            if (
-                !$match && $cleanInvestorName && $kmzFile['investor'] &&
-                mb_strtolower($kmzFile['investor']) === mb_strtolower($cleanInvestorName)
-            ) {
-                $match = true;
-                $matchReason = "Investor match";
+            // PRIORITY 3: Neighborhood match with area verification
+            if (!$match && $areaString && $kmzFile['area']) {
+                // Normalize areas for comparison
+                $excelArea = (float)str_replace(',', '.', $areaString);
+                $kmzArea = (float)str_replace(',', '.', $kmzFile['area']);
+
+                // Allow for small differences in area (±0.1 hectare)
+                if (abs($excelArea - $kmzArea) <= 0.1) {
+                    // Check if neighborhood names are similar
+                    $similarity = $this->calculateStringSimilarity($neighborhoodName, $kmzNeighborhood);
+                    if ($similarity >= 0.6) { // 60% similarity threshold
+                        $match = true;
+                        $matchReason = "Area + neighborhood similarity match (similarity: " . round($similarity * 100) . "%)";
+                        $matchScore = 80;
+                    }
+                }
             }
 
-            // 3. AREA MATCH - If area is specified in both the aktiv and kmz
-            if (
-                !$match && $areaString && $kmzFile['area'] &&
-                str_replace(',', '.', $kmzFile['area']) === str_replace(',', '.', $areaString)
-            ) {
-                $match = true;
-                $matchReason = "Area match";
+            // PRIORITY 4: Investor match (if both have investors)
+            if (!$match && $cleanInvestorName && $kmzFile['investor']) {
+                if (mb_strtolower($kmzFile['investor']) === mb_strtolower($cleanInvestorName)) {
+                    $match = true;
+                    $matchReason = "Investor match";
+                    $matchScore = 70;
+                }
             }
 
-            // 4. NEIGHBORHOOD + AREA MATCH - Check if both neighborhood words and area match
-            if (
-                !$match && $areaString && $kmzFile['area'] &&
-                str_replace(',', '.', $kmzFile['area']) === str_replace(',', '.', $areaString)
-            ) {
-
-                // Count matching neighborhood words
+            // PRIORITY 5: Neighborhood word matching
+            if (!$match && count($neighborhoodParts) > 0) {
                 $kmzNameParts = array_filter(
-                    explode(' ', preg_replace('/[^\p{L}\p{N}\s]/u', ' ', $kmzNeighborhood)),
+                    explode(' ', preg_replace('/[^\p{L}\p{N}\s-]/u', ' ', $kmzNeighborhood)),
                     function ($part) {
-                        return mb_strlen($part) > 2;
+                        return mb_strlen(trim($part)) > 1;
                     }
                 );
 
                 $matchingWords = 0;
+                $totalWords = count($neighborhoodParts);
+
                 foreach ($neighborhoodParts as $part) {
+                    $part = trim($part);
+                    if (mb_strlen($part) <= 1) continue;
+
                     foreach ($kmzNameParts as $kmzPart) {
+                        $kmzPart = trim($kmzPart);
+                        if (mb_strlen($kmzPart) <= 1) continue;
+
+                        // Exact word match
+                        if (mb_strtolower($part) === mb_strtolower($kmzPart)) {
+                            $matchingWords++;
+                            break;
+                        }
+
+                        // Partial word match for longer words
                         if (mb_strlen($part) > 3 && mb_strlen($kmzPart) > 3) {
-                            if (mb_strtolower($part) === mb_strtolower($kmzPart)) {
+                            $similarity = $this->calculateStringSimilarity($part, $kmzPart);
+                            if ($similarity >= 0.8) {
                                 $matchingWords++;
                                 break;
                             }
@@ -674,56 +757,80 @@ class RenovationProjectSeeder extends Seeder
                     }
                 }
 
-                // Match if at least 50% of words match along with the area
-                $totalSignificantWords = count($neighborhoodParts);
-                if ($totalSignificantWords > 0 && $matchingWords >= ceil($totalSignificantWords * 0.5)) {
+                // Match if at least 70% of words match
+                if ($totalWords > 0 && $matchingWords >= ceil($totalWords * 0.7)) {
                     $match = true;
-                    $matchReason = "Neighborhood words + area match ($matchingWords/$totalSignificantWords words)";
+                    $matchReason = "Word similarity match ($matchingWords/$totalWords words)";
+                    $matchScore = 60;
                 }
             }
 
-            // 5. FILENAME PATTERN MATCH - Check if the filename contains the neighborhood name
+            // PRIORITY 6: Filename pattern match (lowest priority)
             if (!$match) {
-                if (
-                    stripos($kmzFile['filename'], $neighborhoodName) !== false ||
-                    stripos($neighborhoodName, $kmzFile['neighborhood_name']) !== false
-                ) {
+                if (stripos($kmzFile['filename'], $neighborhoodName) !== false) {
                     $match = true;
-                    $matchReason = "Filename pattern match";
+                    $matchReason = "Filename contains neighborhood name";
+                    $matchScore = 30;
                 }
             }
 
             // If we have a match, create the document record
             if ($match) {
-                // Store the relative path in the database (easier to use in web context)
                 $relativePath = 'assets/data/BASA_RENOVA/' . $kmzFile['filename'];
 
-                // Log the successful match
-                Log::info("KMZ Match found for Aktiv ID: $aktivId, File: {$kmzFile['filename']}, Reason: $matchReason");
+                Log::info("KMZ Match found for Aktiv ID: $aktivId, File: {$kmzFile['filename']}, Reason: $matchReason, Score: $matchScore");
 
                 AktivDoc::create([
                     'aktiv_id' => $aktivId,
                     'doc_type' => 'kmz-document',
                     'path' => $relativePath,
-                    'filename' => $kmzFile['filename'],  // Store the filename separately
-                    'url' => url($relativePath),  // Store the full URL for easy access
+                    'filename' => $kmzFile['filename'],
+                    'url' => url($relativePath),
                     'created_at' => now(),
                     'updated_at' => now(),
                 ]);
 
                 $linkedDocs++;
 
-                // Important: Remove this KMZ from the array to prevent it from matching with other records
-                // This ensures each KMZ is only linked to the most relevant Aktiv record
+                // Remove this KMZ from the array to prevent duplicate matching
                 unset($kmzFiles[$key]);
+                break; // Only match one KMZ per aktiv for now
             }
         }
 
         if ($linkedDocs > 0) {
             Log::info("Linked $linkedDocs KMZ documents to Aktiv ID: $aktivId");
+        } else {
+            Log::warning("No KMZ match found for Aktiv ID: $aktivId, Neighborhood: $neighborhoodName");
         }
 
         return $linkedDocs;
+    }
+
+    /**
+     * Calculate string similarity between two strings
+     */
+    private function calculateStringSimilarity($str1, $str2)
+    {
+        $str1 = mb_strtolower(trim($str1));
+        $str2 = mb_strtolower(trim($str2));
+
+        if ($str1 === $str2) {
+            return 1.0;
+        }
+
+        if (empty($str1) || empty($str2)) {
+            return 0.0;
+        }
+
+        // Use Levenshtein distance for similarity calculation
+        $maxLen = max(mb_strlen($str1), mb_strlen($str2));
+        if ($maxLen == 0) {
+            return 1.0;
+        }
+
+        $distance = levenshtein($str1, $str2);
+        return 1 - ($distance / $maxLen);
     }
 
     /**
@@ -870,3 +977,4 @@ class RenovationProjectSeeder extends Seeder
         return is_numeric($value) ? (float)$value : null;
     }
 }
+?>
