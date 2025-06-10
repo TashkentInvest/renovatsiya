@@ -52,7 +52,7 @@ Route::group(['middleware' => ['auth', 'checkUserRole']], function () {
     Route::post('/aktivs/export', [AktivController::class, 'export'])->name('aktivs.export');
 
 
-    Route::get('/my-map', [AktivController::class, 'myMap'])->name('aktivs.myMap');
+    // Route::get('/my-map', [AktivController::class, 'myMap'])->name('aktivs.myMap');
     Route::get('/my-taklif-map', [AktivController::class, 'myTaklifMap'])->name('myTaklifMap');
 
     // Route::get('maps/aktivs', [AktivController::class, 'getLots']);
