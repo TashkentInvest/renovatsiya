@@ -1444,11 +1444,11 @@
                 const geoJson = toGeoJSON.kml(kmlDoc);
 
                 let style = {
-                    color: 'green',
+                    color: 'red',
                     weight: 2,
-                    opacity: 0.7,
-                    fillColor: 'green',
-                    fillOpacity: 0.2
+                    opacity: 0,
+                    fillColor: 'red',
+                    fillOpacity: 0.8
                 };
 
                 if (lot.status === "9") {
@@ -2101,10 +2101,10 @@
             }
 
             let style = {
-                color: 'green',
+                color: 'red',
                 weight: 2,
                 opacity: 0.7,
-                fillColor: 'green',
+                fillColor: 'red',
                 fillOpacity: 0.2
             };
 
