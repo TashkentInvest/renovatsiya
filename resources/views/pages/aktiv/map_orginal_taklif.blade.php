@@ -1,10 +1,9 @@
 <!DOCTYPE html>
 <html lang="uz">
-
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>InvestUz Map after auth</title>
+    <title>InvestUz Map - Complete Integration</title>
     <!-- Leaflet CSS -->
     <link rel="stylesheet" href="https://unpkg.com/leaflet@1.9.4/dist/leaflet.css" />
     <link rel="stylesheet" href="https://unpkg.com/leaflet.markercluster@1.4.1/dist/MarkerCluster.css" />
@@ -101,45 +100,51 @@
             background-color: #009933;
         }
 
-        /* Sidebar styles */
-        .sidebar {
+        /* Modal styles instead of sidebar */
+        .info-modal {
             position: fixed;
             top: 0;
-            right: -400px;
-            width: 380px;
-            height: 100vh;
-            background: white;
-            box-shadow: -3px 0 10px rgba(0, 0, 0, 0.1);
+            left: 0;
+            width: 100%;
+            height: 100%;
+            background: rgba(0, 0, 0, 0.5);
+            display: none;
             z-index: 1000;
-            transition: right 0.3s ease;
+            justify-content: center;
+            align-items: center;
+        }
+
+        .info-modal.show {
+            display: flex;
+        }
+
+        .modal-content {
+            background: white;
+            border-radius: 8px;
+            max-width: 600px;
+            max-height: 80vh;
+            width: 90%;
             overflow-y: auto;
-            padding-bottom: 20px;
+            box-shadow: 0 4px 20px rgba(0, 0, 0, 0.3);
         }
 
-        .sidebar.open {
-            right: 0;
-        }
-
-        .sidebar-header {
-            padding: 15px;
+        .modal-header {
+            padding: 15px 20px;
             border-bottom: 1px solid #ddd;
             display: flex;
             justify-content: space-between;
             align-items: center;
             background-color: #1E3685;
             color: white;
+            border-radius: 8px 8px 0 0;
         }
 
-        .sidebar-header h2 {
+        .modal-header h2 {
             margin: 0;
             font-size: 18px;
-            max-width: 300px;
-            overflow: hidden;
-            text-overflow: ellipsis;
-            white-space: nowrap;
         }
 
-        .sidebar-close-btn {
+        .modal-close-btn {
             background: none;
             border: none;
             color: white;
@@ -153,8 +158,67 @@
             justify-content: center;
         }
 
-        .sidebar-content {
-            padding: 15px;
+        .modal-body {
+            padding: 20px;
+        }
+
+        /* Enhanced popup styles */
+        .leaflet-popup-content {
+            margin: 12px 15px;
+            max-width: 300px;
+        }
+
+        .popup-header {
+            font-size: 16px;
+            font-weight: 600;
+            color: #1E3685;
+            margin-bottom: 8px;
+            border-bottom: 1px solid #eee;
+            padding-bottom: 5px;
+        }
+
+        .popup-info {
+            margin: 5px 0;
+            font-size: 14px;
+        }
+
+        .popup-info strong {
+            color: #333;
+        }
+
+        .popup-buttons {
+            margin-top: 10px;
+            display: flex;
+            gap: 5px;
+            flex-wrap: wrap;
+        }
+
+        .popup-btn {
+            padding: 5px 10px;
+            background: #1E3685;
+            color: white;
+            border: none;
+            border-radius: 3px;
+            cursor: pointer;
+            font-size: 12px;
+            text-decoration: none;
+            display: inline-block;
+        }
+
+        .popup-btn:hover {
+            background: #152a6c;
+        }
+
+        .popup-btn.details {
+            background: #0E6245;
+        }
+
+        .popup-btn.download {
+            background: #F5A623;
+        }
+
+        .popup-btn.external {
+            background: #FF5722;
         }
 
         .section-title {
@@ -259,33 +323,6 @@
             white-space: pre-line;
         }
 
-        /* Related investments section */
-        .related-investments {
-            display: flex;
-            flex-direction: column;
-            gap: 10px;
-        }
-
-        .data-card {
-            padding: 10px;
-            border-radius: 4px;
-            border: 1px solid #eee;
-            background: #f9f9f9;
-            cursor: pointer;
-            transition: all 0.2s;
-        }
-
-        .data-card:hover {
-            background: #f0f7ff;
-            border-color: #1E3685;
-        }
-
-        .data-card-title {
-            font-weight: 600;
-            margin-bottom: 5px;
-            color: #1E3685;
-        }
-
         /* Loading indicator */
         .loading {
             position: fixed;
@@ -346,34 +383,8 @@
             background: #D62839;
         }
 
-        /* Popup customization */
-        .leaflet-popup-content {
-            margin: 10px 12px;
-        }
-
-        .leaflet-popup-content h3 {
-            margin: 0 0 5px 0;
-            font-size: 16px;
-        }
-
-        .leaflet-popup-content p {
-            margin: 3px 0;
-            font-size: 14px;
-        }
-
-        .details-btn {
-            margin-top: 8px;
-            padding: 5px 10px;
-            background: #1E3685;
-            color: white;
-            border: none;
-            border-radius: 3px;
-            cursor: pointer;
-            font-size: 13px;
-        }
-
-        .details-btn:hover {
-            background: #152a6c;
+        .toast.success {
+            background: #0E6245;
         }
 
         /* Map controls */
@@ -463,13 +474,15 @@
         }
 
         .map-control-btn.active {
+            background: #FFD700;
+            color: #333;
+            border-color: #FFD700;
+        }
+
+        .map-control-btn.auction-active {
             background: #FF5722;
             color: white;
             border-color: #FF5722;
-        }
-
-        .map-control-btn i {
-            font-size: 16px;
         }
 
         .count-badge {
@@ -484,23 +497,27 @@
         }
 
         .map-control-btn.active .count-badge {
+            background: rgba(0, 0, 0, 0.3);
+            color: white;
+        }
+
+        .map-control-btn.auction-active .count-badge {
             background: rgba(255, 255, 255, 0.3);
         }
 
-        .control-content {
-            display: flex;
-            align-items: center;
-            gap: 8px;
+        .details-btn {
+            margin-top: 8px;
+            padding: 5px 10px;
+            background: #1E3685;
+            color: white;
+            border: none;
+            border-radius: 3px;
+            cursor: pointer;
+            font-size: 13px;
         }
 
-        .auction-popup {
-            padding: 5px;
-        }
-
-        .auction-image {
-            margin: 8px 0;
-            border-radius: 4px;
-            overflow: hidden;
+        .details-btn:hover {
+            background: #152a6c;
         }
 
         /* Stats panel */
@@ -539,6 +556,17 @@
         .stats-value {
             font-weight: 600;
             color: #333;
+        }
+
+        /* Auction popup */
+        .auction-popup {
+            padding: 5px;
+        }
+
+        .auction-image {
+            margin: 8px 0;
+            border-radius: 4px;
+            overflow: hidden;
         }
 
         /* Responsive adjustments */
@@ -583,13 +611,25 @@
         <div class="spinner"></div>
     </div>
 
+    <!-- Info Modal -->
+    <div id="info-modal" class="info-modal">
+        <div class="modal-content">
+            <div class="modal-header">
+                <h2 id="modal-title">Маълумотлар</h2>
+                <button class="modal-close-btn" onclick="closeModal()">×</button>
+            </div>
+            <div class="modal-body" id="modal-body">
+                <!-- Content will be loaded here -->
+            </div>
+        </div>
+    </div>
+
     <!-- Leaflet JS -->
     <script src="https://unpkg.com/leaflet@1.9.4/dist/leaflet.js"></script>
     <script src="https://unpkg.com/leaflet.markercluster@1.4.1/dist/leaflet.markercluster.js"></script>
 
     <!-- KMZ Support -->
     <script src="https://unpkg.com/jszip@3.10.1/dist/jszip.min.js"></script>
-    <script src="https://cdnjs.cloudflare.com/ajax/libs/leaflet-omnivore/0.3.4/leaflet-omnivore.min.js"></script>
     <script src="https://cdnjs.cloudflare.com/ajax/libs/togeojson/0.16.0/togeojson.min.js"></script>
 
     <script>
@@ -607,6 +647,7 @@
             jsonDataVisible: true,
             jsonDataCluster: null,
             currentSidebar: null,
+            currentModal: null,
             isAnimating: false,
             currentItem: null,
             lastView: {
@@ -618,21 +659,21 @@
                 regular: 0,
                 auction: 0,
                 jsonData: 0,
-                kmz: 0
+                kmz: 0,
+                dopKmz: 0
             },
             mapLayers: {
                 osm: null,
                 satellite: null,
                 hybridBase: null,
                 hybridLabels: null,
-                currentLayer: 'osm'
+                currentLayer: 'hybrid'
             },
             apiBaseUrl: (function() {
                 const hostname = window.location.hostname;
                 const port = window.location.port;
                 const protocol = window.location.protocol;
 
-                // Use the same origin as the current page to avoid CORS issues
                 if (hostname === 'localhost' || hostname === '127.0.0.1') {
                     return `${protocol}//${hostname}${port ? ':' + port : ''}`;
                 } else {
@@ -641,7 +682,15 @@
             })()
         };
 
-        // Enhanced coordinate extraction from Google Maps and Yandex URLs
+        // KMZ file list for DOP_DATA
+        const DOP_KMZ_FILES = [
+            'ALL_RENOVATION_AREA_368_303_230525.kmz',
+            'SER-10_Кумарик_1,92 га.kmz',
+            'YAK-11_Ракатбоши-6_0,63 га.kmz',
+            'YASH-44_Бойкурган-4_1,75 га.kmz'
+        ];
+
+         // Enhanced coordinate extraction from Google Maps and Yandex URLs
         function extractCoordinatesFromUrl(url) {
             if (!url) return null;
 
@@ -1020,7 +1069,6 @@
                     headers: {
                         'Accept': 'application/json',
                     },
-                    // Use no-cors mode if CORS is an issue
                     mode: 'cors'
                 });
 
@@ -1105,7 +1153,6 @@
             } catch (error) {
                 console.error('Error fetching auction data:', error);
 
-                // More specific error handling
                 if (error.message.includes('CORS') || error.message.includes('Failed to fetch')) {
                     showToast('Аукцион маълумотларни юклашда CORS хатолиги', 'warning');
                 } else {
@@ -1115,926 +1162,229 @@
             }
         }
 
-        // Toggle auction markers visibility
-        function toggleAuctionMarkers() {
-            if (App.auctionMarkersVisible) {
-                App.map.removeLayer(App.auctionCluster);
-                App.auctionMarkersVisible = false;
-            } else {
-                App.map.addLayer(App.auctionCluster);
-                App.auctionMarkersVisible = true;
-            }
+        // Parse description data from KML
+        function parseDescriptionData(description) {
+            if (!description) return {};
 
-            updateAuctionButtonText();
-            updateCounts();
-        }
-
-        // Toggle JSON data markers visibility
-        function toggleJsonDataMarkers() {
-            if (App.jsonDataVisible) {
-                App.map.removeLayer(App.jsonDataCluster);
-                App.jsonDataVisible = false;
-            } else {
-                App.map.addLayer(App.jsonDataCluster);
-                App.jsonDataVisible = true;
-            }
-
-            updateJsonDataButtonText();
-            updateCounts();
-        }
-
-        // Update the auction toggle button text
-        function updateAuctionButtonText() {
-            const button = document.getElementById('toggle-auction-btn');
-            if (button) {
-                const content = button.querySelector('.control-content');
-
-                if (content) {
-                    content.innerHTML = `
-                        <div style="display: flex; align-items: center; gap: 6px;">
-                            <i class="fas fa-gavel"></i>
-                            <span>${App.auctionMarkersVisible ? 'Аукционларни яшириш' : 'Аукционларни кўрсатиш'}</span>
-                        </div>
-                    `;
-                }
-
-                button.className = App.auctionMarkersVisible ?
-                    'map-control-btn active' : 'map-control-btn';
-            }
-        }
-
-        // Update the JSON data toggle button text
-        function updateJsonDataButtonText() {
-            const button = document.getElementById('toggle-json-btn');
-            if (button) {
-                const content = button.querySelector('.control-content');
-
-                if (content) {
-                    content.innerHTML = `
-                        <div style="display: flex; align-items: center; gap: 6px;">
-                            <i class="fas fa-layer-group"></i>
-                            <span>${App.jsonDataVisible ? 'JSON маълумотларни яшириш' : 'JSON маълумотларни кўрсатиш'}</span>
-                        </div>
-                    `;
-                }
-
-                button.className = App.jsonDataVisible ?
-                    'map-control-btn active' : 'map-control-btn';
-            }
-        }
-
-        // Create map style controls
-        function createMapStyleControls() {
-            const styleControlDiv = document.createElement('div');
-            styleControlDiv.className = 'map-style-controls';
-
-            const title = document.createElement('div');
-            title.className = 'style-control-title';
-            title.textContent = 'Харита турлари';
-
-            const osmBtn = document.createElement('button');
-            osmBtn.className = 'style-btn active';
-            osmBtn.textContent = 'Стандарт';
-            osmBtn.onclick = function() { changeMapStyle('osm'); };
-
-            const satelliteBtn = document.createElement('button');
-            satelliteBtn.className = 'style-btn';
-            satelliteBtn.textContent = 'Сунъий йўлдош';
-            satelliteBtn.onclick = function() { changeMapStyle('satellite'); };
-
-            const hybridBtn = document.createElement('button');
-            hybridBtn.className = 'style-btn';
-            hybridBtn.textContent = 'Гибрид';
-            hybridBtn.onclick = function() { changeMapStyle('hybrid'); };
-
-            styleControlDiv.appendChild(title);
-            styleControlDiv.appendChild(osmBtn);
-            styleControlDiv.appendChild(satelliteBtn);
-            styleControlDiv.appendChild(hybridBtn);
-
-            document.getElementById('map').appendChild(styleControlDiv);
-        }
-
-        // Change map style
-        function changeMapStyle(styleType) {
-            console.log('Changing map style to:', styleType);
-
-            // Remove current layers
-            if (App.mapLayers.currentLayer === 'osm' && App.mapLayers.osm) {
-                App.map.removeLayer(App.mapLayers.osm);
-            } else if (App.mapLayers.currentLayer === 'satellite' && App.mapLayers.satellite) {
-                App.map.removeLayer(App.mapLayers.satellite);
-            } else if (App.mapLayers.currentLayer === 'hybrid') {
-                if (App.mapLayers.hybridBase) App.map.removeLayer(App.mapLayers.hybridBase);
-                if (App.mapLayers.hybridLabels) App.map.removeLayer(App.mapLayers.hybridLabels);
-            }
-
-            // Add new layer
-            if (styleType === 'osm') {
-                App.map.addLayer(App.mapLayers.osm);
-            } else if (styleType === 'satellite') {
-                App.map.addLayer(App.mapLayers.satellite);
-            } else if (styleType === 'hybrid') {
-                App.map.addLayer(App.mapLayers.hybridBase);
-                App.map.addLayer(App.mapLayers.hybridLabels);
-            }
-
-            App.mapLayers.currentLayer = styleType;
-
-            // Update button states
-            document.querySelectorAll('.style-btn').forEach(btn => {
-                btn.classList.remove('active');
-            });
-
-            const buttonTexts = {
-                'osm': 'Стандарт',
-                'satellite': 'Сунъий йўлдош',
-                'hybrid': 'Гибрид'
-            };
-
-            document.querySelectorAll('.style-btn').forEach(btn => {
-                if (btn.textContent === buttonTexts[styleType]) {
-                    btn.classList.add('active');
-                }
-            });
-
-            console.log('Map style changed to:', styleType);
-        }
-
-        // Create map controls - This was the missing function!
-        function createMapControls() {
-            const controlDiv = document.createElement('div');
-            controlDiv.className = 'map-controls';
-
-            // Create regular data info button (non-toggleable)
-            const regularButton = document.createElement('div');
-            regularButton.id = 'regular-count-btn';
-            regularButton.className = 'map-control-btn';
-            regularButton.style.cursor = 'default';
-            regularButton.innerHTML = `
-                <div class="control-content">
-                    <div style="display: flex; align-items: center; gap: 6px;">
-                        <i class="fas fa-building"></i>
-                        <span>API + KMZ маълумотлар</span>
-                    </div>
-                </div>
-                <span class="count-badge">0</span>
-            `;
-
-            // Create JSON data toggle button
-            const jsonButton = document.createElement('button');
-            jsonButton.id = 'toggle-json-btn';
-            jsonButton.className = 'map-control-btn active';
-            jsonButton.innerHTML = `
-                <div class="control-content">
-                    <div style="display: flex; align-items: center; gap: 6px;">
-                        <i class="fas fa-layer-group"></i>
-                        <span>JSON маълумотларни яшириш</span>
-                    </div>
-                </div>
-                <span class="count-badge">0</span>
-            `;
-            jsonButton.addEventListener('click', toggleJsonDataMarkers);
-
-            // Create auction toggle button
-            const auctionButton = document.createElement('button');
-            auctionButton.id = 'toggle-auction-btn';
-            auctionButton.className = 'map-control-btn';
-            auctionButton.innerHTML = `
-                <div class="control-content">
-                    <div style="display: flex; align-items: center; gap: 6px;">
-                        <i class="fas fa-gavel"></i>
-                        <span>Аукционларни кўрсатиш</span>
-                    </div>
-                </div>
-                <span class="count-badge">0</span>
-            `;
-            auctionButton.addEventListener('click', toggleAuctionMarkers);
-
-            // Create stats panel
-            const statsPanel = document.createElement('div');
-            statsPanel.className = 'stats-panel';
-
-            // Add all elements to control div
-            controlDiv.appendChild(regularButton);
-            controlDiv.appendChild(jsonButton);
-            controlDiv.appendChild(auctionButton);
-            controlDiv.appendChild(statsPanel);
-
-            // Add control to the map container
-            document.getElementById('map').appendChild(controlDiv);
-
-            // Initial update
-            updateCounts();
-        }
-
-        // Setup event listeners
-        function setupEventListeners() {
-            document.addEventListener('click', function(e) {
-                if (e.target.classList.contains('details-btn')) {
-                    const lotId = e.target.getAttribute('data-lot-id');
-                    const itemId = e.target.getAttribute('data-item-id');
-
-                    if (lotId) {
-                        showDetails(lotId);
-                    } else if (itemId) {
-                        showJsonItemDetails(itemId);
-                    }
-                }
-            });
-
-            App.map.on('click', function() {
-                if (window.innerWidth <= 768) {
-                    closeSidebar();
-                }
-            });
-
-            window.addEventListener('resize', function() {
-                App.map.invalidateSize();
-            });
-        }
-
-        // Initialize app with improved error handling
-        async function init() {
-            showLoading();
+            const data = {};
 
             try {
-                initMap();
-                setupEventListeners();
-                createMapStyleControls();
-                createMapControls();
+                const lines = description.split('\n').map(line => line.trim()).filter(line => line);
 
-                // Execute data fetching with proper error handling
-                const dataPromises = [
-                    fetchData().catch(error => {
-                        console.warn('Regular data fetch failed:', error);
-                        return false;
-                    }),
-                    fetchAuctionData().catch(error => {
-                        console.warn('Auction data fetch failed:', error);
-                        return false;
-                    }),
-                    fetchJsonData().catch(error => {
-                        console.warn('JSON data fetch failed:', error);
-                        return false;
-                    })
-                ];
+                for (const line of lines) {
+                    const colonMatch = line.match(/^([^:]+):\s*(.+)$/);
+                    const dashMatch = line.match(/^([^-]+)-\s*(.+)$/);
+                    const equalMatch = line.match(/^([^=]+)=\s*(.+)$/);
 
-                const [regularDataResult, auctionDataResult, jsonDataResult] = await Promise.allSettled(dataPromises);
+                    let key, value;
 
-                // Process results
-                const regularSuccess = regularDataResult.status === 'fulfilled' && regularDataResult.value;
-                const auctionSuccess = auctionDataResult.status === 'fulfilled' && auctionDataResult.value;
-                const jsonSuccess = jsonDataResult.status === 'fulfilled' && jsonDataResult.value;
+                    if (colonMatch) {
+                        key = colonMatch[1].trim();
+                        value = colonMatch[2].trim();
+                    } else if (dashMatch) {
+                        key = dashMatch[1].trim();
+                        value = dashMatch[2].trim();
+                    } else if (equalMatch) {
+                        key = equalMatch[1].trim();
+                        value = equalMatch[2].trim();
+                    } else if (line.includes(' ')) {
+                        const parts = line.split(' ');
+                        if (parts.length >= 2) {
+                            key = parts[0];
+                            value = parts.slice(1).join(' ');
+                        }
+                    }
 
-                if (!regularSuccess && App.markers.length === 0 &&
-                    Object.keys(App.polygons).length === 0 &&
-                    Object.keys(App.kmzLayers).length === 0) {
-                    console.warn('No regular API data loaded on map');
+                    if (key && value) {
+                        data[key] = value;
+                    }
                 }
 
-                if (auctionSuccess) {
-                    console.log('Auction data loaded successfully');
-                } else {
-                    console.warn('No auction data loaded');
+                // Handle specific formats from your example
+                if (description.includes('Лот №')) {
+                    const lotMatch = description.match(/Лот №\s*([^\n]+)/);
+                    if (lotMatch) data['Лот №'] = lotMatch[1].trim();
                 }
 
-                if (jsonSuccess) {
-                    console.log('JSON data loaded successfully');
-                } else {
-                    console.warn('No JSON data loaded');
+                if (description.includes('Туман')) {
+                    const regionMatch = description.match(/Туман\s*-\s*([^\n]+)/);
+                    if (regionMatch) data['Туман'] = regionMatch[1].trim();
                 }
 
-                const allMarkers = [];
-
-                if (App.markers.length > 0) {
-                    allMarkers.push(...App.markers.map(m => m.marker));
+                if (description.includes('МФЙ')) {
+                    const mfyMatch = description.match(/МФЙ\s*-\s*([^\n]+)/);
+                    if (mfyMatch) data['МФЙ'] = mfyMatch[1].trim();
                 }
 
-                if (App.jsonDataMarkers.length > 0) {
-                    allMarkers.push(...App.jsonDataMarkers.map(m => m.marker));
+                if (description.includes('Майдони')) {
+                    const areaMatch = description.match(/Майдони\s*-\s*([^\n]+)/);
+                    if (areaMatch) data['Майдони'] = areaMatch[1].trim();
                 }
 
-                // Fit map bounds to show all markers
-                if (allMarkers.length > 0) {
-                    const group = L.featureGroup(allMarkers);
-                    App.map.fitBounds(group.getBounds(), {
-                        padding: [50, 50]
-                    });
-                } else {
-                    // Default to Tashkent center if no markers
-                    App.map.setView([41.311, 69.279], 11);
+                if (description.includes('Стратегия')) {
+                    const strategyMatch = description.match(/Стратегия:\s*([^\n]+)/);
+                    if (strategyMatch) data['Стратегия'] = strategyMatch[1].trim();
                 }
 
-                // Final count update
-                updateCounts();
-
-                // Show summary toast
-                const totalLoaded = App.counts.regular + App.counts.auction + App.counts.jsonData + App.counts.kmz;
-                if (totalLoaded > 0) {
-                    showToast(`Жами юкланди: ${totalLoaded} та маълумот`, 'info');
-                } else {
-                    showToast('Ҳеч қандай маълумот юкланмади. Сервер ишлаётганини текширинг.', 'warning');
+                if (description.includes('Қаватлилик')) {
+                    const floorsMatch = description.match(/Қаватлилик:\s*([^\n]+)/);
+                    if (floorsMatch) data['Қаватлилик'] = floorsMatch[1].trim();
                 }
-
-                // Log final status
-                console.log(`Final status: Regular: ${App.counts.regular}, KMZ: ${App.counts.kmz}, JSON: ${App.counts.jsonData}, Auction: ${App.counts.auction}`);
 
             } catch (error) {
-                console.error('Initialization error:', error);
-                showToast('Харитани ишга туширишда хатолик: ' + error.message, 'error');
-            } finally {
-                hideLoading();
+                console.warn('Error parsing description:', error);
             }
+
+            return data;
         }
 
-        // Start the app when DOM is ready
-        document.addEventListener('DOMContentLoaded', init);
-
-        // Get status info for different types
-        function getStatusInfo(item) {
-            const type = item['Таклиф_тури_(Реновация,_Инвестиция,_Аукцион)'];
-
-            switch (type) {
-                case 'Реновация':
-                    return { text: 'Реновация', class: 'badge-renovation', color: '#8e24aa' };
-                case 'Инвестиция':
-                    return { text: 'Инвестиция', class: 'badge-investment', color: '#0277bd' };
-                case 'Аукцион':
-                    return { text: 'Аукцион', class: 'badge-auction', color: '#f57c00' };
-                default:
-                    return { text: type || 'Белгисиз', class: 'badge-info', color: '#1E3685' };
-            }
-        }
-
-        // Create marker icon based on type
-        function createMarkerIcon(item) {
-            const status = getStatusInfo(item);
-
-            return L.divIcon({
-                html: `<div style="background-color: ${status.color}; width: 12px; height: 12px; border-radius: 50%; border: 2px solid white;"></div>`,
-                className: 'custom-marker',
-                iconSize: [16, 16],
-                iconAnchor: [8, 8]
-            });
-        }
-
-        // Show loading indicator
-        function showLoading() {
-            document.getElementById('loading').style.display = 'flex';
-        }
-
-        // Hide loading indicator
-        function hideLoading() {
-            document.getElementById('loading').style.display = 'none';
-        }
-
-        // Show toast notification
-        function showToast(message, type = 'info') {
-            const toast = document.createElement('div');
-            toast.className = 'toast ' + type;
-            toast.textContent = message;
-            document.body.appendChild(toast);
-
-            setTimeout(() => {
-                toast.remove();
-            }, 3000);
-        }
-
-        // Update counts in control panel
-        function updateCounts() {
-            const jsonBtn = document.getElementById('toggle-json-btn');
-            const auctionBtn = document.getElementById('toggle-auction-btn');
-            const regularBtn = document.getElementById('regular-count-btn');
-
-            if (jsonBtn) {
-                const jsonCount = jsonBtn.querySelector('.count-badge');
-                if (jsonCount) {
-                    jsonCount.textContent = App.counts.jsonData;
-                }
-            }
-
-            if (auctionBtn) {
-                const auctionCount = auctionBtn.querySelector('.count-badge');
-                if (auctionCount) {
-                    auctionCount.textContent = App.counts.auction;
-                }
-            }
-
-            if (regularBtn) {
-                const regularCount = regularBtn.querySelector('.count-badge');
-                if (regularCount) {
-                    regularCount.textContent = App.counts.regular + App.counts.kmz;
-                }
-            }
-
-            // Update stats panel
-            updateStatsPanel();
-        }
-
-        // Update stats panel
-        function updateStatsPanel() {
-            const statsPanel = document.querySelector('.stats-panel');
-            if (statsPanel) {
-                const total = App.counts.regular + App.counts.auction + App.counts.jsonData + App.counts.kmz;
-                statsPanel.innerHTML = `
-                    <div class="stats-title">Статистика</div>
-                    <div class="stats-grid">
-                        <div class="stats-item">
-                            <span class="stats-label">Жами:</span>
-                            <span class="stats-value">${total}</span>
-                        </div>
-                        <div class="stats-item">
-                            <span class="stats-label">API:</span>
-                            <span class="stats-value">${App.counts.regular}</span>
-                        </div>
-                        <div class="stats-item">
-                            <span class="stats-label">KMZ:</span>
-                            <span class="stats-value">${App.counts.kmz}</span>
-                        </div>
-                        <div class="stats-item">
-                            <span class="stats-label">JSON:</span>
-                            <span class="stats-value">${App.counts.jsonData}</span>
-                        </div>
-                        <div class="stats-item">
-                            <span class="stats-label">Аукцион:</span>
-                            <span class="stats-value">${App.counts.auction}</span>
-                        </div>
-                        <div class="stats-item">
-                            <span class="stats-label">Кўрсатилган:</span>
-                            <span class="stats-value">${(App.jsonDataVisible ? App.counts.jsonData : 0) + (App.auctionMarkersVisible ? App.counts.auction : 0) + App.counts.regular + App.counts.kmz}</span>
-                        </div>
-                    </div>
-                `;
-            }
-        }
-
-        // Convert DMS coordinates to decimal
-        function dmsToDecimal(dmsStr) {
-            if (!dmsStr) return null;
-
-            const regex = /(\d+)°(\d+)'(\d+\.\d+)"([СNЮSВEЗW])/;
-            const match = dmsStr.match(regex);
-
-            if (!match) return null;
-
-            const degrees = parseFloat(match[1]);
-            const minutes = parseFloat(match[2]);
-            const seconds = parseFloat(match[3]);
-            const direction = match[4];
-
-            let decimal = degrees + (minutes / 60) + (seconds / 3600);
-
-            if (['Ю', 'S', 'З', 'W'].includes(direction)) {
-                decimal *= -1;
-            }
-
-            return decimal;
-        }
-
-        // Format status
-        function formatStatus(status) {
-            if (!status) {
-                return {
-                    text: "Статус не указан",
-                    class: "badge-info"
-                };
-            }
-
-            switch (status) {
-                case "9":
-                    return {
-                        text: "Инвест договор", class: "badge-success"
-                    };
-                case "1":
-                    return {
-                        text: "Ишлаб чиқилмоқда", class: "badge-warning"
-                    };
-                case "2":
-                    return {
-                        text: "Қурилиш жараёнида", class: "badge-info"
-                    };
-                default:
-                    return {
-                        text: "Статус: " + status, class: "badge-info"
-                    };
-            }
-        }
-
-        // Safe get function for object properties
-        function safeGet(obj, key, defaultValue = 'N/A') {
-            return (obj && obj[key] !== undefined && obj[key] !== null && obj[key] !== '') ? obj[key] : defaultValue;
-        }
-
-        // Initialize map
-        function initMap() {
-            App.map = L.map('map', {
-                center: [41.311, 69.279],
-                zoom: 11,
-                minZoom: 10,
-                maxZoom: 18
-            });
-
-            // Initialize map layers
-            App.mapLayers.osm = L.tileLayer('https://{s}.tile.openstreetmap.org/{z}/{x}/{y}.png', {
-                attribution: '© OpenStreetMap contributors'
-            });
-
-            App.mapLayers.satellite = L.tileLayer('https://server.arcgisonline.com/ArcGIS/rest/services/World_Imagery/MapServer/tile/{z}/{y}/{x}', {
-                attribution: '© Esri, Maxar, Earthstar Geographics, CNES/Airbus DS, USDA FSA, USGS, Aerogrid, IGN, IGP, and the GIS User Community'
-            });
-
-            // Create hybrid layer - satellite base with labels overlay
-            App.mapLayers.hybridBase = L.tileLayer('https://server.arcgisonline.com/ArcGIS/rest/services/World_Imagery/MapServer/tile/{z}/{y}/{x}', {
-                attribution: '© Esri, Maxar, Earthstar Geographics, CNES/Airbus DS, USDA FSA, USGS, Aerogrid, IGN, IGP, and the GIS User Community'
-            });
-
-            App.mapLayers.hybridLabels = L.tileLayer('https://server.arcgisonline.com/ArcGIS/rest/services/Reference/World_Boundaries_and_Places/MapServer/tile/{z}/{y}/{x}', {
-                attribution: ''
-            });
-
-            // Add default layer (OSM)
-            App.mapLayers.osm.addTo(App.map);
-            App.mapLayers.currentLayer = 'osm';
-
-            App.markerCluster = L.markerClusterGroup({
-                chunkedLoading: true,
-                maxClusterRadius: 50,
-                spiderfyOnMaxZoom: true,
-                showCoverageOnHover: false,
-                disableClusteringAtZoom: 16
-            });
-
-            App.auctionCluster = L.markerClusterGroup({
-                chunkedLoading: true,
-                maxClusterRadius: 50,
-                spiderfyOnMaxZoom: true,
-                showCoverageOnHover: false,
-                disableClusteringAtZoom: 16
-            });
-
-            App.jsonDataCluster = L.markerClusterGroup({
-                chunkedLoading: true,
-                maxClusterRadius: 50,
-                spiderfyOnMaxZoom: true,
-                showCoverageOnHover: false,
-                disableClusteringAtZoom: 16
-            });
-
-            App.map.addLayer(App.markerCluster);
-            App.map.addLayer(App.jsonDataCluster);
-        }
-
-        // Add JSON data marker to map
-        function addJsonDataMarker(item) {
-            const coordinates = extractCoordinatesFromUrl(item['Таклиф_Харита']);
-
-            if (!coordinates) {
-                console.log(`No valid coordinates extracted for item ${item['№']}, URL: ${item['Таклиф_Харита']}`);
-                return false;
-            }
-
-            const itemId = 'json-item-' + item['№'];
-            const icon = createMarkerIcon(item);
-            const marker = L.marker(coordinates, { icon: icon });
-
-            marker.itemId = itemId;
-
-            const status = getStatusInfo(item);
-            const district = safeGet(item, 'Туман');
-            const address = safeGet(item, 'Манзил_(МФЙ,_кўча)');
-            const area = safeGet(item, 'Таклиф_Ер_майдони_(га)');
-            const floors = safeGet(item, 'Таклиф_қавати_ва_ҳудуд');
-            const activity = safeGet(item, 'Таклиф_Фаолият_тури');
-
-            const popup = `
-                <div>
-                    <h3>${district} - ${item['№']}</h3>
-                    <p><strong>Манзил:</strong> ${address}</p>
-                    <p><strong>Майдон:</strong> ${area} га</p>
-                    <p><strong>Қаватлар:</strong> ${floors}</p>
-                    <p><strong>Фаолият:</strong> ${activity}</p>
-                    <p><span class="badge ${status.class}">${status.text}</span></p>
-                    <button class="details-btn" data-item-id="${itemId}">Тафсилотлар</button>
-                </div>
-            `;
-
-            marker.bindPopup(popup);
-
-            marker.on('click', function(e) {
-                showJsonItemDetails(this.itemId);
-                L.DomEvent.stopPropagation(e);
-            });
-
-            App.jsonDataCluster.addLayer(marker);
-            App.jsonDataMarkers.push({
-                marker: marker,
-                data: item
-            });
-
-            App.counts.jsonData++;
-            console.log(`Successfully added marker for item ${item['№']} at coordinates:`, coordinates);
-            return true;
-        }
-
-        // Show JSON item details
-        function showJsonItemDetails(itemId) {
-            if (App.isAnimating) {
-                return;
-            }
-
-            let item = null;
-            for (let i = 0; i < App.jsonDataMarkers.length; i++) {
-                if (App.jsonDataMarkers[i].marker.itemId === itemId) {
-                    item = App.jsonDataMarkers[i].data;
-                    break;
-                }
-            }
-
-            if (!item) {
-                console.error(`Item with ID ${itemId} not found`);
-                return;
-            }
-
-            App.lastView.zoom = App.map.getZoom();
-            App.lastView.center = App.map.getCenter();
-            closeSidebar(true);
-
-            App.currentItem = itemId;
-            App.isAnimating = true;
-
-            const status = getStatusInfo(item);
-            const sidebar = document.createElement('div');
-            sidebar.className = 'sidebar';
-            sidebar.id = `sidebar-${Date.now()}`;
-
-            let sidebarHtml = `
-                <div class="sidebar-header">
-                    <h2>${safeGet(item, 'Туман')} - ${safeGet(item, '№')}</h2>
-                    <button class="sidebar-close-btn">×</button>
-                </div>
-                <div class="sidebar-content">
-                    <div class="section-title">Асосий маълумотлар</div>
-                    <table class="details-table">
-                        <tr><td>№:</td><td>${safeGet(item, '№')}</td></tr>
-                        <tr><td>Туман:</td><td>${safeGet(item, 'Туман')}</td></tr>
-                        <tr><td>Манзил:</td><td>${safeGet(item, 'Манзил_(МФЙ,_кўча)')}</td></tr>
-                        <tr><td>Тури:</td><td><span class="badge ${status.class}">${status.text}</span></td></tr>
-                        <tr><td>Майдон:</td><td>${safeGet(item, 'Таклиф_Ер_майдони_(га)')} га</td></tr>
-                    </table>
-
-                    <div class="section-title">Лойиҳа тафсилотлари</div>
-                    <table class="details-table">
-                        <tr><td>Бош режадаги ҳолат:</td><td>${safeGet(item, 'Бош_режадаги_ҳолати_ва_қавати')}</td></tr>
-                        <tr><td>Таклиф қават:</td><td>${safeGet(item, 'Таклиф_қавати_ва_ҳудуд')}</td></tr>
-                        <tr><td>Фаолият тури:</td><td>${safeGet(item, 'Таклиф_Фаолият_тури')}</td></tr>
-                        <tr><td>Филтр фаолияти:</td><td>${safeGet(item, 'Таклиф_Фалияти_филтир_учун')}</td></tr>
-                    </table>
-
-                    <div class="section-title">Бош режа ҳолати</div>
-                    <table class="details-table">
-                        <tr><td>Киритилганлиги:</td><td>${safeGet(item, 'Таклиф_Бош_режага_таклиф_киритилганлиги_(таклиф_берилган_лекин_киритилмаган_бўлас_КИРИТИЛМАГАН_хисобланади)')}</td></tr>
-                    </table>
-            `;
-
-            // Add technical parameters if available
-            if (item['Этажность'] || item['Қурилиш_ости_майдони'] || item['Бинонинг_умумий_майдони']) {
-                sidebarHtml += `
-                    <div class="section-title">Техник параметрлар</div>
-                    <table class="details-table">
-                        ${item['Этажность'] ? `<tr><td>Этажность:</td><td>${item['Этажность']}</td></tr>` : ''}
-                        ${item['Қурилиш_ости_майдони'] ? `<tr><td>Қурилиш ости майдони:</td><td>${item['Қурилиш_ости_майдони']} м²</td></tr>` : ''}
-                        ${item['Бинонинг_умумий_майдони'] ? `<tr><td>Умумий майдон:</td><td>${item['Бинонинг_умумий_майдони']} м²</td></tr>` : ''}
-                        ${item['Хизмат_кўрсатиш_сохаси'] ? `<tr><td>Хизмат кўрсатиш:</td><td>${item['Хизмат_кўрсатиш_сохаси']} м²</td></tr>` : ''}
-                        ${item['Яшаш_майдон'] ? `<tr><td>Яшаш майдон:</td><td>${item['Яшаш_майдон']} м²</td></tr>` : ''}
-                    </table>
-                `;
-            }
-
-            // Add demographic information if available
-            if (item['хонадонлар_сони'] || item['Ахоли_сони']) {
-                sidebarHtml += `
-                    <div class="section-title">Демографик маълумотлар</div>
-                    <table class="details-table">
-                        ${item['хонадонлар_сони'] ? `<tr><td>Хонадонлар сони:</td><td>${item['хонадонлар_сони']}</td></tr>` : ''}
-                        ${item['Ахоли_сони'] ? `<tr><td>Аҳоли сони:</td><td>${item['Ахоли_сони']}</td></tr>` : ''}
-                    </table>
-                `;
-            }
-
-            // Add map link if available
-            if (item['Таклиф_Харита']) {
-                sidebarHtml += `
-                    <div class="section-title">Харита</div>
-                    <a href="${item['Таклиф_Харита']}" target="_blank" class="document-link">
-                        <i class="fas fa-map"></i> Харитада кўриш
-                    </a>
-                `;
-            }
-
-            sidebarHtml += `</div>`;
-
-            sidebar.innerHTML = sidebarHtml;
-            document.body.appendChild(sidebar);
-            App.currentSidebar = sidebar;
-
-            const closeBtn = sidebar.querySelector('.sidebar-close-btn');
-            if (closeBtn) {
-                closeBtn.addEventListener('click', function() {
-                    closeSidebar();
-                });
-            }
-
-            requestAnimationFrame(() => {
-                sidebar.classList.add('open');
-
-                setTimeout(() => {
-                    const markerEntry = App.jsonDataMarkers.find(m => m.marker.itemId === itemId);
-                    if (markerEntry) {
-                        const coordinates = markerEntry.marker.getLatLng();
-                        App.map.setView(coordinates, 17, { animate: true });
-                    }
-
-                    App.isAnimating = false;
-                }, 300);
-            });
-
-            showToast('Маълумотлар юкланди');
-        }
-
-        // Extract polygon coordinates
-        function extractPolygonCoordinates(polygonData) {
-            if (!polygonData) {
-                return null;
-            }
-
-            let coordinates = [];
-
-            if (Array.isArray(polygonData)) {
-                if (polygonData.length < 3) {
-                    return null;
+        // Process single DOP KMZ file (Yellow styling)
+        async function processDopKmzFile(fileName) {
+            try {
+                const kmzUrl = `/assets/data/DOP_DATA/${fileName}`;
+                console.log(`Processing DOP KMZ file: ${fileName}`);
+
+                const response = await fetch(kmzUrl);
+                if (!response.ok) {
+                    throw new Error(`Failed to fetch KMZ file: ${response.statusText}`);
                 }
 
-                if (typeof polygonData[0] === 'object') {
-                    if (polygonData[0].start_lat && polygonData[0].start_lon) {
-                        coordinates = polygonData.map(point => {
-                            const lat = dmsToDecimal(point.start_lat);
-                            const lng = dmsToDecimal(point.start_lon);
+                const kmzData = await response.arrayBuffer();
+                const zip = await JSZip.loadAsync(kmzData);
 
-                            if (lat === null || lng === null) {
-                                return null;
-                            }
+                let kmlFile;
+                let kmlContent;
 
-                            return [lat, lng];
-                        }).filter(coord => coord !== null);
-                    }
-                    else if (polygonData[0].lat && polygonData[0].lng) {
-                        coordinates = polygonData.map(point => {
-                            return [parseFloat(point.lat), parseFloat(point.lng)];
-                        });
-                    }
-                    else if (polygonData[0].latitude && polygonData[0].longitude) {
-                        coordinates = polygonData.map(point => {
-                            return [parseFloat(point.latitude), parseFloat(point.longitude)];
-                        });
-                    }
-                    else if (Array.isArray(polygonData[0]) && polygonData[0].length === 2) {
-                        coordinates = polygonData.map(point => {
-                            return [parseFloat(point[0]), parseFloat(point[1])];
-                        });
+                if (zip.file('doc.kml')) {
+                    kmlFile = zip.file('doc.kml');
+                } else {
+                    const kmlFiles = Object.keys(zip.files).filter(filename =>
+                        filename.toLowerCase().endsWith('.kml') && !zip.files[filename].dir
+                    );
+
+                    if (kmlFiles.length > 0) {
+                        kmlFile = zip.file(kmlFiles[0]);
                     }
                 }
-                else if (typeof polygonData[0] === 'number' && polygonData.length >= 6 && polygonData.length % 2 === 0) {
-                    for (let i = 0; i < polygonData.length; i += 2) {
-                        coordinates.push([parseFloat(polygonData[i]), parseFloat(polygonData[i + 1])]);
-                    }
-                }
-            }
-            else if (polygonData.type === 'Polygon' && Array.isArray(polygonData.coordinates)) {
-                if (polygonData.coordinates.length > 0 && Array.isArray(polygonData.coordinates[0])) {
-                    coordinates = polygonData.coordinates[0].map(coord => {
-                        return [parseFloat(coord[1]), parseFloat(coord[0])];
-                    });
-                }
-            }
 
-            if (coordinates.length < 3) {
-                console.warn('Not enough valid coordinates found in polygon data');
-                return null;
-            }
-
-            return coordinates;
-        }
-
-        // Add marker to map - improved to handle missing coordinates
-        function addMarker(lot) {
-            if (!lot) {
-                return false;
-            }
-
-            // Only create point markers if we have coordinates
-            if (lot.lat && lot.lng && lot.lat !== null && lot.lng !== null) {
-                const marker = L.marker([parseFloat(lot.lat), parseFloat(lot.lng)]);
-
-                if (!lot.id) {
-                    lot.id = 'lot-' + Math.random().toString(36).substr(2, 9);
+                if (!kmlFile) {
+                    throw new Error('No KML file found in KMZ archive');
                 }
 
-                marker.lotId = lot.id;
+                kmlContent = await kmlFile.async('text');
 
-                const name = safeGet(lot, 'neighborhood_name', safeGet(lot, 'name', 'Unnamed'));
-                const district = safeGet(lot, 'district_name', safeGet(lot, 'district'));
-                const area = safeGet(lot, 'area_hectare', safeGet(lot, 'area'));
-                const statusText = lot.status ? formatStatus(lot.status).text : 'Статус не указан';
+                const parser = new DOMParser();
+                const kmlDoc = parser.parseFromString(kmlContent, 'text/xml');
+                const geoJson = toGeoJSON.kml(kmlDoc);
 
-                const popup = `
-                    <div>
-                        <h3>${name}</h3>
-                        <p>${district}</p>
-                        <p>Майдон: ${area} га</p>
-                        <p>${statusText}</p>
-                        <button class="details-btn" data-lot-id="${lot.id}">Тафсилотлар</button>
-                    </div>
-                `;
-
-                marker.bindPopup(popup);
-
-                marker.on('click', function(e) {
-                    showDetails(this.lotId);
-                    L.DomEvent.stopPropagation(e);
-                });
-
-                App.markerCluster.addLayer(marker);
-
-                App.markers.push({
-                    marker: marker,
-                    data: lot
-                });
-
-                App.counts.regular++;
-                return true;
-            }
-
-            return false;
-        }
-
-        // Add polygon to map
-        function addPolygon(lot) {
-            if (!lot || !lot.id || !lot.polygons) {
-                return false;
-            }
-
-            const coords = extractPolygonCoordinates(lot.polygons);
-            if (!coords) {
-                return false;
-            }
-
-            let style = {
-                color: '#1E3685',
-                weight: 2,
-                opacity: 0.7,
-                fillColor: '#1E3685',
-                fillOpacity: 0.2
-            };
-
-            if (lot.status === "9") {
-                style.color = '#0E6245';
-                style.fillColor = '#0E6245';
-            } else if (lot.status === "2") {
-                style.color = '#D62839';
-                style.fillColor = '#D62839';
-            }
-
-            const polygon = L.polygon(coords, style);
-            polygon.lotId = lot.id;
-
-            polygon.on('mouseover', function() {
-                this.setStyle({
+                // Yellow style for DOP KMZ layers
+                const yellowStyle = {
+                    color: '#FFA500',
                     weight: 3,
+                    opacity: 0.8,
+                    fillColor: '#FFD700',
                     fillOpacity: 0.4
+                };
+
+                const currentFileName = fileName;
+                const fileNameWithoutExt = fileName.replace('.kmz', '');
+
+                const kmzLayer = L.geoJSON(geoJson, {
+                    style: yellowStyle,
+                    pointToLayer: function(feature, latlng) {
+                        return L.marker(latlng, {
+                            icon: L.divIcon({
+                                html: '<div style="background-color: #FFD700; width: 12px; height: 12px; border-radius: 50%; border: 2px solid #FFA500;"></div>',
+                                className: 'custom-marker',
+                                iconSize: [16, 16],
+                                iconAnchor: [8, 8]
+                            })
+                        });
+                    },
+                    onEachFeature: function(feature, layer) {
+                        let lotData = {};
+
+                        const fileNameParts = fileNameWithoutExt.split('_');
+                        if (fileNameParts.length >= 2) {
+                            lotData['Лот №'] = fileNameParts[0];
+                            lotData['Номи'] = fileNameParts.slice(1).join('_');
+                        }
+
+                        if (feature.properties && feature.properties.description) {
+                            const parsedData = parseDescriptionData(feature.properties.description);
+                            lotData = { ...lotData, ...parsedData };
+                        }
+
+                        if (feature.properties && feature.properties.name) {
+                            lotData['Номи'] = feature.properties.name;
+                        }
+
+                        let popupContent = `<div>
+                            <div class="popup-header" style="color: #FFA500;">${lotData['Номи'] || fileNameWithoutExt}</div>`;
+
+                        if (lotData['Лот №']) {
+                            popupContent += `<div class="popup-info"><strong>Лот №:</strong> ${lotData['Лот №']}</div>`;
+                        }
+
+                        if (lotData['Туман']) {
+                            popupContent += `<div class="popup-info"><strong>Туман:</strong> ${lotData['Туман']}</div>`;
+                        }
+
+                        if (lotData['Майдони']) {
+                            popupContent += `<div class="popup-info"><strong>Майдони:</strong> ${lotData['Майдони']}</div>`;
+                        }
+
+                        if (lotData['Стратегия']) {
+                            popupContent += `<div class="popup-info"><strong>Стратегия:</strong> ${lotData['Стратегия']}</div>`;
+                        }
+
+                        popupContent += `<div class="popup-buttons">
+                            <button class="popup-btn details" onclick="showDopKmzModal('${currentFileName}')">Тафсилотлар</button>
+                            <a href="/assets/data/DOP_DATA/${currentFileName}" download class="popup-btn download">Юклаш</a>
+                        </div></div>`;
+
+                        layer.bindPopup(popupContent, { maxWidth: 300 });
+
+                        layer.kmzData = lotData;
+                        layer.kmzFileName = currentFileName;
+
+                        if (layer.setStyle) {
+                            layer.on('mouseover', function() {
+                                this.setStyle({
+                                    weight: 5,
+                                    fillOpacity: 0.6
+                                });
+                            });
+
+                            layer.on('mouseout', function() {
+                                this.setStyle(yellowStyle);
+                            });
+                        }
+
+                        layer.on('click', function(e) {
+                            showDopKmzModal(currentFileName);
+                            L.DomEvent.stopPropagation(e);
+                        });
+                    }
                 });
-            });
 
-            polygon.on('mouseout', function() {
-                this.setStyle(style);
-            });
+                kmzLayer.fileName = currentFileName;
+                kmzLayer.addTo(App.map);
 
-            polygon.on('click', function(e) {
-                showDetails(this.lotId);
-                L.DomEvent.stopPropagation(e);
-            });
+                App.kmzLayers[`dop_${currentFileName}`] = kmzLayer;
+                App.counts.dopKmz++;
 
-            polygon.addTo(App.map);
+                console.log(`Successfully loaded DOP KMZ file: ${fileName}`);
+                return true;
 
-            App.polygons[lot.id] = {
-                polygon: polygon,
-                data: lot
-            };
-
-            return true;
+            } catch (error) {
+                console.error(`Error processing DOP KMZ file ${fileName}:`, error);
+                showToast(`Хатолик: ${fileName} - ${error.message}`, 'error');
+                return false;
+            }
         }
 
-        // Process KMZ files
+        // Process KMZ files from API (Original logic with status-based colors)
         async function processKmzFile(lot, kmzDoc) {
             if (!lot || !lot.id || !kmzDoc) {
                 console.error('Invalid lot or KMZ document data');
@@ -2094,10 +1444,10 @@
                 const geoJson = toGeoJSON.kml(kmlDoc);
 
                 let style = {
-                    color: '#1E3685',
+                    color: 'green',
                     weight: 2,
                     opacity: 0.7,
-                    fillColor: '#1E3685',
+                    fillColor: 'green',
                     fillOpacity: 0.2
                 };
 
@@ -2141,7 +1491,7 @@
                         }
 
                         layer.on('click', function(e) {
-                            showDetails(lot.id);
+                            showDetailsModal(lot.id);
                             L.DomEvent.stopPropagation(e);
                         });
                     }
@@ -2164,17 +1514,768 @@
             }
         }
 
-        // Show details function - improved to handle API data structure
-        function showDetails(lotId) {
-            if (!lotId || App.isAnimating) {
-                return;
+        // Load all DOP KMZ files
+        async function loadDopKmzFiles() {
+            try {
+                console.log('Loading DOP KMZ files...');
+
+                let successCount = 0;
+                let errorCount = 0;
+
+                for (const fileName of DOP_KMZ_FILES) {
+                    try {
+                        const success = await processDopKmzFile(fileName);
+                        if (success) {
+                            successCount++;
+                        } else {
+                            errorCount++;
+                        }
+
+                        updateCounts();
+                        await new Promise(resolve => setTimeout(resolve, 100));
+
+                    } catch (error) {
+                        console.error(`Failed to process ${fileName}:`, error);
+                        errorCount++;
+                    }
+                }
+
+                console.log(`DOP KMZ loading completed: ${successCount} успешно, ${errorCount} с ошибками`);
+
+                if (successCount > 0) {
+                    showToast(`Юкланди: ${successCount} та DOP KMZ файл`, 'success');
+                    return true;
+                } else {
+                    showToast('Ҳеч қандай DOP KMZ файл юкланмади', 'warning');
+                    return false;
+                }
+
+            } catch (error) {
+                console.error('Error loading DOP KMZ files:', error);
+                showToast('DOP KMZ файлларни юклашда хатолик', 'error');
+                return false;
             }
+        }
+
+        // Toggle auction markers visibility
+        function toggleAuctionMarkers() {
+            if (App.auctionMarkersVisible) {
+                App.map.removeLayer(App.auctionCluster);
+                App.auctionMarkersVisible = false;
+            } else {
+                App.map.addLayer(App.auctionCluster);
+                App.auctionMarkersVisible = true;
+            }
+
+            updateAuctionButtonText();
+            updateCounts();
+        }
+
+        // Toggle JSON data markers visibility
+        function toggleJsonDataMarkers() {
+            if (App.jsonDataVisible) {
+                App.map.removeLayer(App.jsonDataCluster);
+                App.jsonDataVisible = false;
+            } else {
+                App.map.addLayer(App.jsonDataCluster);
+                App.jsonDataVisible = true;
+            }
+
+            updateJsonDataButtonText();
+            updateCounts();
+        }
+
+        // Update button texts
+        function updateAuctionButtonText() {
+            const button = document.getElementById('toggle-auction-btn');
+            if (button) {
+                const content = button.querySelector('.control-content');
+
+                if (content) {
+                    content.innerHTML = `
+                        <div style="display: flex; align-items: center; gap: 6px;">
+                            <i class="fas fa-gavel"></i>
+                            <span>${App.auctionMarkersVisible ? 'Аукционларни яшириш' : 'Аукционларни кўрсатиш'}</span>
+                        </div>
+                    `;
+                }
+
+                button.className = App.auctionMarkersVisible ?
+                    'map-control-btn auction-active' : 'map-control-btn';
+            }
+        }
+
+        function updateJsonDataButtonText() {
+            const button = document.getElementById('toggle-json-btn');
+            if (button) {
+                const content = button.querySelector('.control-content');
+
+                if (content) {
+                    content.innerHTML = `
+                        <div style="display: flex; align-items: center; gap: 6px;">
+                            <i class="fas fa-layer-group"></i>
+                            <span>${App.jsonDataVisible ? 'JSON маълумотларни яшириш' : 'JSON маълумотларни кўрсатиш'}</span>
+                        </div>
+                    `;
+                }
+
+                button.className = App.jsonDataVisible ?
+                    'map-control-btn active' : 'map-control-btn';
+            }
+        }
+
+        // Create map style controls
+        function createMapStyleControls() {
+            const styleControlDiv = document.createElement('div');
+            styleControlDiv.className = 'map-style-controls';
+
+            const title = document.createElement('div');
+            title.className = 'style-control-title';
+            title.textContent = 'Харита турлари';
+
+            const osmBtn = document.createElement('button');
+            osmBtn.className = 'style-btn';
+            osmBtn.textContent = 'Стандарт';
+            osmBtn.onclick = function() { changeMapStyle('osm'); };
+
+            const satelliteBtn = document.createElement('button');
+            satelliteBtn.className = 'style-btn';
+            satelliteBtn.textContent = 'Сунъий йўлдош';
+            satelliteBtn.onclick = function() { changeMapStyle('satellite'); };
+
+            const hybridBtn = document.createElement('button');
+            hybridBtn.className = 'style-btn active';
+            hybridBtn.textContent = 'Гибрид';
+            hybridBtn.onclick = function() { changeMapStyle('hybrid'); };
+
+            styleControlDiv.appendChild(title);
+            styleControlDiv.appendChild(osmBtn);
+            styleControlDiv.appendChild(satelliteBtn);
+            styleControlDiv.appendChild(hybridBtn);
+
+            document.getElementById('map').appendChild(styleControlDiv);
+        }
+
+        // Change map style
+        function changeMapStyle(styleType) {
+            console.log('Changing map style to:', styleType);
+
+            if (App.mapLayers.currentLayer === 'osm' && App.mapLayers.osm) {
+                App.map.removeLayer(App.mapLayers.osm);
+            } else if (App.mapLayers.currentLayer === 'satellite' && App.mapLayers.satellite) {
+                App.map.removeLayer(App.mapLayers.satellite);
+            } else if (App.mapLayers.currentLayer === 'hybrid') {
+                if (App.mapLayers.hybridBase) App.map.removeLayer(App.mapLayers.hybridBase);
+                if (App.mapLayers.hybridLabels) App.map.removeLayer(App.mapLayers.hybridLabels);
+            }
+
+            if (styleType === 'osm') {
+                App.map.addLayer(App.mapLayers.osm);
+            } else if (styleType === 'satellite') {
+                App.map.addLayer(App.mapLayers.satellite);
+            } else if (styleType === 'hybrid') {
+                App.map.addLayer(App.mapLayers.hybridBase);
+                App.map.addLayer(App.mapLayers.hybridLabels);
+            }
+
+            App.mapLayers.currentLayer = styleType;
+
+            document.querySelectorAll('.style-btn').forEach(btn => {
+                btn.classList.remove('active');
+            });
+
+            const buttonTexts = {
+                'osm': 'Стандарт',
+                'satellite': 'Сунъий йўлдош',
+                'hybrid': 'Гибрид'
+            };
+
+            document.querySelectorAll('.style-btn').forEach(btn => {
+                if (btn.textContent === buttonTexts[styleType]) {
+                    btn.classList.add('active');
+                }
+            });
+
+            console.log('Map style changed to:', styleType);
+        }
+
+        // Create map controls
+        function createMapControls() {
+            const controlDiv = document.createElement('div');
+            controlDiv.className = 'map-controls';
+
+            const regularButton = document.createElement('div');
+            regularButton.id = 'regular-count-btn';
+            regularButton.className = 'map-control-btn';
+            regularButton.style.cursor = 'default';
+            regularButton.innerHTML = `
+                <div class="control-content">
+                    <div style="display: flex; align-items: center; gap: 6px;">
+                        <i class="fas fa-building"></i>
+                        <span>API + KMZ маълумотлар</span>
+                    </div>
+                </div>
+                <span class="count-badge">0</span>
+            `;
+
+            const jsonButton = document.createElement('button');
+            jsonButton.id = 'toggle-json-btn';
+            jsonButton.className = 'map-control-btn active';
+            jsonButton.innerHTML = `
+                <div class="control-content">
+                    <div style="display: flex; align-items: center; gap: 6px;">
+                        <i class="fas fa-layer-group"></i>
+                        <span>JSON маълумотларни яшириш</span>
+                    </div>
+                </div>
+                <span class="count-badge">0</span>
+            `;
+            jsonButton.addEventListener('click', toggleJsonDataMarkers);
+
+            const auctionButton = document.createElement('button');
+            auctionButton.id = 'toggle-auction-btn';
+            auctionButton.className = 'map-control-btn';
+            auctionButton.innerHTML = `
+                <div class="control-content">
+                    <div style="display: flex; align-items: center; gap: 6px;">
+                        <i class="fas fa-gavel"></i>
+                        <span>Аукционларни кўрсатиш</span>
+                    </div>
+                </div>
+                <span class="count-badge">0</span>
+            `;
+            auctionButton.addEventListener('click', toggleAuctionMarkers);
+
+            const dopKmzButton = document.createElement('button');
+            dopKmzButton.id = 'toggle-dop-kmz-btn';
+            dopKmzButton.className = 'map-control-btn active';
+            dopKmzButton.innerHTML = `
+                <div class="control-content">
+                    <div style="display: flex; align-items: center; gap: 6px;">
+                        <i class="fas fa-file-archive"></i>
+                        <span>DOP KMZ файллар</span>
+                    </div>
+                </div>
+                <span class="count-badge">0</span>
+            `;
+            dopKmzButton.addEventListener('click', toggleDopKmzVisibility);
+
+            const statsPanel = document.createElement('div');
+            statsPanel.className = 'stats-panel';
+
+            controlDiv.appendChild(regularButton);
+            controlDiv.appendChild(jsonButton);
+            controlDiv.appendChild(auctionButton);
+            controlDiv.appendChild(dopKmzButton);
+            controlDiv.appendChild(statsPanel);
+
+            document.getElementById('map').appendChild(controlDiv);
+
+            updateCounts();
+        }
+
+        // Toggle DOP KMZ visibility
+        function toggleDopKmzVisibility() {
+            const visible = Object.keys(App.kmzLayers).some(key =>
+                key.startsWith('dop_') && App.map.hasLayer(App.kmzLayers[key])
+            );
+
+            Object.keys(App.kmzLayers).forEach(key => {
+                if (key.startsWith('dop_')) {
+                    if (visible) {
+                        App.map.removeLayer(App.kmzLayers[key]);
+                    } else {
+                        App.map.addLayer(App.kmzLayers[key]);
+                    }
+                }
+            });
+
+            updateDopKmzButtonText();
+        }
+
+        function updateDopKmzButtonText() {
+            const button = document.getElementById('toggle-dop-kmz-btn');
+            if (button) {
+                const visible = Object.keys(App.kmzLayers).some(key =>
+                    key.startsWith('dop_') && App.map.hasLayer(App.kmzLayers[key])
+                );
+
+                button.innerHTML = `
+                    <div class="control-content">
+                        <div style="display: flex; align-items: center; gap: 6px;">
+                            <i class="fas fa-file-archive"></i>
+                            <span>${visible ? 'DOP KMZ яшириш' : 'DOP KMZ кўрсатиш'}</span>
+                        </div>
+                    </div>
+                    <span class="count-badge">${App.counts.dopKmz}</span>
+                `;
+
+                button.className = visible ? 'map-control-btn active' : 'map-control-btn';
+            }
+        }
+
+        // Update counts
+        function updateCounts() {
+            const jsonBtn = document.getElementById('toggle-json-btn');
+            const auctionBtn = document.getElementById('toggle-auction-btn');
+            const regularBtn = document.getElementById('regular-count-btn');
+            const dopKmzBtn = document.getElementById('toggle-dop-kmz-btn');
+
+            if (jsonBtn) {
+                const jsonCount = jsonBtn.querySelector('.count-badge');
+                if (jsonCount) {
+                    jsonCount.textContent = App.counts.jsonData;
+                }
+            }
+
+            if (auctionBtn) {
+                const auctionCount = auctionBtn.querySelector('.count-badge');
+                if (auctionCount) {
+                    auctionCount.textContent = App.counts.auction;
+                }
+            }
+
+            if (regularBtn) {
+                const regularCount = regularBtn.querySelector('.count-badge');
+                if (regularCount) {
+                    regularCount.textContent = App.counts.regular + App.counts.kmz;
+                }
+            }
+
+            if (dopKmzBtn) {
+                const dopKmzCount = dopKmzBtn.querySelector('.count-badge');
+                if (dopKmzCount) {
+                    dopKmzCount.textContent = App.counts.dopKmz;
+                }
+            }
+
+            updateStatsPanel();
+        }
+
+        // Update stats panel
+        function updateStatsPanel() {
+            const statsPanel = document.querySelector('.stats-panel');
+            if (statsPanel) {
+                const total = App.counts.regular + App.counts.auction + App.counts.jsonData + App.counts.kmz + App.counts.dopKmz;
+                statsPanel.innerHTML = `
+                    <div class="stats-title">Статистика</div>
+                    <div class="stats-grid">
+                        <div class="stats-item">
+                            <span class="stats-label">DOP KMZ:</span>
+                            <span class="stats-value">${App.counts.dopKmz}</span>
+                        </div>
+                    </div>
+                `;
+            }
+        }
+
+        // Get status info for different types
+        function getStatusInfo(item) {
+            const type = item['Таклиф_тури_(Реновация,_Инвестиция,_Аукцион)'];
+
+            switch (type) {
+                case 'Реновация':
+                    return { text: 'Реновация', class: 'badge-renovation', color: '#8e24aa' };
+                case 'Инвестиция':
+                    return { text: 'Инвестиция', class: 'badge-investment', color: '#0277bd' };
+                case 'Аукцион':
+                    return { text: 'Аукцион', class: 'badge-auction', color: '#f57c00' };
+                default:
+                    return { text: type || 'Белгисиз', class: 'badge-info', color: '#1E3685' };
+            }
+        }
+
+        // Create marker icon based on type
+        function createMarkerIcon(item) {
+            const status = getStatusInfo(item);
+
+            return L.divIcon({
+                html: `<div style="background-color: ${status.color}; width: 12px; height: 12px; border-radius: 50%; border: 2px solid white;"></div>`,
+                className: 'custom-marker',
+                iconSize: [16, 16],
+                iconAnchor: [8, 8]
+            });
+        }
+
+        // Add JSON data marker to map
+        function addJsonDataMarker(item) {
+            const coordinates = extractCoordinatesFromUrl(item['Таклиф_Харита']);
+
+            if (!coordinates) {
+                console.log(`No valid coordinates extracted for item ${item['№']}, URL: ${item['Таклиф_Харита']}`);
+                return false;
+            }
+
+            const itemId = 'json-item-' + item['№'];
+            const icon = createMarkerIcon(item);
+            const marker = L.marker(coordinates, { icon: icon });
+
+            marker.itemId = itemId;
+
+            const status = getStatusInfo(item);
+            const district = safeGet(item, 'Туман');
+            const address = safeGet(item, 'Манзил_(МФЙ,_кўча)');
+            const area = safeGet(item, 'Таклиф_Ер_майдони_(га)');
+            const floors = safeGet(item, 'Таклиф_қавати_ва_ҳудуд');
+            const activity = safeGet(item, 'Таклиф_Фаолият_тури');
+
+            const popup = `
+                <div>
+                    <div class="popup-header">${district} - ${item['№']}</div>
+                    <div class="popup-info"><strong>Манзил:</strong> ${address}</div>
+                    <div class="popup-info"><strong>Майдон:</strong> ${area} га</div>
+                    <div class="popup-info"><strong>Қаватлар:</strong> ${floors}</div>
+                    <div class="popup-info"><strong>Фаолият:</strong> ${activity}</div>
+                    <div class="popup-info"><span class="badge ${status.class}">${status.text}</span></div>
+                    <div class="popup-buttons">
+                        <button class="popup-btn details" onclick="showJsonItemModal('${itemId}')">Тафсилотлар</button>
+                    </div>
+                </div>
+            `;
+
+            marker.bindPopup(popup);
+
+            marker.on('click', function(e) {
+                showJsonItemModal(this.itemId);
+                L.DomEvent.stopPropagation(e);
+            });
+
+            App.jsonDataCluster.addLayer(marker);
+            App.jsonDataMarkers.push({
+                marker: marker,
+                data: item
+            });
+
+            App.counts.jsonData++;
+            return true;
+        }
+
+        // Format status
+        function formatStatus(status) {
+            if (!status) {
+                return {
+                    text: "Статус не указан",
+                    class: "badge-info"
+                };
+            }
+
+            switch (status) {
+                case "9":
+                    return {
+                        text: "Инвест договор", class: "badge-success"
+                    };
+                case "1":
+                    return {
+                        text: "Ишлаб чиқилмоқда", class: "badge-warning"
+                    };
+                case "2":
+                    return {
+                        text: "Қурилиш жараёнида", class: "badge-info"
+                    };
+                default:
+                    return {
+                        text: "Статус: " + status, class: "badge-info"
+                    };
+            }
+        }
+
+        // Safe get function
+        function safeGet(obj, key, defaultValue = 'N/A') {
+            return (obj && obj[key] !== undefined && obj[key] !== null && obj[key] !== '') ? obj[key] : defaultValue;
+        }
+
+        // Add marker to map
+        function addMarker(lot) {
+            if (!lot) {
+                return false;
+            }
+
+            if (lot.lat && lot.lng && lot.lat !== null && lot.lng !== null) {
+                const marker = L.marker([parseFloat(lot.lat), parseFloat(lot.lng)]);
+
+                if (!lot.id) {
+                    lot.id = 'lot-' + Math.random().toString(36).substr(2, 9);
+                }
+
+                marker.lotId = lot.id;
+
+                const name = safeGet(lot, 'neighborhood_name', safeGet(lot, 'name', 'Unnamed'));
+                const district = safeGet(lot, 'district_name', safeGet(lot, 'district'));
+                const area = safeGet(lot, 'area_hectare', safeGet(lot, 'area'));
+                const statusText = lot.status ? formatStatus(lot.status).text : 'Статус не указан';
+
+                const popup = `
+                    <div>
+                        <div class="popup-header">${name}</div>
+                        <div class="popup-info">${district}</div>
+                        <div class="popup-info"><strong>Майдон:</strong> ${area} га</div>
+                        <div class="popup-info">${statusText}</div>
+                        <div class="popup-buttons">
+                            <button class="popup-btn details" onclick="showDetailsModal('${lot.id}')">Тафсилотлар</button>
+                        </div>
+                    </div>
+                `;
+
+                marker.bindPopup(popup);
+
+                marker.on('click', function(e) {
+                    showDetailsModal(this.lotId);
+                    L.DomEvent.stopPropagation(e);
+                });
+
+                App.markerCluster.addLayer(marker);
+
+                App.markers.push({
+                    marker: marker,
+                    data: lot
+                });
+
+                App.counts.regular++;
+                return true;
+            }
+
+            return false;
+        }
+
+        // Extract polygon coordinates
+        function extractPolygonCoordinates(polygonData) {
+            if (!polygonData) {
+                return null;
+            }
+
+            let coordinates = [];
+
+            if (Array.isArray(polygonData)) {
+                if (polygonData.length < 3) {
+                    return null;
+                }
+
+                if (typeof polygonData[0] === 'object') {
+                    if (polygonData[0].start_lat && polygonData[0].start_lon) {
+                        coordinates = polygonData.map(point => {
+                            const lat = parseFloat(point.start_lat);
+                            const lng = parseFloat(point.start_lon);
+
+                            if (isNaN(lat) || isNaN(lng)) {
+                                return null;
+                            }
+
+                            return [lat, lng];
+                        }).filter(coord => coord !== null);
+                    }
+                    else if (polygonData[0].lat && polygonData[0].lng) {
+                        coordinates = polygonData.map(point => {
+                            return [parseFloat(point.lat), parseFloat(point.lng)];
+                        });
+                    }
+                    else if (polygonData[0].latitude && polygonData[0].longitude) {
+                        coordinates = polygonData.map(point => {
+                            return [parseFloat(point.latitude), parseFloat(point.longitude)];
+                        });
+                    }
+                    else if (Array.isArray(polygonData[0]) && polygonData[0].length === 2) {
+                        coordinates = polygonData.map(point => {
+                            return [parseFloat(point[0]), parseFloat(point[1])];
+                        });
+                    }
+                }
+            }
+
+            if (coordinates.length < 3) {
+                console.warn('Not enough valid coordinates found in polygon data');
+                return null;
+            }
+
+            return coordinates;
+        }
+
+        // Add polygon to map
+        function addPolygon(lot) {
+            if (!lot || !lot.id || !lot.polygons) {
+                return false;
+            }
+
+            const coords = extractPolygonCoordinates(lot.polygons);
+            if (!coords) {
+                return false;
+            }
+
+            let style = {
+                color: 'green',
+                weight: 2,
+                opacity: 0.7,
+                fillColor: 'green',
+                fillOpacity: 0.2
+            };
+
+            if (lot.status === "9") {
+                style.color = '#0E6245';
+                style.fillColor = '#0E6245';
+            } else if (lot.status === "2") {
+                style.color = '#D62839';
+                style.fillColor = '#D62839';
+            }
+
+            const polygon = L.polygon(coords, style);
+            polygon.lotId = lot.id;
+
+            polygon.on('mouseover', function() {
+                this.setStyle({
+                    weight: 3,
+                    fillOpacity: 0.4
+                });
+            });
+
+            polygon.on('mouseout', function() {
+                this.setStyle(style);
+            });
+
+            polygon.on('click', function(e) {
+                showDetailsModal(this.lotId);
+                L.DomEvent.stopPropagation(e);
+            });
+
+            polygon.addTo(App.map);
+
+            App.polygons[lot.id] = {
+                polygon: polygon,
+                data: lot
+            };
+
+            return true;
+        }
+
+        // Initialize map
+        function initMap() {
+            App.map = L.map('map', {
+                center: [41.311, 69.279],
+                zoom: 11,
+                minZoom: 10,
+                maxZoom: 18
+            });
+
+            // Initialize map layers
+            App.mapLayers.osm = L.tileLayer('https://{s}.tile.openstreetmap.org/{z}/{x}/{y}.png', {
+                attribution: '© OpenStreetMap contributors'
+            });
+
+            App.mapLayers.satellite = L.tileLayer('https://server.arcgisonline.com/ArcGIS/rest/services/World_Imagery/MapServer/tile/{z}/{y}/{x}', {
+                attribution: '© Esri, Maxar, Earthstar Geographics, CNES/Airbus DS, USDA FSA, USGS, Aerogrid, IGN, IGP, and the GIS User Community'
+            });
+
+            App.mapLayers.hybridBase = L.tileLayer('https://server.arcgisonline.com/ArcGIS/rest/services/World_Imagery/MapServer/tile/{z}/{y}/{x}', {
+                attribution: '© Esri, Maxar, Earthstar Geographics, CNES/Airbus DS, USDA FSA, USGS, Aerogrid, IGN, IGP, and the GIS User Community'
+            });
+
+            App.mapLayers.hybridLabels = L.tileLayer('https://server.arcgisonline.com/ArcGIS/rest/services/Reference/World_Boundaries_and_Places/MapServer/tile/{z}/{y}/{x}', {
+                attribution: ''
+            });
+
+            // Set default to hybrid
+            App.mapLayers.hybridBase.addTo(App.map);
+            App.mapLayers.hybridLabels.addTo(App.map);
+            App.mapLayers.currentLayer = 'hybrid';
+
+            App.markerCluster = L.markerClusterGroup({
+                chunkedLoading: true,
+                maxClusterRadius: 50,
+                spiderfyOnMaxZoom: true,
+                showCoverageOnHover: false,
+                disableClusteringAtZoom: 16
+            });
+
+            App.auctionCluster = L.markerClusterGroup({
+                chunkedLoading: true,
+                maxClusterRadius: 50,
+                spiderfyOnMaxZoom: true,
+                showCoverageOnHover: false,
+                disableClusteringAtZoom: 16
+            });
+
+            App.jsonDataCluster = L.markerClusterGroup({
+                chunkedLoading: true,
+                maxClusterRadius: 50,
+                spiderfyOnMaxZoom: true,
+                showCoverageOnHover: false,
+                disableClusteringAtZoom: 16
+            });
+
+            App.map.addLayer(App.markerCluster);
+            App.map.addLayer(App.jsonDataCluster);
+        }
+
+        // Show loading indicator
+        function showLoading() {
+            document.getElementById('loading').style.display = 'flex';
+        }
+
+        // Hide loading indicator
+        function hideLoading() {
+            document.getElementById('loading').style.display = 'none';
+        }
+
+        // Show toast notification
+        function showToast(message, type = 'info') {
+            const toast = document.createElement('div');
+            toast.className = 'toast ' + type;
+            toast.textContent = message;
+            document.body.appendChild(toast);
+
+            setTimeout(() => {
+                toast.remove();
+            }, 3000);
+        }
+
+        // Setup event listeners
+        function setupEventListeners() {
+            // Close modal when clicking outside
+            document.getElementById('info-modal').addEventListener('click', function(e) {
+                if (e.target === this) {
+                    closeModal();
+                }
+            });
+
+            App.map.on('click', function() {
+                // Map click handler if needed
+            });
+
+            window.addEventListener('resize', function() {
+                App.map.invalidateSize();
+            });
+
+            document.addEventListener('keydown', function(e) {
+                if (e.key === 'Escape') {
+                    closeModal();
+                }
+            });
+        }
+
+        // Show modal instead of sidebar
+        function showModal(title, content) {
+            const modal = document.getElementById('info-modal');
+            const modalTitle = document.getElementById('modal-title');
+            const modalBody = document.getElementById('modal-body');
+
+            modalTitle.textContent = title;
+            modalBody.innerHTML = content;
+            modal.classList.add('show');
+            App.currentModal = modal;
+        }
+
+        // Close modal
+        function closeModal() {
+            const modal = document.getElementById('info-modal');
+            modal.classList.remove('show');
+            App.currentModal = null;
+        }
+
+        // Show details in modal
+        function showDetailsModal(lotId) {
+            if (App.isAnimating) return;
 
             let lot = null;
             let markerEntry = null;
-            let polygonEntry = null;
 
-            // Find lot data
             for (let i = 0; i < App.markers.length; i++) {
                 if (App.markers[i].data && App.markers[i].data.id === lotId) {
                     markerEntry = App.markers[i];
@@ -2184,8 +2285,7 @@
             }
 
             if (!lot && App.polygons[lotId]) {
-                polygonEntry = App.polygons[lotId];
-                lot = polygonEntry.data;
+                lot = App.polygons[lotId].data;
             }
 
             if (!lot) {
@@ -2205,230 +2305,278 @@
                 return;
             }
 
-            App.lastView.zoom = App.map.getZoom();
-            App.lastView.center = App.map.getCenter();
-            closeSidebar(true);
-
-            App.currentItem = lotId;
-            App.isAnimating = true;
-
             const status = lot.status ? formatStatus(lot.status) : {
                 text: "Статус не указан",
                 class: "badge-info"
             };
 
-            // Use API data structure field names
             const name = safeGet(lot, 'neighborhood_name', safeGet(lot, 'name', 'Unnamed'));
             const district = safeGet(lot, 'district_name', safeGet(lot, 'district'));
             const area = safeGet(lot, 'area_hectare', safeGet(lot, 'area'));
 
-            // API specific fields
-            const totalBuildingArea = safeGet(lot, 'total_building_area');
-            const residentialArea = safeGet(lot, 'residential_area');
-            const nonResidentialArea = safeGet(lot, 'non_residential_area');
-            const umnCoefficient = safeGet(lot, 'umn_coefficient');
-            const qmnPercentage = safeGet(lot, 'qmn_percentage');
-            const designatedFloors = safeGet(lot, 'designated_floors');
-            const proposedFloors = safeGet(lot, 'proposed_floors');
-            const decisionNumber = safeGet(lot, 'decision_number');
-            const cadastreCertificate = safeGet(lot, 'cadastre_certificate');
-            const areaStrategy = safeGet(lot, 'area_strategy');
-            const investor = safeGet(lot, 'investor');
-            const population = safeGet(lot, 'population');
-            const householdCount = safeGet(lot, 'household_count');
-            const additionalInformation = safeGet(lot, 'additional_information');
+            let modalContent = `
+                <div class="section-title">Асосий маълумотлар</div>
+                <table class="details-table">
+                    <tr><td>Туман:</td><td>${district}</td></tr>
+                    <tr><td>Майдон:</td><td>${area} га</td></tr>
+                    <tr><td>Ҳолати:</td><td><span class="badge ${status.class}">${status.text}</span></td></tr>
+                    <tr><td>Инвестор:</td><td>${safeGet(lot, 'investor')}</td></tr>
+                    <tr><td>Қарор рақами:</td><td>${safeGet(lot, 'decision_number')}</td></tr>
+                </table>
 
-            // Create sidebar
-            const sidebar = document.createElement('div');
-            sidebar.className = 'sidebar';
-            sidebar.id = `sidebar-${Date.now()}`;
+                <div class="section-title">Техник параметрлар</div>
+                <table class="details-table">
+                    <tr><td>Мавжуд қаватлар:</td><td>${safeGet(lot, 'designated_floors')}</td></tr>
+                    <tr><td>Таклиф қилинган қаватлар:</td><td>${safeGet(lot, 'proposed_floors')}</td></tr>
+                    <tr><td>УМН коэффициенти:</td><td>${safeGet(lot, 'umn_coefficient')}</td></tr>
+                    <tr><td>Умумий майдон:</td><td>${safeGet(lot, 'total_building_area')} м²</td></tr>
+                    <tr><td>Турар жой майдони:</td><td>${safeGet(lot, 'residential_area')} м²</td></tr>
+                </table>
+            `;
 
-            // Generate sidebar HTML with API data structure
-            let sidebarHtml = `
-                <div class="sidebar-header">
-                    <h2>${name}</h2>
-                    <button class="sidebar-close-btn">×</button>
-                </div>
-                <div class="sidebar-content">`;
-
-            sidebarHtml += `
-                    <div class="section-title">Асосий маълумотлар</div>
-                    <table class="details-table">
-                        <tr><td>Туман:</td><td>${district}</td></tr>
-                        <tr><td>Майдон:</td><td>${area} га</td></tr>
-                        <tr><td>Ҳолати:</td><td><span class="badge ${status.class}">${status.text}</span></td></tr>
-                        <tr><td>Инвестор:</td><td>${investor}</td></tr>
-                        <tr><td>Қарор рақами:</td><td>${decisionNumber}</td></tr>
-                        <tr><td>Стратегия муддати:</td><td>${areaStrategy}</td></tr>
-                    </table>
-
-                    <div class="section-title">Техник параметрлар</div>
-                    <table class="details-table">
-                        <tr><td>Кадастр ҳужжати:</td><td>${cadastreCertificate}</td></tr>
-                        <tr><td>Мавжуд қаватлар:</td><td>${designatedFloors}</td></tr>
-                        <tr><td>Таклиф қилинган қаватлар:</td><td>${proposedFloors}</td></tr>
-                        <tr><td>УМН коэффициенти:</td><td>${umnCoefficient}</td></tr>
-                        <tr><td>ҚМН фоизи:</td><td>${qmnPercentage}%</td></tr>
-                    </table>
-
-                    <div class="section-title">Қурилиш майдонлари</div>
-                    <table class="details-table">
-                        <tr><td>Умумий майдон:</td><td>${totalBuildingArea} м²</td></tr>
-                        <tr><td>Турар жой майдони:</td><td>${residentialArea} м²</td></tr>
-                        <tr><td>Нотурар жой майдони:</td><td>${nonResidentialArea || '0'} м²</td></tr>
-                    </table>`;
-
-            // Add demographic information if available
-            if (population !== 'N/A' || householdCount !== 'N/A') {
-                sidebarHtml += `
-                    <div class="section-title">Демографик маълумотлар</div>
-                    <table class="details-table">
-                        ${population !== 'N/A' ? `<tr><td>Аҳоли сони:</td><td>${population}</td></tr>` : ''}
-                        ${householdCount !== 'N/A' ? `<tr><td>Хонадонлар сони:</td><td>${householdCount}</td></tr>` : ''}
-                    </table>
-                `;
-            }
-
-            // Add additional information if available
-            if (additionalInformation !== 'N/A') {
-                sidebarHtml += `
-                    <div class="section-title">Қўшимча маълумотлар</div>
-                    <div class="additional-info">${additionalInformation}</div>
-                `;
-            }
-
-            // Add documents if available
             if (lot.documents && lot.documents.length > 0) {
-                sidebarHtml += `
-                    <div class="section-title">Ҳужжатлар</div>
-                    <div class="documents-list">`;
+                modalContent += `<div class="section-title">Ҳужжатлар</div>`;
 
-                // Group documents by type
                 const pdfDocs = lot.documents.filter(doc => doc.doc_type === 'pdf-document');
                 const kmzDocs = lot.documents.filter(doc => doc.doc_type === 'kmz-document');
 
-                // Add PDF documents
                 if (pdfDocs.length > 0) {
-                    sidebarHtml += `<div class="doc-group">
-                        <h4>PDF Ҳужжатлар</h4>`;
-
+                    modalContent += `<h4>PDF Ҳужжатлар</h4>`;
                     pdfDocs.forEach(doc => {
                         const fileName = doc.filename || 'Ҳужжат';
-                        let pdfUrl = doc.url;
-                        if (pdfUrl.startsWith('http') && !pdfUrl.includes(window.location.hostname)) {
-                            const paths = pdfUrl.split('/assets/');
-                            if (paths.length > 1) {
-                                pdfUrl = App.apiBaseUrl + '/assets/data/RENOVATSIYA ISXOD PDF/' + paths[1].split('/').pop();
-                            }
-                        }
-
-                        sidebarHtml += `
-                            <a href="${pdfUrl}" target="_blank" class="document-link">
-                                <i class="fas fa-file-pdf"></i> ${fileName}
-                            </a>`;
+                        modalContent += `<a href="${doc.url}" target="_blank" class="document-link">
+                            <i class="fas fa-file-pdf"></i> ${fileName}
+                        </a>`;
                     });
-
-                    sidebarHtml += `</div>`;
                 }
 
-                // Add KMZ documents
                 if (kmzDocs.length > 0) {
-                    sidebarHtml += `<div class="doc-group">
-                        <h4>KMZ Харита файллари</h4>`;
-
+                    modalContent += `<h4>KMZ файллар</h4>`;
                     kmzDocs.forEach(doc => {
                         const fileName = doc.filename || 'KMZ файл';
-                        let kmzUrl = doc.url;
-                        if (kmzUrl.startsWith('http') && !kmzUrl.includes(window.location.hostname)) {
-                            const paths = kmzUrl.split('/assets/');
-                            if (paths.length > 1) {
-                                kmzUrl = App.apiBaseUrl + '/assets/data/BASA_RENOVA/' + paths[1].split('/').pop();
-                            }
-                        }
-
-                        sidebarHtml += `
-                            <a href="${kmzUrl}" download class="document-link">
-                                <i class="fas fa-map"></i> ${fileName}
-                            </a>`;
+                        modalContent += `<a href="${doc.url}" download class="document-link">
+                            <i class="fas fa-map"></i> ${fileName}
+                        </a>`;
                     });
-
-                    sidebarHtml += `</div>`;
                 }
-
-                sidebarHtml += `</div>`;
             }
 
-            sidebarHtml += `</div>`;
-
-            sidebar.innerHTML = sidebarHtml;
-            document.body.appendChild(sidebar);
-            App.currentSidebar = sidebar;
-
-            const closeBtn = sidebar.querySelector('.sidebar-close-btn');
-            if (closeBtn) {
-                closeBtn.addEventListener('click', function() {
-                    closeSidebar();
-                });
-            }
-
-            requestAnimationFrame(() => {
-                sidebar.classList.add('open');
-                setTimeout(() => {
-                    App.isAnimating = false;
-                }, 300);
-            });
-
-            showToast('Маълумотлар юкланди');
+            showModal(name, modalContent);
         }
 
-        // Close sidebar
-        function closeSidebar(immediate = false) {
-            if (!App.currentSidebar) return;
+        // Show JSON item details in modal
+        function showJsonItemModal(itemId) {
+            if (App.isAnimating) return;
 
-            if (immediate) {
-                if (App.cleanup && App.cleanup.length) {
-                    App.cleanup.forEach(fn => {
-                        try {
-                            fn();
-                        } catch (e) {
-                            console.error('Cleanup error:', e);
-                        }
-                    });
-                    App.cleanup = [];
+            let item = null;
+            for (let i = 0; i < App.jsonDataMarkers.length; i++) {
+                if (App.jsonDataMarkers[i].marker.itemId === itemId) {
+                    item = App.jsonDataMarkers[i].data;
+                    break;
                 }
+            }
 
-                App.currentSidebar.remove();
-                App.currentSidebar = null;
-                App.currentItem = null;
+            if (!item) {
+                console.error(`Item with ID ${itemId} not found`);
                 return;
             }
 
-            App.currentSidebar.classList.remove('open');
+            const status = getStatusInfo(item);
+            const displayName = `${safeGet(item, 'Туман')} - ${safeGet(item, '№')}`;
 
-            setTimeout(() => {
-                if (App.cleanup && App.cleanup.length) {
-                    App.cleanup.forEach(fn => {
-                        try {
-                            fn();
-                        } catch (e) {
-                            console.error('Cleanup error:', e);
+            let modalContent = `
+                <div class="section-title">Асосий маълумотлар</div>
+                <table class="details-table">
+                    <tr><td>№:</td><td>${safeGet(item, '№')}</td></tr>
+                    <tr><td>Туман:</td><td>${safeGet(item, 'Туман')}</td></tr>
+                    <tr><td>Манзил:</td><td>${safeGet(item, 'Манзил_(МФЙ,_кўча)')}</td></tr>
+                    <tr><td>Тури:</td><td><span class="badge ${status.class}">${status.text}</span></td></tr>
+                    <tr><td>Майдон:</td><td>${safeGet(item, 'Таклиф_Ер_майдони_(га)')} га</td></tr>
+                </table>
+
+                <div class="section-title">Лойиҳа тафсилотлари</div>
+                <table class="details-table">
+                    <tr><td>Бош режа ҳолати:</td><td>${safeGet(item, 'Бош_режадаги_ҳолати_ва_қавати')}</td></tr>
+                    <tr><td>Таклиф қават:</td><td>${safeGet(item, 'Таклиф_қавати_ва_ҳудуд')}</td></tr>
+                    <tr><td>Фаолият тури:</td><td>${safeGet(item, 'Таклиф_Фаолият_тури')}</td></tr>
+                </table>
+            `;
+
+            if (item['Таклиф_Харита']) {
+                modalContent += `
+                    <div class="section-title">Харита</div>
+                    <a href="${item['Таклиф_Харита']}" target="_blank" class="document-link">
+                        <i class="fas fa-map"></i> Харитада кўриш
+                    </a>
+                `;
+            }
+
+            showModal(displayName, modalContent);
+        }
+
+        // Show DOP KMZ details in modal
+        function showDopKmzModal(fileName) {
+            if (App.isAnimating) return;
+
+            const kmzLayer = App.kmzLayers[`dop_${fileName}`];
+            if (!kmzLayer) {
+                console.error(`DOP KMZ layer ${fileName} not found`);
+                return;
+            }
+
+            let lotData = {};
+            kmzLayer.eachLayer(function(layer) {
+                if (layer.kmzData) {
+                    lotData = layer.kmzData;
+                    return false;
+                }
+            });
+
+            const displayName = lotData['Номи'] || fileName.replace('.kmz', '');
+
+            let modalContent = `
+                <div class="section-title">KMZ файл маълумотлари</div>
+                <table class="details-table">
+                    <tr><td>Файл номи:</td><td>${fileName}</td></tr>
+            `;
+
+            Object.keys(lotData).forEach(key => {
+                if (key !== 'Номи') {
+                    modalContent += `<tr><td>${key}:</td><td>${lotData[key]}</td></tr>`;
+                }
+            });
+
+            modalContent += `
+                </table>
+
+                <div class="section-title">Файл операциялари</div>
+                <a href="/assets/data/DOP_DATA/${fileName}" download class="document-link">
+                    <i class="fas fa-download"></i> Файлни юклаш
+                </a>
+            `;
+
+            showModal(displayName, modalContent);
+        }
+
+        // Make functions globally available
+        window.showDopKmzModal = showDopKmzModal;
+        window.showDetailsModal = showDetailsModal;
+        window.showJsonItemModal = showJsonItemModal;
+        window.closeModal = closeModal;
+
+        // Initialize application
+        async function init() {
+            showLoading();
+
+            try {
+                console.log('Initializing InvestUz Complete Map...');
+
+                initMap();
+                createMapStyleControls();
+                createMapControls();
+                setupEventListeners();
+
+                // Execute all data fetching in parallel
+                const dataPromises = [
+                    fetchData().catch(error => {
+                        console.warn('Regular data fetch failed:', error);
+                        return false;
+                    }),
+                    fetchAuctionData().catch(error => {
+                        console.warn('Auction data fetch failed:', error);
+                        return false;
+                    }),
+                    fetchJsonData().catch(error => {
+                        console.warn('JSON data fetch failed:', error);
+                        return false;
+                    }),
+                    loadDopKmzFiles().catch(error => {
+                        console.warn('DOP KMZ loading failed:', error);
+                        return false;
+                    })
+                ];
+
+                const [regularDataResult, auctionDataResult, jsonDataResult, dopKmzResult] = await Promise.allSettled(dataPromises);
+
+                const regularSuccess = regularDataResult.status === 'fulfilled' && regularDataResult.value;
+                const auctionSuccess = auctionDataResult.status === 'fulfilled' && auctionDataResult.value;
+                const jsonSuccess = jsonDataResult.status === 'fulfilled' && jsonDataResult.value;
+                const dopKmzSuccess = dopKmzResult.status === 'fulfilled' && dopKmzResult.value;
+
+                console.log('Loading results:', {
+                    regular: regularSuccess,
+                    auction: auctionSuccess,
+                    json: jsonSuccess,
+                    dopKmz: dopKmzSuccess
+                });
+
+                const allMarkers = [];
+
+                if (App.markers.length > 0) {
+                    allMarkers.push(...App.markers.map(m => m.marker));
+                }
+
+                if (App.jsonDataMarkers.length > 0) {
+                    allMarkers.push(...App.jsonDataMarkers.map(m => m.marker));
+                }
+
+                // Fit map bounds to show all data
+                if (allMarkers.length > 0 || Object.keys(App.kmzLayers).length > 0) {
+                    const allLayers = [...allMarkers];
+
+                    Object.values(App.kmzLayers).forEach(kmzLayer => {
+                        if (kmzLayer.getBounds) {
+                            allLayers.push(kmzLayer);
                         }
                     });
-                    App.cleanup = [];
+
+                    if (allLayers.length > 0) {
+                        const group = L.featureGroup(allLayers);
+                        App.map.fitBounds(group.getBounds(), {
+                            padding: [50, 50]
+                        });
+                    }
+                } else {
+                    App.map.setView([41.311, 69.279], 11);
                 }
 
-                App.currentSidebar.remove();
-                App.currentSidebar = null;
-                App.currentItem = null;
+                updateCounts();
 
-                if (App.lastView.center && App.lastView.zoom) {
-                    App.map.setView(App.lastView.center, App.lastView.zoom, {
-                        animate: true
-                    });
+                const totalLoaded = App.counts.regular + App.counts.auction + App.counts.jsonData + App.counts.kmz + App.counts.dopKmz;
+                if (totalLoaded > 0) {
+                    showToast(`Жами юкланди: ${totalLoaded} та маълумот`, 'info');
+                } else {
+                    showToast('Ҳеч қандай маълумот юкланмади. Сервер ишлаётганини текширинг.', 'warning');
                 }
-            }, 300);
+
+                console.log(`Final status: Regular: ${App.counts.regular}, KMZ: ${App.counts.kmz}, JSON: ${App.counts.jsonData}, Auction: ${App.counts.auction}, DOP KMZ: ${App.counts.dopKmz}`);
+
+            } catch (error) {
+                console.error('Initialization error:', error);
+                showToast('Харитани ишга туширишда хатолик: ' + error.message, 'error');
+            } finally {
+                hideLoading();
+            }
         }
+
+        // Start the app when DOM is ready
+        document.addEventListener('DOMContentLoaded', init);
+
+        // Handle language switching
+        document.addEventListener('DOMContentLoaded', function() {
+            const langButtons = document.querySelectorAll('.lang-btn');
+            langButtons.forEach(btn => {
+                btn.addEventListener('click', function() {
+                    langButtons.forEach(b => b.classList.remove('active'));
+                    this.classList.add('active');
+
+                    const lang = this.textContent;
+                    console.log('Language switched to:', lang);
+                });
+            });
+        });
+
     </script>
 </body>
-
 </html>
+
