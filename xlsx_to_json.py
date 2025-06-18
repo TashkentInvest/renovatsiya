@@ -1,7 +1,7 @@
 import pandas as pd
 
 # Step 1: Load the Excel file
-file_path = '431 та умумий.xlsx'  # Change this to the actual path of your Excel file
+file_path = 'Охирги свод бош режа 27.05.2025 (2).xlsx'  # Change this to the actual path of your Excel file
 df = pd.read_excel(file_path)
 
 # Optional: Rename columns to valid JSON keys (remove spaces, quotes, etc.)
