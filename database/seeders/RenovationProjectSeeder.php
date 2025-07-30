@@ -223,13 +223,16 @@ class RenovationProjectSeeder extends Seeder
                     $comment = "{$district_name} тумани, {$neighborhood_name} " . ($area_hectare ? $area_hectare . " гектар" : "");
                     $this->createCompletePolygonRecords($aktiv->id, $start_lat_raw, $start_lon_raw, $end_lat_raw, $end_lon_raw, $comment);
 
+                    // Calculate row number (Т/р) for better document matching
+                    $rowNumber = $row - 1; // Subtract 1 because we start from row 2
+
                     // Match and link PDF files with the neighborhood name
                     if ($neighborhood_name) {
-                        $linkedDocs = $this->linkPdfDocumentsToAktiv($aktiv->id, $neighborhood_name, $pdfFiles, $area_hectare);
+                        // FIXED: Pass the $rowNumber parameter to PDF linking function
+                        $linkedDocs = $this->linkPdfDocumentsToAktiv($aktiv->id, $neighborhood_name, $pdfFiles, $area_hectare, $rowNumber);
                         $docsLinked += $linkedDocs;
 
                         // Pass the row number (Т/р) for better KMZ matching
-                        $rowNumber = $row - 1; // Subtract 1 because we start from row 2
                         $linkedKmz = $this->linkKmzDocumentsToAktiv($aktiv->id, $neighborhood_name, $kmzFiles, $investor, $area_hectare, $rowNumber);
                         $kmzLinked += $linkedKmz;
                     }
