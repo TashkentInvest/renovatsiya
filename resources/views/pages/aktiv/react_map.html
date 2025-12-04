@@ -214,7 +214,7 @@
 }
 
 .zoom-btn:hover {
-    background: linear-gradient(135deg, #f59e0b 0%, #fbbf24 50%, #f59e0b 100%);
+    background: linear-gradient(135deg, #f59e0b 0%, #ffee04 50%, #f59e0b 100%);
     transform: translateY(-3px);
     box-shadow:
         0 6px 15px rgba(245, 158, 11, 0.4),
@@ -399,7 +399,7 @@
                 background: linear-gradient(
                     135deg,
                     var(--accent-gold),
-                    #fbbf24
+                    #ffee04
                 );
                 border-radius: 12px;
                 display: flex;
@@ -2786,7 +2786,7 @@
                         React.createElement("div", {
                             className: "legend-color",
                             style: {
-                                backgroundColor: "#8e24aa",
+                                backgroundColor: "red",
                             },
                         }),
                         React.createElement("span", null, TEXTS.renovatsiyaProjects)
@@ -4139,7 +4139,7 @@
                                             .filter((ring) => ring.length > 0);
                                         if (rings.length === 0) return;
                                         layer = L.polygon(rings, {
-                                            fillColor: "#8e24aa",
+                                            fillColor: "red",
                                             weight: 2,
                                             opacity: 0.8,
                                             color: "#ffffff",
@@ -4153,7 +4153,7 @@
                                             .filter(Boolean);
                                         if (latLngs.length === 0) return;
                                         layer = L.polyline(latLngs, {
-                                            color: "#8e24aa",
+                                            color: "red",
                                             weight: 3,
                                             opacity: 0.8,
                                         });
