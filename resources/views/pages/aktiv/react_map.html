@@ -1588,6 +1588,7 @@
                 auctions: "Аукционлар",
                 soldProperties: "Сотилган мулклар",
                 kmzData: "TIC (Реновация)",
+                renovatsiyaProjects: "Реновация лойихалари",
                 kmzSearch: "KMZ Қидириш ва Танлаш",
                 geojsonLayers: "GeoJSON қатламлари",
                 strategyLayers: "Стратегия қатламлари",
@@ -1650,6 +1651,7 @@
                 sold: "https://projects.toshkentinvest.uz/api/sotilgan",
                 jsonData: "/assets/data/443_output.json",
                 geoJsonStrategy: "/tashkent_master_plan.geojson",
+                renovatsiyaProjects: "/assets/data/DOP_DATA/tic_data_renovatsiya_loyihalar.kmz",
             };
 
             // Enhanced map styles
@@ -2784,6 +2786,17 @@
                         React.createElement("div", {
                             className: "legend-color",
                             style: {
+                                backgroundColor: "#8e24aa",
+                            },
+                        }),
+                        React.createElement("span", null, TEXTS.renovatsiyaProjects)
+                    ),
+                    React.createElement(
+                        "div",
+                        { className: "legend-item" },
+                        React.createElement("div", {
+                            className: "legend-color",
+                            style: {
                                 backgroundColor:
                                     STRATEGY_COLORS["Qizil_chiziqlar"],
                             },
@@ -3376,6 +3389,11 @@
                         icon: "fas fa-file-archive",
                         visible: false,
                     },
+                    renovatsiyaProjects: {
+                        name: TEXTS.renovatsiyaProjects,
+                        icon: "fas fa-building",
+                        visible: false,
+                    },
                 });
 
                 const [counts, setCounts] = useState({
@@ -3384,6 +3402,7 @@
                     auction: 0,
                     sold: 0,
                     kmz: 0,
+                    renovatsiyaProjects: 0,
                     geojson: 0,
                 });
 
@@ -3448,6 +3467,7 @@
                             chunkedLoading: true,
                             maxClusterRadius: 40,
                         }),
+                        renovatsiyaProjects: L.featureGroup(),
                         geojson: L.featureGroup(),
                     };
 
@@ -4084,6 +4104,99 @@
                     }
                 }, [addToast]);
 
+                const fetchRenovatsiyaProjects = useCallback(async () => {
+                    try {
+                        const geoJSON = await processKMZFile(API_ENDPOINTS.renovatsiyaProjects);
+                        if (!geoJSON || !geoJSON.features) return false;
+
+                        let processed = 0;
+                        const group = layerGroupsRef.current.renovatsiyaProjects;
+
+                        geoJSON.features.forEach((feature) => {
+                            if (!feature.geometry || !feature.geometry.coordinates) return;
+
+                            const geomType = feature.geometry.type;
+                            const properties = feature.properties || {};
+                            let layer = null;
+
+                            try {
+                                switch (geomType) {
+                                    case "Point":
+                                        const coords = convertCoordinates(feature.geometry.coordinates);
+                                        if (!coords) return;
+                                        layer = L.marker(coords, {
+                                            icon: createMarkerIcon("renovation"),
+                                        });
+                                        break;
+
+                                    case "Polygon":
+                                        const rings = feature.geometry.coordinates
+                                            .map((ring) =>
+                                                ring
+                                                    .map((coord) => convertCoordinates(coord))
+                                                    .filter(Boolean)
+                                            )
+                                            .filter((ring) => ring.length > 0);
+                                        if (rings.length === 0) return;
+                                        layer = L.polygon(rings, {
+                                            fillColor: "#8e24aa",
+                                            weight: 2,
+                                            opacity: 0.8,
+                                            color: "#ffffff",
+                                            fillOpacity: 0.5,
+                                        });
+                                        break;
+
+                                    case "LineString":
+                                        const latLngs = feature.geometry.coordinates
+                                            .map((coord) => convertCoordinates(coord))
+                                            .filter(Boolean);
+                                        if (latLngs.length === 0) return;
+                                        layer = L.polyline(latLngs, {
+                                            color: "#8e24aa",
+                                            weight: 3,
+                                            opacity: 0.8,
+                                        });
+                                        break;
+
+                                    default:
+                                        return;
+                                }
+
+                                if (layer) {
+                                    const popup = `
+    <div class="popup-header">Реновация лойиҳаси</div>
+    <div class="popup-details">
+        <p><strong>Тур:</strong> <span class="badge badge-renovation">Реновация лойиҳалари</span></p>
+        <p><strong>Ном:</strong> ${properties.Name || properties.name || "N/A"}</p>
+        <p><strong>Тавсиф:</strong> ${properties.Description || properties.description || "N/A"}</p>
+        ${properties.district ? `<p><strong>Туман:</strong> ${properties.district}</p>` : ""}
+        ${properties.area ? `<p><strong>Майдон:</strong> ${properties.area} га</p>` : ""}
+        ${properties.status ? `<p><strong>Ҳолат:</strong> ${properties.status}</p>` : ""}
+    </div>
+`;
+                                    layer.bindPopup(popup, { maxWidth: 300 });
+                                    group.addLayer(layer);
+                                    processed++;
+                                }
+                            } catch (error) {
+                                console.warn(`Failed to process renovatsiya feature:`, error);
+                            }
+                        });
+
+                        setCounts((prev) => ({ ...prev, renovatsiyaProjects: processed }));
+                        if (processed > 0)
+                            addToast(
+                                `${TEXTS.successLoaded}: ${processed} реновация лойиҳаси`,
+                                "success"
+                            );
+                        return processed > 0;
+                    } catch (error) {
+                        console.error("Error fetching renovatsiya projects:", error);
+                        return false;
+                    }
+                }, [addToast]);
+
                 // Layer Toggle
                 const toggleLayer = useCallback((layerKey) => {
                     setLayers((prev) => {
@@ -4551,6 +4664,7 @@
                                 fetchJsonData(),
                                 fetchAuctionData(),
                                 fetchSoldData(),
+                                fetchRenovatsiyaProjects(),
                             ]);
 
                             const successCount = results.filter(
@@ -4604,6 +4718,7 @@
                     fetchJsonData,
                     fetchAuctionData,
                     fetchSoldData,
+                    fetchRenovatsiyaProjects,
                     loadGeoJSON,
                     addToast,
                 ]);
