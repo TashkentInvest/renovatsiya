@@ -510,6 +510,14 @@
                 padding: 24px;
             }
 
+            /* Location Search Control */
+            .location-search-control {
+                top: 20px;
+                left: 610px;
+                width: 350px;
+                padding: 20px;
+            }
+
             /* KMZ Search Control */
             .kmz-search-control {
                 top: 20px;
@@ -2231,6 +2239,378 @@
             // Global KMZ Search Manager instance
             window.kmzSearchManager = new KMZSearchManager();
 
+            // Location Search Manager for finding any locations
+            class LocationSearchManager {
+                constructor() {
+                    this.searchInput = null;
+                    this.resultsContainer = null;
+                    this.addToast = null;
+                    this.isInitialized = false;
+                }
+
+                init(searchInput, resultsContainer, addToast) {
+                    this.searchInput = searchInput;
+                    this.resultsContainer = resultsContainer;
+                    this.addToast = addToast;
+                    this.isInitialized = true;
+
+                    if (this.searchInput) {
+                        this.searchInput.addEventListener("input", this.handleSearch.bind(this));
+                        this.searchInput.addEventListener("keypress", this.handleKeyPress.bind(this));
+                        this.searchInput.addEventListener("focus", this.showHelp.bind(this));
+                    }
+
+                    // Hide results when clicking outside
+                    document.addEventListener("click", (e) => {
+                        if (!e.target.closest(".location-search-control")) {
+                            this.hideResults();
+                        }
+                    });
+                }
+
+                handleKeyPress(e) {
+                    if (e.key === "Enter") {
+                        this.findLocation();
+                    }
+                }
+
+                handleSearch() {
+                    // Show help text on focus
+                    const query = this.searchInput.value.trim();
+                    if (query.length === 0) {
+                        this.showHelp();
+                    } else {
+                        this.renderPreview();
+                    }
+                }
+
+                // Parse DMS format: 48°51'30.24"N, 2°17'40.2"E
+                parseDMS(dmsString) {
+                    const dmsRegex = /(\d+)°(\d+)'([\d.]+)"([NS])\s*,?\s*(\d+)°(\d+)'([\d.]+)"([EW])/i;
+                    const match = dmsString.match(dmsRegex);
+
+                    if (!match) return null;
+
+                    let lat = parseInt(match[1]) + parseInt(match[2]) / 60 + parseFloat(match[3]) / 3600;
+                    let lng = parseInt(match[5]) + parseInt(match[6]) / 60 + parseFloat(match[7]) / 3600;
+
+                    if (match[4].toUpperCase() === "S") lat = -lat;
+                    if (match[8].toUpperCase() === "W") lng = -lng;
+
+                    return [lat, lng];
+                }
+
+                // Parse decimal coordinates: 41.3639259, 69.2740783 or 69.2740783, 41.3639259
+                parseDecimal(input) {
+                    // Handle multiple coordinate separators
+                    const decimalRegex = /(-?\d+\.?\d*)\s*[,;\s]\s*(-?\d+\.?\d*)/;
+                    const match = input.match(decimalRegex);
+
+                    if (!match) return null;
+
+                    const num1 = parseFloat(match[1]);
+                    const num2 = parseFloat(match[2]);
+
+                    console.log("Parsing decimal coordinates:", num1, num2);
+
+                    // Try both orders and validate for Uzbekistan bounds
+                    // Latitude: 39-43, Longitude: 68-71
+                    if (num1 >= 39 && num1 <= 43 && num2 >= 68 && num2 <= 71) {
+                        console.log("Valid as lat,lng:", [num1, num2]);
+                        return [num1, num2]; // lat, lng
+                    }
+                    if (num2 >= 39 && num2 <= 43 && num1 >= 68 && num1 <= 71) {
+                        console.log("Valid as lng,lat (swapped to lat,lng):", [num2, num1]);
+                        return [num2, num1]; // swap to lat, lng
+                    }
+
+                    // Fallback: be more lenient and try to match pattern even if outside strict bounds
+                    // This handles border coordinates or satellite view quirks
+                    if ((num1 >= 38 && num1 <= 44) && (num2 >= 67 && num2 <= 72)) {
+                        if (num1 >= 39 && num1 <= 43) {
+                            console.log("Lenient match (num1 is lat):", [num1, num2]);
+                            return [num1, num2];
+                        }
+                        if (num2 >= 39 && num2 <= 43) {
+                            console.log("Lenient match (num2 is lat):", [num2, num1]);
+                            return [num2, num1];
+                        }
+                    }
+
+                    console.log("Coordinates out of bounds:", num1, num2);
+                    return null;
+                }
+
+                // Parse Google Maps URL and Yandex Maps URL
+                parseGoogleMapsUrl(url) {
+                    try {
+                        const decodedUrl = decodeURIComponent(url);
+
+                        // Yandex Maps pattern: ll=lng,lat
+                        if (decodedUrl.includes("yandex")) {
+                            const llPattern = /ll=(-?\d+\.?\d*),(-?\d+\.?\d*)/;
+                            const llMatch = decodedUrl.match(llPattern);
+                            if (llMatch) {
+                                const lng = parseFloat(llMatch[1]);
+                                const lat = parseFloat(llMatch[2]);
+                                console.log("Yandex coords extracted:", [lat, lng]);
+                                if (lat >= 39 && lat <= 43 && lng >= 68 && lng <= 71) {
+                                    return [lat, lng];
+                                }
+                            }
+                        }
+
+                        // Google Maps pattern: @lat,lng,zoom
+                        const atPattern = /@(-?\d+\.?\d*),(-?\d+\.?\d*)/;
+                        const atMatch = decodedUrl.match(atPattern);
+                        if (atMatch) {
+                            const lat = parseFloat(atMatch[1]);
+                            const lng = parseFloat(atMatch[2]);
+                            console.log("Google @ pattern coords extracted:", [lat, lng]);
+                            if (lat >= 39 && lat <= 43 && lng >= 68 && lng <= 71) {
+                                return [lat, lng];
+                            }
+                        }
+
+                        // Google Maps pattern: !3d!4d
+                        const dataPattern = /!3d(-?\d+\.?\d*)!4d(-?\d+\.?\d*)/;
+                        const dataMatch = decodedUrl.match(dataPattern);
+                        if (dataMatch) {
+                            const lat = parseFloat(dataMatch[1]);
+                            const lng = parseFloat(dataMatch[2]);
+                            console.log("Google !3d!4d pattern coords extracted:", [lat, lng]);
+                            if (lat >= 39 && lat <= 43 && lng >= 68 && lng <= 71) {
+                                return [lat, lng];
+                            }
+                        }
+
+                        // Try URL object parsing for query params
+                        try {
+                            const urlObj = new URL(decodedUrl);
+                            const params = urlObj.searchParams;
+
+                            if (params.has("q")) {
+                                const qMatch = params.get("q").match(/(-?\d+\.?\d*),(-?\d+\.?\d*)/);
+                                if (qMatch) {
+                                    const lat = parseFloat(qMatch[1]);
+                                    const lng = parseFloat(qMatch[2]);
+                                    console.log("Query param coords extracted:", [lat, lng]);
+                                    if (lat >= 39 && lat <= 43 && lng >= 68 && lng <= 71) {
+                                        return [lat, lng];
+                                    }
+                                }
+                            }
+                        } catch (urlError) {
+                            // URL parsing failed, continue with fallback
+                        }
+
+                        // Fallback: look for any decimal numbers in sequence that might be coordinates
+                        const fallbackPattern = /(\d+\.\d+),\s*(\d+\.\d+)/;
+                        const fallbackMatch = decodedUrl.match(fallbackPattern);
+                        if (fallbackMatch) {
+                            const num1 = parseFloat(fallbackMatch[1]);
+                            const num2 = parseFloat(fallbackMatch[2]);
+                            console.log("Fallback coords found:", [num1, num2]);
+
+                            // Try both orders
+                            if (num1 >= 39 && num1 <= 43 && num2 >= 68 && num2 <= 71) {
+                                return [num1, num2]; // lat, lng
+                            }
+                            if (num2 >= 39 && num2 <= 43 && num1 >= 68 && num1 <= 71) {
+                                return [num2, num1]; // swap to lat, lng
+                            }
+                        }
+                    } catch (e) {
+                        console.log("URL parsing error:", e);
+                    }
+                    return null;
+                }
+
+                // Main location finder
+                findLocation() {
+                    const input = this.searchInput.value.trim();
+                    if (!input) return;
+
+                    let coords = null;
+                    let source = "Noma'lum";
+
+                    // Try different parsing methods
+                    if (input.includes("°") || input.match(/\d+°\d+'/)) {
+                        coords = this.parseDMS(input);
+                        source = "DMS koordinatalari";
+                    } else if (input.includes("http")) {
+                        coords = this.parseGoogleMapsUrl(input);
+                        source = "Google Maps havolasi";
+                        // If short URL didn't work, try decimal fallback
+                        if (!coords && input.includes("maps.app.goo.gl")) {
+                            console.log("Short URL couldn't be resolved, this may require API expansion");
+                        }
+                    } else {
+                        coords = this.parseDecimal(input);
+                        source = "O'nlik koordinatalari";
+                    }
+
+                    if (coords) {
+                        this.zoomToLocation(coords, source);
+                    } else {
+                        if (this.addToast) {
+                            this.addToast("Joylashuv topilmadi. Iltimos, to'g'ri format kiriting", "warning");
+                        }
+                        this.showFormatHelp();
+                    }
+                }
+
+                // Zoom to location on map
+                zoomToLocation(coords, source) {
+                    const map = window.mapInstanceRef?.current;
+                    if (!map) {
+                        console.error("Map not available");
+                        if (this.addToast) {
+                            this.addToast("Xarita yuklana olmadi", "error");
+                        }
+                        return;
+                    }
+
+                    try {
+                        const [lat, lng] = coords;
+                        console.log("Zooming to coordinates:", [lat, lng]);
+
+                        // Validate coordinates
+                        if (isNaN(lat) || isNaN(lng)) {
+                            console.error("Invalid coordinates - NaN detected");
+                            if (this.addToast) {
+                                this.addToast("Noto'g'ri koordinatalar", "warning");
+                            }
+                            return;
+                        }
+
+                        if (lat < 39 || lat > 43 || lng < 68 || lng > 71) {
+                            console.error(`Coordinates out of bounds: lat=${lat}, lng=${lng}`);
+                            if (this.addToast) {
+                                this.addToast("Koordinatalar Toshkent uchun amal qilmaydi (39-43°N, 68-71°E)", "warning");
+                            }
+                            return;
+                        }
+
+                        // Set map view
+                        map.setView([lat, lng], 17);
+                        console.log("Map view set successfully");
+
+                        // Add marker
+                        const marker = L.marker([lat, lng], {
+                            icon: createMarkerIcon("regular", 20),
+                            title: source
+                        });
+
+                        // Create popup
+                        const popup = `
+                            <div class="popup-header">${source}</div>
+                            <div class="popup-details">
+                                <p><strong>Latitude:</strong> ${lat.toFixed(6)}</p>
+                                <p><strong>Longitude:</strong> ${lng.toFixed(6)}</p>
+                            </div>
+                        `;
+
+                        marker.bindPopup(popup).addTo(map).openPopup();
+                        console.log("Marker added to map");
+
+                        if (this.addToast) {
+                            this.addToast(`Joylashuv topildi: ${lat.toFixed(4)}, ${lng.toFixed(4)}`, "success");
+                        }
+
+                        this.hideResults();
+                    } catch (error) {
+                        console.error("Zoom error:", error);
+                        if (this.addToast) {
+                            this.addToast("Xatolik: " + error.message, "error");
+                        }
+                    }
+                }
+
+                showHelp() {
+                    if (!this.resultsContainer) return;
+
+                    const helpHtml = `
+                        <div class="search-results-counter">
+                            <i class="fas fa-info-circle"></i>
+                            Joylashuvni topish
+                        </div>
+                        <div style="padding: 12px; font-size: 12px; line-height: 1.6; color: #666;">
+                            <strong>Qo'llanma:</strong><br>
+                            📍 <strong>DMS format:</strong><br>48°51'30.24"N, 2°17'40.2"E<br><br>
+                            📍 <strong>O'nlik:</strong><br>41.3639259, 69.2740783<br><br>
+                            📍 <strong>Google Maps URL:</strong><br>https://maps.app.goo.gl/...<br><br>
+                            ↵ Enter tugmasini bosing
+                        </div>
+                    `;
+
+                    this.resultsContainer.innerHTML = helpHtml;
+                    this.resultsContainer.classList.add("show");
+                }
+
+                showFormatHelp() {
+                    if (!this.resultsContainer) return;
+
+                    const helpHtml = `
+                        <div class="search-results-counter">
+                            <i class="fas fa-exclamation"></i>
+                            Noto'g'ri format
+                        </div>
+                        <div style="padding: 12px; font-size: 12px; color: #d32f2f; line-height: 1.6;">
+                            <strong>Qabul qilingan formatlar:</strong><br>
+                            • 48°51'30.24"N, 2°17'40.2"E<br>
+                            • 41.3639259, 69.2740783<br>
+                            • Google Maps URL
+                        </div>
+                    `;
+
+                    this.resultsContainer.innerHTML = helpHtml;
+                    this.resultsContainer.classList.add("show");
+                }
+
+                renderPreview() {
+                    const input = this.searchInput.value.trim();
+                    if (!input) return;
+
+                    let preview = "";
+                    let icon = "fa-question";
+
+                    if (input.includes("°") || input.match(/\d+°\d+'/)) {
+                        preview = "DMS koordinatalari (Degrees, Minutes, Seconds)";
+                        icon = "fa-compass";
+                    } else if (input.includes("http")) {
+                        preview = "Google Maps havolasi";
+                        icon = "fa-link";
+                    } else if (input.match(/^-?\d+\.?\d*\s*[,\s]\s*-?\d+\.?\d*/)) {
+                        preview = "O'nlik koordinatalari (Latitude, Longitude)";
+                        icon = "fa-map-pin";
+                    }
+
+                    if (preview) {
+                        const html = `
+                            <div class="search-results-counter">
+                                <i class="fas ${icon}"></i>
+                                ${preview}
+                            </div>
+                            <div style="padding: 12px; font-size: 12px; color: #666; text-align: center;">
+                                ↵ Enter tugmasini bosing qidirish uchun
+                            </div>
+                        `;
+                        this.resultsContainer.innerHTML = html;
+                        this.resultsContainer.classList.add("show");
+                    }
+                }
+
+                hideResults() {
+                    if (this.resultsContainer) {
+                        this.resultsContainer.classList.remove("show");
+                    }
+                }
+            }
+
+            // Global Location Search Manager instance
+            window.locationSearchManager = new LocationSearchManager();
+
             // Utility Functions
             const initProj4 = () => {
                 if (typeof proj4 !== "undefined") {
@@ -2660,6 +3040,51 @@
                             "0"
                         ),
                         " ta KMZ obyekt"
+                    )
+                );
+            };
+
+            // Location Search Component - Find any locations
+            const LocationSearchControl = ({ addToast }) => {
+                const searchInputRef = useRef(null);
+                const resultsRef = useRef(null);
+
+                useEffect(() => {
+                    if (searchInputRef.current && resultsRef.current) {
+                        window.locationSearchManager.init(
+                            searchInputRef.current,
+                            resultsRef.current,
+                            addToast
+                        );
+                    }
+                }, [addToast]);
+
+                return React.createElement(
+                    "div",
+                    { className: "control-panel location-search-control" },
+                    React.createElement(
+                        "div",
+                        { className: "search-title" },
+                        React.createElement("i", {
+                            className: "fas fa-map-pin",
+                        }),
+                        "Joylashuvni Topish"
+                    ),
+                    React.createElement("input", {
+                        ref: searchInputRef,
+                        type: "text",
+                        className: "search-input",
+                        placeholder:
+                            "Koordinata, URL yoki DMS kiriting...",
+                    }),
+                    React.createElement(
+                        "div",
+                        { ref: resultsRef, className: "results-container" },
+                        React.createElement(
+                            "div",
+                            { className: "loading-text" },
+                            "Joylashuvni topish uchun ma'lumot kiriting"
+                        )
                     )
                 );
             };
@@ -4729,6 +5154,11 @@
                     [addToast]
                 );
 
+                const memoizedLocationSearchControl = useMemo(
+                    () => React.createElement(LocationSearchControl, { addToast }),
+                    [addToast]
+                );
+
                 const memoizedLayerControls = useMemo(
                     () =>
                         React.createElement(LayerControls, {
@@ -4845,6 +5275,7 @@
 
                             // Control Panels
                             memoizedMapStyleControls,
+                            memoizedLocationSearchControl,
                             memoizedKMZSearchControl,
                             memoizedLayerControls,
                             memoizedGeoJSONControls
