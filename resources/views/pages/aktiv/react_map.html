@@ -4724,7 +4724,8 @@
                             data.features.forEach((feature) => {
                                 const layer = createGeoJSONLayer(feature);
                                 if (layer) {
-                                    addGeoJSONPopup(layer, feature.properties);
+                                    const properties = feature.properties || feature.attributes || {};
+                                    addGeoJSONPopup(layer, properties);
                                     featureGroup.addLayer(layer);
                                     featuresProcessed++;
                                 }
@@ -4773,12 +4774,20 @@
                 );
 
                 const createGeoJSONLayer = useCallback((feature) => {
-                    if (!feature.geometry || !feature.geometry.coordinates)
-                        return null;
+                    if (!feature.geometry) return null;
 
-                    const geomType = feature.geometry.type;
-                    const coords = feature.geometry.coordinates;
-                    const properties = feature.properties || {};
+                    // Handle both standard GeoJSON and ESRI format
+                    let geomType = feature.geometry.type;
+                    let coords = feature.geometry.coordinates;
+                    const properties = feature.properties || feature.attributes || {};
+
+                    // Convert ESRI format to GeoJSON
+                    if (feature.geometry.rings && !coords) {
+                        geomType = 'Polygon';
+                        coords = feature.geometry.rings;
+                    }
+
+                    if (!coords) return null;
 
                     try {
                         switch (geomType) {
@@ -4893,6 +4902,7 @@
                     const title =
                         properties.mahalla_nomi ||
                         properties.name ||
+                        properties.cadastral_number ||
                         "GeoJSON объект";
                     const strategy =
                         properties.strategiya ||
@@ -4992,6 +5002,22 @@
                                 content += `<p><strong>ID рақами:</strong> ${properties.id_raqami}</p>`;
                             if (isRedLine)
                                 content += `<p><strong>Маълумот:</strong> Қизил чизиқлар - муҳофаза қилинадиган ҳудудлар</p>`;
+
+                            // Cadastral data fields
+                            if (properties.cadastral_number)
+                                content += `<p><strong>Кадастр рақами:</strong> ${properties.cadastral_number}</p>`;
+                            if (properties.district_name)
+                                content += `<p><strong>Туман:</strong> ${properties.district_name}</p>`;
+                            if (properties.region_name)
+                                content += `<p><strong>Вилоят:</strong> ${properties.region_name}</p>`;
+                            if (properties.sp_unit_type)
+                                content += `<p><strong>Тур:</strong> ${properties.sp_unit_type.replace(/_/g, ' ')}</p>`;
+                            if (properties.property_kind)
+                                content += `<p><strong>Мулк тури:</strong> ${properties.property_kind.replace(/_/g, ' ')}</p>`;
+                            if (properties.soato_region)
+                                content += `<p><strong>СОАТО регион:</strong> ${properties.soato_region}</p>`;
+                            if (properties.soato_district)
+                                content += `<p><strong>СОАТО туман:</strong> ${properties.soato_district}</p>`;
 
                             content += `</div>`;
                             return content;
@@ -5102,6 +5128,9 @@
                                 setTimeout(() => {
                                     loadGeoJSON(API_ENDPOINTS.geoJsonStrategy);
                                 }, 1000);
+                                setTimeout(() => {
+                                    loadGeoJSON('./TOSHKENT_CADASTRAL_COMPLETE.geojson');
+                                }, 1500);
 
                                 mapInstanceRef.current.setView(
                                     [41.311, 69.279],
