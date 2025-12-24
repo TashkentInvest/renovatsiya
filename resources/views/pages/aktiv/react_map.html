@@ -2682,18 +2682,20 @@
 
                     // Google Maps patterns - multiple formats
                     const googlePatterns = [
+                        // Format: /search/lat,lng or /search/lat,+lng
+                        /\/search\/(-?\d+\.\d+),\+?(-?\d+\.\d+)/,
                         // Format: @lat,lng,zoom
                         /@(-?\d+\.?\d*),(-?\d+\.?\d*),?\d*[mz]?/,
                         // Format: decimal coordinates in URL
-                        /(-?\d+\.\d{4,}),(-?\d+\.\d{4,})/,
+                        /(-?\d+\.\d{4,}),\+?(-?\d+\.\d{4,})/,
                         // Format: !3d!4d coordinates
                         /!3d(-?\d+\.?\d*)!4d(-?\d+\.?\d*)/,
                         // Format: place coordinates
                         /\/place\/[^@]*@(-?\d+\.?\d*),(-?\d+\.?\d*)/,
                         // Format: DMS coordinates converted
                         /%C2%B0(\d+)'(\d+)\.?(\d*)"N\+(\d+)%C2%B0(\d+)'(\d+)\.?(\d*)"E/,
-                        // Format: simple lat,lng
-                        /(-?\d+\.?\d+),(-?\d+\.?\d+)/,
+                        // Format: simple lat,lng with optional + sign
+                        /(-?\d+\.?\d+),\+?(-?\d+\.?\d+)/,
                     ];
 
                     for (const pattern of googlePatterns) {
