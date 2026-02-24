@@ -1,0 +1,1392 @@
+
+<!DOCTYPE html>
+<html lang="en">
+
+<head>
+    <title>Toshkent Invest Projects - Production Ready</title>
+    <meta charset="utf-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1, user-scalable=0, minimal-ui" />
+    <meta http-equiv="X-UA-Compatible" content="IE=edge" />
+    <meta name="description" content="Toshkent Invest Projects" />
+    <meta name="keywords" content="Invest, Toshkent, Tashkent Invest, Investitsiya, Aksiyadorlik jamiyati" />
+    <meta name="author" content="Tashkent Invest" />
+
+    <!-- OG/Twitter tags as needed -->
+    <meta property="og:type" content="website" />
+    <meta property="og:url" content="https://www.toshkentinvest.uz" />
+    <meta property="og:title" content="Toshkent Invest Projects" />
+    <meta property="og:description" content="Toshkent Invest" />
+    <meta property="og:image" content="https://projects.toshkentinvest.uz/assets/images/og-image.png" />
+    <meta name="twitter:card" content="summary_large_image" />
+    <meta name="twitter:title" content="Toshkent Invest Projects" />
+    <meta name="twitter:description" content="Toshkent Invest" />
+    <meta name="twitter:image" content="https://projects.toshkentinvest.uz/assets/images/twitter-image.png" />
+
+    <link rel="icon" href="https://projects.toshkentinvest.uz/assets/images/logo.png" type="image/x-icon" />
+
+    <!-- Bootstrap -->
+    <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/bootstrap@5.2.0/dist/css/bootstrap.min.css" />
+    <!-- SimpleBar (custom scrollbar) -->
+    <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/simplebar@latest/dist/simplebar.min.css" />
+    <!-- Custom Fonts/Styles -->
+    <link rel="stylesheet" href="https://projects.toshkentinvest.uz/assets/fonts/tabler-icons.min.css" />
+    <link rel="stylesheet" href="https://projects.toshkentinvest.uz/assets/fonts/material.css" />
+    <link rel="stylesheet" href="https://projects.toshkentinvest.uz/assets/css/style.css" id="main-style-link" />
+    <link rel="stylesheet" href="https://projects.toshkentinvest.uz/assets/css/custom.style.css" />
+    <link rel="stylesheet" href="https://projects.toshkentinvest.uz/assets/css/icon.css" />
+
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.0.0-beta3/css/all.min.css" />
+
+    <!-- Polyfills -->
+    <script src="https://cdn.jsdelivr.net/npm/whatwg-fetch@3.6.2/dist/fetch.umd.min.js" defer></script>
+
+    <!-- Analytics (optional) -->
+    <script async src="https://mc.yandex.ru/metrika/tag.js"></script>
+    <script>
+        (function(m, e, t, r, i, k, a) {
+            m[i] = m[i] || function() {
+                (m[i].a = m[i].a || []).push(arguments)
+            };
+            m[i].l = 1 * new Date();
+            k = e.createElement(t), a = e.getElementsByTagName(t)[0],
+                k.async = 1;
+            k.src = r;
+            a.parentNode.insertBefore(k, a)
+        })(window, document, "script", "https://mc.yandex.ru/metrika/tag.js", "ym");
+        ym(98050002, "init", {
+            clickmap: true,
+            trackLinks: true,
+            accurateTrackBounce: true,
+            webvisor: true
+        });
+    </script>
+    <noscript>
+        <div><img src="https://mc.yandex.ru/watch/98050002" style="position:absolute; left:-9999px;" alt="" />
+        </div>
+    </noscript>
+
+    <script async src="https://www.googletagmanager.com/gtag/js?id=G-5R6FWF22VT"></script>
+    <script>
+        window.dataLayer = window.dataLayer || [];
+
+        function gtag() {
+            dataLayer.push(arguments);
+        }
+        gtag('js', new Date());
+        gtag('config', 'G-5R6FWF22VT');
+    </script>
+
+    <style>
+        /* Make the search area fixed for desktop */
+        #fixedSearchBar {
+            position: fixed;
+            top: 100px;
+            right: 10px;
+            z-index: 9999;
+            width: 260px;
+            display: flex;
+            flex-wrap: wrap;
+            gap: 0.5rem;
+            align-items: center;
+            background-color: #f8f9fa;
+            padding: 0.5rem;
+            border-radius: 4px;
+            box-shadow: 0 2px 6px rgba(0, 0, 0, 0.2);
+        }
+
+        /* Hide the fixed search bar on small screens */
+        @media (max-width: 767px) {
+            #fixedSearchBar {
+                display: none;
+            }
+
+            .pc-header {
+                display: none;
+            }
+        }
+
+        #fixedSearchBar select,
+        #fixedSearchBar input,
+        #fixedSearchBar button {
+            flex: 1 1 auto;
+            min-width: 100px;
+            font-size: 0.875rem;
+            padding: 0.4rem;
+        }
+
+        .form-control {
+            min-width: 120px;
+        }
+
+        .form-select {
+            min-width: 120px;
+        }
+
+        .custom_sidebar_image {
+            max-width: 100%;
+            height: 200px;
+        }
+
+        /* Map full height minus the header offset (70px) if needed, or no offset if header is reduced */
+        #map {
+            width: 100%;
+            height: 100vh;
+            margin: 0;
+            padding: 0;
+        }
+
+        /* Info Sidebar */
+        #info-sidebar {
+            position: fixed;
+            right: 0;
+            top: 0;
+            width: 420px;
+            max-width: 90vw;
+            height: 100%;
+            background-color: #fff;
+            overflow-y: auto;
+            box-shadow: -2px 0 4px rgba(0, 0, 0, 0.2);
+            transform: translateX(100%);
+            transition: transform 0.3s ease-in-out;
+            padding: 1rem;
+            z-index: 9998;
+        }
+
+        #info-sidebar.open {
+            transform: translateX(0);
+        }
+
+        #info-sidebar .close-btn {
+            font-size: 1.25rem;
+            cursor: pointer;
+            float: right;
+        }
+
+        #info-sidebar .info-content {
+            clear: both;
+            margin-top: 1rem;
+        }
+
+        #info-sidebar table {
+            width: 100%;
+            margin-bottom: 1rem;
+        }
+
+        #info-sidebar table th {
+            width: 40%;
+            text-align: left;
+        }
+
+        #info-sidebar .sidebar_key {
+            text-transform: uppercase;
+            font-size: 0.875rem;
+            color: #555;
+        }
+
+        #info-sidebar .custom_sidebar_title {
+            margin-bottom: 1rem;
+            font-weight: 600;
+        }
+
+        /* Mobile search button */
+
+        #mobileSearchButton {
+            position: fixed;
+            bottom: 70px;
+            right: 5px;
+            z-index: 9999;
+            width: 50px;
+            height: 50px;
+            border-radius: 50%;
+            background-color: #007bff;
+            color: white;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            box-shadow: 0 2px 10px rgba(0, 0, 0, 0.3);
+        }
+        }
+
+        /* Language switcher */
+        .language-switcher {
+            display: flex;
+            align-items: center;
+        }
+
+        .language-switcher select {
+            padding: 4px 8px;
+            border-radius: 4px;
+            font-size: 0.875rem;
+        }
+
+        /* Modal UI improvements */
+        .modal-header {
+            background-color: #f8f9fa;
+            border-bottom: 1px solid #e9ecef;
+        }
+
+        .modal-title {
+            font-weight: 600;
+        }
+
+        .btn-link {
+            display: inline-block;
+            margin-top: 5px !important;
+            color: #007bff;
+            text-decoration: none;
+        }
+
+        .btn-link:hover {
+            text-decoration: underline;
+        }
+
+        #toggle-currency-btn {
+            margin-bottom: 1rem;
+            padding: 0.375rem 0.75rem;
+            /* background-color: #f8f9fa; */
+            border: 1px solid #ddd;
+            border-radius: 4px;
+            font-size: 0.875rem;
+        }
+
+        #qr-code-container {
+            display: flex;
+            flex-direction: column;
+            align-items: center;
+            margin: 1rem 0;
+        }
+
+        #qr-code-container img {
+            max-width: 150px;
+
+            margin-bottom: 0.5rem;
+        }
+    </style>
+</head>
+
+<body data-pc-preset="preset-1" data-pc-sidebar-caption="true" data-pc-layout="vertical" data-pc-direction="ltr"
+    style="overflow-x: hidden !importtant" data-pc-theme="light">
+
+    <!-- Page Loader -->
+    <div class="page-loader">
+        <div class="bar"></div>
+    </div>
+
+    <!-- Left Sidebar -->
+    <nav class="pc-sidebar">
+        <div class="navbar-wrapper">
+            <div class="m-header">
+                <a href="https://projects.toshkentinvest.uz" class="b-brand text-primary">
+                    <img src="https://projects.toshkentinvest.uz/assets/logo.png" class="img-fluid logo-lg custom_logo" alt="logo" />
+                </a>
+            </div>
+            <div class="navbar-content">
+                <ul class="pc-navbar">
+                    <li class="pc-item pc-caption" style="display: none !important">
+                        <label id="sidebar-label-xarita">Xarita</label>
+                        <a class="pc-link" href="https://projects.toshkentinvest.uz" id="sidebar-link-xarita">Xarita</a>
+                    </li>
+                </ul>
+                <!-- District Info (Sidebar) -->
+                <div id="district-info" class="mt-2">
+                    <div id="district-name" style="padding:10px; font-weight: bold">Toshkent</div>
+                    <table id="info-table" class="table">
+                        <thead>
+                            <tr>
+                                <th colspan="2" id="info-table-header">Ma'lumotlar</th>
+                            </tr>
+                        </thead>
+                        <tbody>
+                            <tr>
+                                <td id="label-maydoni">Maydoni</td>
+                                <td id="maydoni">43.5 km²</td>
+                            </tr>
+                            <tr>
+                                <td id="label-aholiSoni">Aholi soni</td>
+                                <td id="aholiSoni">3 000 000</td>
+                            </tr>
+                            <tr>
+                                <td id="label-TumanlarSoni">Tumanlar soni</td>
+                                <td id="TumanlarSoni">12</td>
+                            </tr>
+                            <tr>
+                                <td id="label-MahallaSoni">Mahalla soni</td>
+                                <td id="MahallaSoni">585</td>
+                            </tr>
+                            <tr>
+                                <td id="label-savdodaTurganJamiSoni">Savdodagi obyektlar</td>
+                                <td id="savdodaTurganJamiSoni">---</td>
+                            </tr>
+                        </tbody>
+                    </table>
+                </div>
+            </div>
+        </div>
+    </nav>
+
+    <!-- Header -->
+    <header class="pc-header">
+        <div class="header-wrapper">
+            <div class="me-auto pc-mob-drp">
+                <ul class="list-unstyled d-flex align-items-center">
+                    <li class="pc-h-item pc-sidebar-collapse">
+                        <a href="#" class="pc-head-link ms-0" id="sidebar-hide" title="Toggle Sidebar">
+                            <i class="ti ti-menu-2"></i>
+                        </a>
+                    </li>
+
+                    <!-- Language Switcher -->
+                    <li class="pc-h-item" style="display: none !important">
+                        <div class="language-switcher ms-3">
+                            <select id="language-select" class="form-select">
+                                <option value="en">English</option>
+                                <option value="uz" selected>O'zbekcha</option>
+                                <option value="ru">Русский</option>
+                            </select>
+                        </div>
+                    </li>
+                </ul>
+            </div>
+        </div>
+    </header>
+
+    <!-- Fixed Search Bar (Desktop) -->
+    <div id="fixedSearchBar">
+        <select id="xml-selector" class="form-select form-control">
+            <option value="tashkent" id="opt-tashkent">Toshkent shahri</option>
+            <option value="bektemir.xml" id="opt-bektemir">Bektemir</option>
+            <option value="chilonzor.xml" id="opt-chilonzor">Chilonzor</option>
+            <option value="mirabod.xml" id="opt-mirabod">Mirobod</option>
+            <option value="mirzo_ulugbek.xml" id="opt-mirzo-ulugbek">Mirzo Ulug'bek</option>
+            <option value="olmazor.xml" id="opt-olmazor">Olmazor</option>
+            <option value="sergeli.xml" id="opt-sergeli">Sergeli</option>
+            <option value="shayhontaxur.xml" id="opt-shayhontaxur">Shayxontohur</option>
+            <option value="uchtepa.xml" id="opt-uchtepa">Uchtepa</option>
+            <option value="yakkasaroy.xml" id="opt-yakkasaroy">Yakkasaroy</option>
+            <option value="yashnabod.xml" id="opt-yashnabod">Yashnabod</option>
+            <option value="yunusabod.xml" id="opt-yunusabod">Yunusobod</option>
+            <option value="yangihayot.xml" id="opt-yangihayot">Yangihayot</option>
+        </select>
+
+        <select id="category-selector" class="form-select form-control">
+            <option value="all" id="opt-all">Barchasi (0)</option>
+            <option value="ishlab-chiqarish" id="opt-ishlab-chiqarish">Ishlab chiqarish va omborxona (0)</option>
+            <option value="savdo-maishiy" id="opt-savdo-maishiy">Savdo va maishiy xizmat ko'rsatish (0)</option>
+            <option value="kop-qavatli-uylar" id="opt-kop-qavatli-uylar">Ko'p qavatli uy-joy qurish (0)</option>
+            <option value="ijtimoiy-soha" id="opt-ijtimoiy-soha">Ijtimoiy soha obyektlari (0)</option>
+            <option value="transport-infratuzilmasi" id="opt-transport-infratuzilmasi">Transport infratuzilmasi (0)
+            </option>
+            <option value="others" id="opt-others">Boshqalar</option>
+        </select>
+
+        <input type="text" id="search-input" class="form-control"
+            placeholder="Mahalla nomini kiriting" />
+        <button id="search-btn" class="btn btn-primary" id="btn-search">Izlash</button>
+    </div>
+
+    <!-- Map Container -->
+    <div id="map"></div>
+
+    <!-- Info Sidebar -->
+    <div id="info-sidebar" data-currency="UZS">
+        <span class="close-btn">&times;</span>
+        <!-- This content is filled dynamically -->
+    </div>
+
+    <!-- MOBILE SEARCH BUTTON (visible on small screens) -->
+    <button id="mobileSearchButton" class="btn btn-primary d-block d-md-none" data-bs-toggle="modal"
+        data-bs-target="#searchModal">
+        <i class="ti ti-search"></i>
+    </button>
+
+    <!-- SEARCH MODAL (for mobile) -->
+    <div class="modal fade" id="searchModal" tabindex="-1" aria-labelledby="searchModalLabel" aria-hidden="true">
+        <div class="modal-dialog">
+            <div class="modal-content">
+                <div class="modal-header">
+                    <h5 id="searchModalLabel">Izlash</h5>
+                    <button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="Close"></button>
+                </div>
+                <div class="modal-body">
+                    <!-- Replicate the search controls for mobile -->
+                    <div class="mb-2">
+                        <select id="xml-selector-mobile" class="form-select form-control">
+                            <option value="tashkent" id="mobile-opt-tashkent">Toshkent shahri</option>
+                            <option value="bektemir.xml" id="mobile-opt-bektemir">Bektemir</option>
+                            <option value="chilonzor.xml" id="mobile-opt-chilonzor">Chilonzor</option>
+                            <option value="mirabod.xml" id="mobile-opt-mirabod">Mirobod</option>
+                            <option value="mirzo_ulugbek.xml" id="mobile-opt-mirzo-ulugbek">Mirzo Ulug'bek</option>
+                            <option value="olmazor.xml" id="mobile-opt-olmazor">Olmazor</option>
+                            <option value="sergeli.xml" id="mobile-opt-sergeli">Sergeli</option>
+                            <option value="shayhontaxur.xml" id="mobile-opt-shayhontaxur">Shayxontohur</option>
+                            <option value="uchtepa.xml" id="mobile-opt-uchtepa">Uchtepa</option>
+                            <option value="yakkasaroy.xml" id="mobile-opt-yakkasaroy">Yakkasaroy</option>
+                            <option value="yashnabod.xml" id="mobile-opt-yashnabod">Yashnabod</option>
+                            <option value="yunusabod.xml" id="mobile-opt-yunusabod">Yunusobod</option>
+                            <option value="yangihayot.xml" id="mobile-opt-yangihayot">Yangihayot</option>
+                        </select>
+                    </div>
+                    <div class="mb-2">
+                        <select id="category-selector-mobile" class="form-select form-control">
+                            <option value="all" id="mobile-opt-all">Barchasi (0)</option>
+                            <option value="ishlab-chiqarish" id="mobile-opt-ishlab-chiqarish">Ishlab chiqarish va
+                                omborxona (0)</option>
+                            <option value="savdo-maishiy" id="mobile-opt-savdo-maishiy">Savdo va maishiy xizmat
+                                ko'rsatish (0)</option>
+                            <option value="kop-qavatli-uylar" id="mobile-opt-kop-qavatli-uylar">Ko'p qavatli uy-joy
+                                qurish (0)</option>
+                            <option value="ijtimoiy-soha" id="mobile-opt-ijtimoiy-soha">Ijtimoiy soha obyektlari (0)
+                            </option>
+                            <option value="transport-infratuzilmasi" id="mobile-opt-transport-infratuzilmasi">
+                                Transport infratuzilmasi (0)</option>
+                            <option value="others" id="mobile-opt-others">Boshqalar</option>
+                        </select>
+                    </div>
+                    <div class="mb-2">
+                        <input type="text" id="search-input-mobile" class="form-control"
+                            placeholder="Mahalla nomini kiriting" />
+                    </div>
+                    <button id="search-btn-mobile" class="btn btn-primary w-100" data-bs-dismiss="modal">
+                        Izlash
+                    </button>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <!-- External Scripts -->
+    <script src="https://cdn.jsdelivr.net/npm/simplebar@latest/dist/simplebar.min.js" defer></script>
+    <script src="https://cdn.jsdelivr.net/npm/bootstrap@5.2.0/dist/js/bootstrap.bundle.min.js" defer></script>
+    <script src="https://projects.toshkentinvest.uz/assets/js/pcoded.js" defer></script>
+    <script src="https://projects.toshkentinvest.uz/assets/js/plugins/feather.min.js" defer></script>
+
+    <script>
+        /**
+         * Main application script for Toshkent Invest Projects map
+         */
+
+        let usdRate = null;
+        let currentLanguage = 'uz'; // Default language
+        let districtInfoCache = {}; // Cache for district info
+        let currentOpenLot = null; // Track the currently open lot
+        let currentLotCurrency = 'UZS'; // Track the current currency
+        let map; // Global map reference
+        let currentHighlight = null; // Track currently highlighted district
+        let polygons = {}; // Store district polygons
+        let searchModalInstance = null; // Bootstrap modal instance
+
+        const categoryKeywords = {
+            'ishlab-chiqarish': [
+                'ishlab chiqarish', 'omborxona', 'tsex', 'Ishlab chiqarish korxonalari', "maxsulotlarni yig'ish"
+            ],
+            'savdo-maishiy': [
+                'savdo', 'maishiy xizmat', 'ofis', 'oshxona', 'kafelar', 'savdo uylari', 'savdo majmualari'
+            ],
+            'kop-qavatli-uylar': [
+                'qavatli turar', 'turar-joy'
+            ],
+            'ijtimoiy-soha': [
+                'bolalar', 'maktab', 'sport', "o'quv", 'davolash', 'ijtimoiy'
+            ],
+            'transport-infratuzilmasi': [
+                'avtomobil', 'qavatli avtoturargoh'
+            ]
+        };
+        const baseUrl = "https://projects.toshkentinvest.uz";
+
+        // Translations
+        const translations = {
+            'uz': {
+                'search': 'Izlash',
+                'searchPlaceholder': 'Mahalla nomini kiriting',
+                'tashkentCity': 'Toshkent shahri',
+                'district': {
+                    'bektemir': 'Bektemir',
+                    'chilonzor': 'Chilonzor',
+                    'mirabod': 'Mirobod',
+                    'mirzo_ulugbek': 'Mirzo Ulug\'bek',
+                    'olmazor': 'Olmazor',
+                    'sergeli': 'Sergeli',
+                    'shayhontaxur': 'Shayxontohur',
+                    'uchtepa': 'Uchtepa',
+                    'yakkasaroy': 'Yakkasaroy',
+                    'yashnabod': 'Yashnabod',
+                    'yunusabod': 'Yunusobod',
+                    'yangihayot': 'Yangihayot'
+                },
+                'categories': {
+                    'all': 'Barchasi',
+                    'ishlab-chiqarish': 'Ishlab chiqarish va omborxona',
+                    'savdo-maishiy': 'Savdo va maishiy xizmat ko\'rsatish',
+                    'kop-qavatli-uylar': 'Ko\'p qavatli uy-joy qurish',
+                    'ijtimoiy-soha': 'Ijtimoiy soha obyektlari',
+                    'transport-infratuzilmasi': 'Transport infratuzilmasi',
+                    'others': 'Boshqalar'
+                },
+                'sidebarLabels': {
+                    'map': 'Xarita',
+                    'data': 'Ma\'lumotlar',
+                    'area': 'Maydoni',
+                    'population': 'Aholi soni',
+                    'districtsCount': 'Tumanlar soni',
+                    'neighborhoodsCount': 'Mahalla soni',
+                    'objectsOnSale': 'Savdodagi obyektlar'
+                },
+                'infoSidebar': {
+                    'changeToUsd': 'Valyutani tahrirlash USD',
+                    'changeToUzs': 'Valyutani tahrirlash UZS',
+                    'notFound': 'Ushbu Yer tizimda mavjud emas',
+                    'lotNumber': 'Lot raqami',
+                    'propertyType': 'Mulk turi',
+                    'purpose': 'Maqsadi',
+                    'useWarning': 'Foydalanish bo\'yicha ogohlantirish',
+                    'region': 'Hududi',
+                    'address': 'Manzili',
+                    'startPrice': 'Boshlang\'ich narxi',
+                    'landArea': 'Yer maydoni (ga)',
+                    'pricePerSotka': '1 sotix uchun narx',
+                    'auctionDate': 'Auksion sanasi',
+                    'downloadQrCode': 'QR Kodni yuklab olish',
+                    'viewLot': 'Lotni ko\'rish'
+                }
+            },
+            'en': {
+                'search': 'Search',
+                'searchPlaceholder': 'Enter district or neighborhood name',
+                'tashkentCity': 'Tashkent city',
+                'district': {
+                    'bektemir': 'Bektemir',
+                    'chilonzor': 'Chilanzar',
+                    'mirabod': 'Mirobod',
+                    'mirzo_ulugbek': 'Mirzo Ulugbek',
+                    'olmazor': 'Olmazor',
+                    'sergeli': 'Sergeli',
+                    'shayhontaxur': 'Shaykhantaur',
+                    'uchtepa': 'Uchtepa',
+                    'yakkasaroy': 'Yakkasaroy',
+                    'yashnabod': 'Yashnabad',
+                    'yunusabod': 'Yunusabad',
+                    'yangihayot': 'Yangihayot'
+                },
+                'categories': {
+                    'all': 'All',
+                    'ishlab-chiqarish': 'Production and warehouses',
+                    'savdo-maishiy': 'Trade and consumer services',
+                    'kop-qavatli-uylar': 'Multi-story residential buildings',
+                    'ijtimoiy-soha': 'Social facilities',
+                    'transport-infratuzilmasi': 'Transport infrastructure',
+                    'others': 'Others'
+                },
+                'sidebarLabels': {
+                    'map': 'Map',
+                    'data': 'Data',
+                    'area': 'Area',
+                    'population': 'Population',
+                    'districtsCount': 'Number of districts',
+                    'neighborhoodsCount': 'Number of neighborhoods',
+                    'objectsOnSale': 'Objects on sale'
+                },
+                'infoSidebar': {
+                    'changeToUsd': 'Change currency to USD',
+                    'changeToUzs': 'Change currency to UZS',
+                    'notFound': 'This land plot is not in the system',
+                    'lotNumber': 'Lot number',
+                    'propertyType': 'Property type',
+                    'purpose': 'Purpose',
+                    'useWarning': 'Usage warning',
+                    'region': 'Region',
+                    'address': 'Address',
+                    'startPrice': 'Starting price',
+                    'landArea': 'Land area (ha)',
+                    'pricePerSotka': 'Price per 100 sq.m',
+                    'auctionDate': 'Auction date',
+                    'downloadQrCode': 'Download QR Code',
+                    'viewLot': 'View lot'
+                }
+            },
+            'ru': {
+                'search': 'Поиск',
+                'searchPlaceholder': 'Введите название района или махалли',
+                'tashkentCity': 'Город Ташкент',
+                'district': {
+                    'bektemir': 'Бектемир',
+                    'chilonzor': 'Чиланзар',
+                    'mirabod': 'Мирабад',
+                    'mirzo_ulugbek': 'Мирзо Улугбек',
+                    'olmazor': 'Алмазар',
+                    'sergeli': 'Сергели',
+                    'shayhontaxur': 'Шайхантахур',
+                    'uchtepa': 'Учтепа',
+                    'yakkasaroy': 'Яккасарай',
+                    'yashnabod': 'Яшнабад',
+                    'yunusabod': 'Юнусабад',
+                    'yangihayot': 'Янгихаят'
+                },
+                'categories': {
+                    'all': 'Все',
+                    'ishlab-chiqarish': 'Производство и склады',
+                    'savdo-maishiy': 'Торговля и бытовые услуги',
+                    'kop-qavatli-uylar': 'Многоэтажные жилые дома',
+                    'ijtimoiy-soha': 'Социальные объекты',
+                    'transport-infratuzilmasi': 'Транспортная инфраструктура',
+                    'others': 'Другие'
+                },
+                'sidebarLabels': {
+                    'map': 'Карта',
+                    'data': 'Данные',
+                    'area': 'Площадь',
+                    'population': 'Население',
+                    'districtsCount': 'Количество районов',
+                    'neighborhoodsCount': 'Количество махаллей',
+                    'objectsOnSale': 'Объекты на продаже'
+                },
+                'infoSidebar': {
+                    'changeToUsd': 'Изменить валюту на USD',
+                    'changeToUzs': 'Изменить валюту на UZS',
+                    'notFound': 'Этот земельный участок отсутствует в системе',
+                    'lotNumber': 'Номер лота',
+                    'propertyType': 'Тип имущества',
+                    'purpose': 'Назначение',
+                    'useWarning': 'Предупреждение об использовании',
+                    'region': 'Регион',
+                    'address': 'Адрес',
+                    'startPrice': 'Начальная цена',
+                    'landArea': 'Площадь земли (га)',
+                    'pricePerSotka': 'Цена за сотку',
+                    'auctionDate': 'Дата аукциона',
+                    'downloadQrCode': 'Скачать QR код',
+                    'viewLot': 'Просмотреть лот'
+                }
+            }
+        };
+
+        // On DOM load
+        window.addEventListener('DOMContentLoaded', async () => {
+            // Set up language switcher
+            document.getElementById('language-select').addEventListener('change', function() {
+                currentLanguage = this.value;
+                updateLanguage();
+                // If there's an open lot, update its content with the new language
+                if (currentOpenLot && document.getElementById('info-sidebar').classList.contains(
+                        'open')) {
+                    updateSidebarContent(currentOpenLot, currentLotCurrency === 'USD');
+                }
+                // Update district info if shown
+                const currentDistrictName = document.getElementById('district-name').textContent;
+                if (currentDistrictName && currentDistrictName !== 'N/A' && districtInfoCache[
+                        currentDistrictName]) {
+                    updateDistrictInfoLabels();
+                }
+            });
+
+            // Initial language setup
+            updateLanguage();
+
+            // Initialize the modal and store reference
+            const searchModalEl = document.getElementById('searchModal');
+            if (searchModalEl) {
+                searchModalEl.addEventListener('hidden.bs.modal', function() {
+                    // Apply filters when modal closes
+                    applyFilters('mobile');
+                });
+            }
+
+            // Fetch Google Maps API key then load script
+            try {
+                const response = await fetch('/maps-api');
+                const {
+                    key: googleMapsApiKey
+                } = await response.json();
+                const script = document.createElement('script');
+                script.src = `https://maps.googleapis.com/maps/api/js?key=${googleMapsApiKey}&callback=initMap`;
+                script.async = true;
+                script.defer = true;
+                document.head.appendChild(script);
+            } catch (err) {
+                console.error('Error fetching /maps-api:', err);
+            }
+        });
+
+        // Initialize the map
+        async function initMap() {
+            usdRate = await fetchUsdRate();
+            const urlParams = new URLSearchParams(window.location.search);
+            const urlLat = parseFloat(urlParams.get('lat'));
+            const urlLng = parseFloat(urlParams.get('lng'));
+
+            const mapOptions = {
+                zoom: (urlLat && urlLng) ? 15 : 12,
+                center: {
+                    lat: urlLat || 41.311,
+                    lng: urlLng || 69.279
+                },
+                mapTypeId: 'hybrid',
+
+                mapTypeControl: true,
+                mapTypeControlOptions: {
+                    style: google.maps.MapTypeControlStyle.DROPDOWN_MENU
+                },
+                streetViewControl: false,
+                fullscreenControl: false
+            };
+            map = new google.maps.Map(document.getElementById('map'), mapOptions);
+
+            // Initialize Bootstrap modal
+            const searchModalEl = document.getElementById('searchModal');
+            if (searchModalEl && window.bootstrap) {
+                searchModalInstance = new bootstrap.Modal(searchModalEl);
+
+                // Set up modal event listeners
+                searchModalEl.addEventListener('hidden.bs.modal', function() {
+                    // Apply filters when modal is hidden
+                    applyFilters('mobile');
+                });
+            }
+
+            // Get markers
+            await fetchMarkers(map, urlLat, urlLng);
+            handleDistricts(map);
+
+            // Setup search for desktop
+            setupSearchFunctionality('desktop');
+
+            // Setup search for mobile
+            setupSearchFunctionality('mobile');
+
+            // Sync the mobile and desktop selectors
+            syncSelectors();
+        }
+
+        // Sync all select elements between mobile and desktop
+        function syncSelectors() {
+            // District selectors sync
+            const xmlSelector = document.getElementById('xml-selector');
+            const xmlSelectorMobile = document.getElementById('xml-selector-mobile');
+
+            if (xmlSelector && xmlSelectorMobile) {
+                xmlSelector.addEventListener('change', function() {
+                    xmlSelectorMobile.value = this.value;
+                    handleDistrictChange(this.value);
+                });
+
+                xmlSelectorMobile.addEventListener('change', function() {
+                    xmlSelector.value = this.value;
+                    // Don't apply immediately on mobile - wait for search button or modal close
+                });
+            }
+
+            // Category selectors sync
+            const categorySelector = document.getElementById('category-selector');
+            const categorySelectorMobile = document.getElementById('category-selector-mobile');
+
+            if (categorySelector && categorySelectorMobile) {
+                categorySelector.addEventListener('change', function() {
+                    categorySelectorMobile.value = this.value;
+                    filterMarkers(this.value);
+                });
+
+                categorySelectorMobile.addEventListener('change', function() {
+                    categorySelector.value = this.value;
+                    // Don't apply immediately on mobile - wait for search button or modal close
+                });
+            }
+        }
+
+        // Apply all current filters
+        function applyFilters(source) {
+            // Reset all markers to visible first
+            if (window.mapMarkers) {
+                window.mapMarkers.forEach(({
+                    marker
+                }) => {
+                    marker.setVisible(true);
+                });
+            }
+
+            // Get filter values from the appropriate source
+            const sourcePrefix = source === 'mobile' ? '-mobile' : '';
+
+            const districtValue = document.getElementById(`xml-selector${sourcePrefix}`).value;
+            const categoryValue = document.getElementById(`category-selector${sourcePrefix}`).value;
+            const searchTerm = document.getElementById(`search-input${sourcePrefix}`).value.trim().toLowerCase();
+
+            // Apply district filter
+            if (districtValue !== 'tashkent') {
+                const districtName = getReadableDistrictName(districtValue);
+                filterByRegion(districtName);
+
+                // Highlight district on map
+                if (source === 'mobile') {
+                    highlightDistrict(districtValue);
+                }
+            }
+
+            // Apply search term filter
+            if (searchTerm) {
+                searchMarkers(searchTerm);
+            }
+
+            // Apply category filter
+            if (categoryValue !== 'all') {
+                filterMarkers(categoryValue);
+            }
+
+            // Close info sidebar if open
+            document.getElementById('info-sidebar').classList.remove('open');
+        }
+
+        // Highlight a district on the map
+        function highlightDistrict(districtValue) {
+            if (currentHighlight && currentHighlight !== 'tashkent') {
+                setPolygonColor(currentHighlight, '#c7a5a594', polygons);
+            }
+
+            if (districtValue === 'tashkent') {
+                map.setCenter({
+                    lat: 41.311,
+                    lng: 69.279
+                });
+                map.setZoom(12);
+                currentHighlight = 'tashkent';
+            } else {
+                setPolygonColor(districtValue, '#EEF5FF', polygons);
+                currentHighlight = districtValue;
+            }
+
+            // Update district info display
+            fetchDistrictInfo(districtValue);
+        }
+
+        // Handle district change
+        function handleDistrictChange(districtValue) {
+            highlightDistrict(districtValue);
+
+            // For desktop, apply filters immediately
+            if (window.mapMarkers) {
+                window.mapMarkers.forEach(({
+                    marker
+                }) => {
+                    marker.setVisible(true);
+                });
+
+                if (districtValue !== 'tashkent') {
+                    const districtName = getReadableDistrictName(districtValue);
+                    filterByRegion(districtName);
+                }
+            }
+        }
+
+        // Update UI language
+        function updateLanguage() {
+            const lang = currentLanguage;
+            const t = translations[lang];
+
+            // Update search buttons
+            document.getElementById('search-btn').textContent = t.search;
+            document.getElementById('search-btn-mobile').textContent = t.search;
+
+            // Update search input placeholders
+            document.getElementById('search-input').placeholder = t.searchPlaceholder;
+            document.getElementById('search-input-mobile').placeholder = t.searchPlaceholder;
+
+            // Update district options
+            document.getElementById('opt-tashkent').textContent = t.tashkentCity;
+            document.getElementById('mobile-opt-tashkent').textContent = t.tashkentCity;
+
+            // Update all district options
+            for (const [key, value] of Object.entries(t.district)) {
+                const districtKey = key.replace('.xml', '');
+                const districtId = `opt-${districtKey}`;
+                const mobileDistrictId = `mobile-${districtId}`;
+
+                const element = document.getElementById(districtId);
+                const mobileElement = document.getElementById(mobileDistrictId);
+
+                if (element) element.textContent = value;
+                if (mobileElement) mobileElement.textContent = value;
+            }
+
+            // Update category options
+            for (const [key, value] of Object.entries(t.categories)) {
+                const catElement = document.getElementById(`opt-${key}`);
+                const mobileCatElement = document.getElementById(`mobile-opt-${key}`);
+
+                if (catElement) {
+                    // Preserve the count if it exists
+                    const countMatch = catElement.textContent.match(/\(\d+\)$/);
+                    const count = countMatch ? countMatch[0] : '';
+                    catElement.textContent = count ? `${value} ${count}` : value;
+                }
+
+                if (mobileCatElement) {
+                    const countMatch = mobileCatElement.textContent.match(/\(\d+\)$/);
+                    const count = countMatch ? countMatch[0] : '';
+                    mobileCatElement.textContent = count ? `${value} ${count}` : value;
+                }
+            }
+
+            // Update sidebar labels
+            document.getElementById('sidebar-label-xarita').textContent = t.sidebarLabels.map;
+            document.getElementById('sidebar-link-xarita').textContent = t.sidebarLabels.map;
+
+            updateDistrictInfoLabels();
+
+            // Update modal title
+            document.getElementById('searchModalLabel').textContent = t.search;
+        }
+
+        function updateDistrictInfoLabels() {
+            const t = translations[currentLanguage].sidebarLabels;
+            document.getElementById('info-table-header').textContent = t.data;
+            document.getElementById('label-maydoni').textContent = t.area;
+            document.getElementById('label-aholiSoni').textContent = t.population;
+            document.getElementById('label-TumanlarSoni').textContent = t.districtsCount;
+            document.getElementById('label-MahallaSoni').textContent = t.neighborhoodsCount;
+            document.getElementById('label-savdodaTurganJamiSoni').textContent = t.objectsOnSale;
+        }
+
+        function setupSearchFunctionality(source) {
+            const sourcePrefix = source === 'mobile' ? '-mobile' : '';
+            const searchBtn = document.getElementById(`search-btn${sourcePrefix}`);
+            const searchInput = document.getElementById(`search-input${sourcePrefix}`);
+
+            if (!searchBtn || !searchInput) return;
+
+            searchBtn.addEventListener('click', function() {
+                applyFilters(source);
+            });
+
+            searchInput.addEventListener('keyup', (event) => {
+                if (event.key === 'Enter') {
+                    applyFilters(source);
+
+                    // On mobile, close the modal
+                    if (source === 'mobile' && searchModalInstance) {
+                        searchModalInstance.hide();
+                    }
+                }
+            });
+        }
+
+        // Convert district XML filename to readable name
+        function getReadableDistrictName(districtValue) {
+            // Remove .xml extension if present
+            const districtKey = districtValue.replace('.xml', '');
+            // Return the district name in current language
+            return translations[currentLanguage].district[districtKey] || districtKey;
+        }
+
+        function searchMarkers(searchTerm) {
+            if (!window.mapMarkers || !searchTerm) return;
+
+            window.mapMarkers.forEach(({
+                marker,
+                data
+            }) => {
+                // Create a combined search text from all relevant fields
+                const searchFields = [
+                    data.property_name || '',
+                    data.build_types || '',
+                    data.address || '',
+                    data.region || '',
+                    data.property_category || '',
+                    data.lot_number || ''
+                ];
+
+                const combinedData = searchFields.join(' ').toLowerCase();
+                const isVisible = combinedData.includes(searchTerm);
+                marker.setVisible(isVisible ? marker.getVisible() : false); // Only modify if it's already visible
+            });
+        }
+
+        function filterByRegion(regionName) {
+            if (!window.mapMarkers || !regionName) return;
+
+            window.mapMarkers.forEach(({
+                marker,
+                data
+            }) => {
+                // Check if the marker's region includes the selected region name
+                const region = (data.region || '').toLowerCase();
+                const matchesRegion = region.includes(regionName.toLowerCase());
+                const currentlyVisible = marker.getVisible();
+
+                // Only hide markers that are currently visible
+                if (currentlyVisible && !matchesRegion) {
+                    marker.setVisible(true);
+                }
+            });
+        }
+
+        async function fetchUsdRate() {
+            try {
+                const response = await fetch('https://cbu.uz/uz/arkhiv-kursov-valyut/json/');
+                const data = await response.json();
+                const usdObj = data.find(item => item.Ccy === 'USD');
+                if (usdObj && usdObj.Rate) {
+                    return parseFloat(usdObj.Rate);
+                }
+            } catch (e) {
+                console.error('USD rate fetch error', e);
+            }
+            return null;
+        }
+
+        // Fetch markers from the server
+        async function fetchMarkers(map, urlLat, urlLng) {
+            try {
+                const response = await fetch('/api/markersing');
+                const data = await response.json();
+                const markersData = data.lots || [];
+                window.markers = markersData;
+                window.mapMarkers = [];
+
+                let targetMarkerData = null;
+                const categoryCounts = {
+                    'all': 0,
+                    'ishlab-chiqarish': 0,
+                    'savdo-maishiy': 0,
+                    'kop-qavatli-uylar': 0,
+                    'ijtimoiy-soha': 0,
+                    'transport-infratuzilmasi': 0,
+                    'others': 0
+                };
+
+                markersData.forEach(markerData => {
+                    if (markerData.property_group !== 'Yer uchastkalari') return;
+                    const lat = parseFloat(markerData.lat);
+                    const lng = parseFloat(markerData.lng);
+                    if (isNaN(lat) || isNaN(lng)) return;
+
+                    const marker = new google.maps.Marker({
+                        position: {
+                            lat,
+                            lng
+                        },
+                        map,
+                        title: markerData.property_name || 'No Title'
+                    });
+                    marker.setVisible(true);
+
+                    let assignedCategory = 'others';
+                    const buildTypes = (markerData.build_types || '').toLowerCase();
+                    for (const [cat, keywords] of Object.entries(categoryKeywords)) {
+                        if (keywords.some(kw => buildTypes.includes(kw.toLowerCase()))) {
+                            assignedCategory = cat;
+                            break;
+                        }
+                    }
+                    markerData.category = assignedCategory;
+                    categoryCounts.all++;
+                    categoryCounts[assignedCategory]++;
+
+                    marker.addListener('click', () => {
+                        const sidebar = document.getElementById('info-sidebar');
+                        currentOpenLot = markerData;
+                        currentLotCurrency = sidebar.getAttribute('data-currency');
+                        updateSidebarContent(markerData, currentLotCurrency === 'USD');
+                        sidebar.classList.add('open');
+                    });
+
+                    window.mapMarkers.push({
+                        marker,
+                        data: markerData
+                    });
+
+                    if (urlLat && urlLng) {
+                        // Check if the lat/lng matches any marker
+                        const latDiff = Math.abs(lat - urlLat);
+                        const lngDiff = Math.abs(lng - urlLng);
+                        if (latDiff < 0.0001 && lngDiff < 0.0001) {
+                            targetMarkerData = markerData;
+                            map.setCenter({
+                                lat,
+                                lng
+                            });
+                            map.setZoom(15);
+                        }
+                    }
+                });
+
+                // If a specific marker was matched from URL
+                const sidebar = document.getElementById('info-sidebar');
+                if (targetMarkerData) {
+                    currentOpenLot = targetMarkerData;
+                    currentLotCurrency = sidebar.getAttribute('data-currency');
+                    updateSidebarContent(targetMarkerData, currentLotCurrency === 'USD');
+                    sidebar.classList.add('open');
+                } else if (urlLat && urlLng) {
+                    // Show an error if URL lat/lng doesn't match any marker
+                    const t = translations[currentLanguage].infoSidebar;
+                    sidebar.innerHTML = `
+              <span class="close-btn">&times;</span>
+              <div class="info-content">
+                <h4 class="custom_sidebar_title"><b>${t.notFound}</b></h4>
+              </div>`;
+                    sidebar.classList.add('open');
+                }
+
+                setupSidebarAndInteraction();
+                updateCategorySelectorCounts(categoryCounts);
+            } catch (err) {
+                console.error('Error fetching marker data:', err);
+            }
+        }
+
+        function filterMarkers(selectedCategory) {
+            if (!window.mapMarkers) return;
+
+            window.mapMarkers.forEach(({
+                marker,
+                data
+            }) => {
+                if (selectedCategory === 'all') {
+                    // Don't modify visibility if 'all' is selected
+                    return;
+                } else {
+                    const matchesCategory = (data.category || 'others') === selectedCategory;
+                    const currentlyVisible = marker.getVisible();
+
+                    // Only hide markers that are currently visible
+                    if (currentlyVisible && !matchesCategory) {
+                        marker.setVisible(false);
+                    }
+                }
+            });
+        }
+
+        function updateCategorySelectorCounts(counts) {
+            const t = translations[currentLanguage].categories;
+            const categorySelector = document.getElementById('category-selector');
+            const categorySelectorMobile = document.getElementById('category-selector-mobile');
+
+            // Desktop category selector
+            if (categorySelector) {
+                for (let i = 0; i < categorySelector.options.length; i++) {
+                    const option = categorySelector.options[i];
+                    const val = option.value;
+                    if (counts[val] !== undefined) {
+                        option.text = `${t[val]} (${counts[val]})`;
+                    }
+                }
+            }
+            // Mobile category selector
+            if (categorySelectorMobile) {
+                for (let i = 0; i < categorySelectorMobile.options.length; i++) {
+                    const option = categorySelectorMobile.options[i];
+                    const val = option.value;
+                    if (counts[val] !== undefined) {
+                        option.text = `${t[val]} (${counts[val]})`;
+                    }
+                }
+            }
+        }
+
+        function updateSidebarContent(markerData, isInUSD) {
+            const sidebar = document.getElementById('info-sidebar');
+            const t = translations[currentLanguage].infoSidebar;
+
+            // Store the current open lot data and currency
+            currentOpenLot = markerData;
+            currentLotCurrency = isInUSD ? 'USD' : 'UZS';
+
+            const areaHa = parseFloat(markerData.land_area) || 0;
+            const priceUZS = parseFloat(markerData.start_price) || 0;
+            const lotPricePerSotixUZS = areaHa > 0 ? priceUZS / (areaHa * 100) : 0;
+            let lotPriceFormatted, lotPricePerSotixFormatted;
+
+            try {
+                if (isInUSD && usdRate) {
+                    const priceUSD = priceUZS / usdRate;
+                    const sotixUSD = lotPricePerSotixUZS / usdRate;
+                    lotPriceFormatted = new Intl.NumberFormat('en-US', {
+                        style: 'currency',
+                        currency: 'USD'
+                    }).format(priceUSD);
+                    lotPricePerSotixFormatted = new Intl.NumberFormat('en-US', {
+                        style: 'currency',
+                        currency: 'USD'
+                    }).format(sotixUSD);
+                } else {
+                    lotPriceFormatted = new Intl.NumberFormat('uz-UZ', {
+                        style: 'currency',
+                        currency: 'UZS',
+                        minimumFractionDigits: 0
+                    }).format(priceUZS);
+                    lotPricePerSotixFormatted = new Intl.NumberFormat('uz-UZ', {
+                        style: 'currency',
+                        currency: 'UZS',
+                        minimumFractionDigits: 0
+                    }).format(lotPricePerSotixUZS);
+                }
+            } catch {
+                lotPriceFormatted = priceUZS;
+                lotPricePerSotixFormatted = lotPricePerSotixUZS;
+            }
+
+            const qrCodeUrl = `${baseUrl}/api/lot/qr-code/${markerData.lat}/${markerData.lng}`;
+            const currencyToggleText = isInUSD ? t.changeToUzs : t.changeToUsd;
+
+            sidebar.innerHTML = `
+  <span class="close-btn">&times;</span>
+  <div class="info-content">
+    ${
+      markerData.main_image
+      ? `<img class="custom_sidebar_image" src="${markerData.main_image}" alt="Marker Image"/>`
+      : '<img class="custom_sidebar_image" src="https://media.istockphoto.com/id/1409329028/vector/no-picture-available-placeholder-thumbnail-icon-illustration-design.jpg?s=612x612&w=0&k=20&c=_zOuJu755g2eEUioiOUdz_mHKJQJn-tDgIAhQzyeKUQ=" alt="Marker Image"/>'
+    }
+    <button id="toggle-currency-btn">${currencyToggleText}</button>
+    <h4 class="custom_sidebar_title"><b>${markerData.property_name || 'No Title'}</b></h4>
+    <table>
+      <tr><th class="sidebar_key">${t.lotNumber}</th><td>${markerData.lot_number || 'N/A'}</td></tr>
+      <tr><th class="sidebar_key">${t.propertyType}</th><td>${markerData.property_group || 'N/A'}</td></tr>
+      <tr><th class="sidebar_key">${t.purpose}</th><td>${markerData.property_category || 'N/A'}</td></tr>
+      <tr><th class="sidebar_key">${t.useWarning}</th><td>${markerData.build_types || 'N/A'}</td></tr>
+      <tr><th class="sidebar_key">${t.region}</th><td>${markerData.region || 'N/A'}</td></tr>
+      <tr><th class="sidebar_key">${t.address}</th><td>${markerData.address || 'N/A'}</td></tr>
+      <tr><th class="sidebar_key">${t.startPrice}</th><td id="price-td">${lotPriceFormatted}</td></tr>
+      <tr><th class="sidebar_key">${t.landArea}</th><td>${markerData.land_area || 'N/A'}</td></tr>
+      <tr><th class="sidebar_key">${t.pricePerSotka}</th><td>${lotPricePerSotixFormatted}</td></tr>
+      <tr><th class="sidebar_key">${t.auctionDate}</th><td>${markerData.auction_date || 'N/A'}</td></tr>
+    </table>
+    <div id="qr-code-container">
+
+    </div>
+    <a target="_blank" href="${markerData.lot_link || '#'}" class="btn-link">${t.viewLot}</a>
+  </div>`;
+        }
+        // <img src="${qrCodeUrl}" alt="QR Code" type="image/svg+xml" />
+        // <a href="${qrCodeUrl}" download="qr_code.svg">${t.downloadQrCode}</a>
+
+        // Common event listeners for the sidebar
+        function setupSidebarAndInteraction() {
+            document.addEventListener('click', (event) => {
+                // Close sidebar
+                if (event.target.matches('.close-btn')) {
+                    document.getElementById('info-sidebar').classList.remove('open');
+                    currentOpenLot = null;
+                }
+                // Toggle currency
+                else if (event.target.matches('#toggle-currency-btn')) {
+                    const sidebar = document.getElementById('info-sidebar');
+                    const isInUSD = sidebar.getAttribute('data-currency') === 'USD';
+                    const newCurrency = isInUSD ? 'UZS' : 'USD';
+
+                    sidebar.setAttribute('data-currency', newCurrency);
+                    currentLotCurrency = newCurrency;
+
+                    const t = translations[currentLanguage].infoSidebar;
+                    event.target.textContent = isInUSD ? t.changeToUsd : t.changeToUzs;
+
+                    if (currentOpenLot) {
+                        if (!isInUSD || (isInUSD && usdRate !== null)) {
+                            // If toggling to USD, check if usdRate is available
+                            updateSidebarContent(currentOpenLot, !isInUSD);
+                        } else if (isInUSD && usdRate === null) {
+                            console.warn("USD rate is not available, defaulting to UZS");
+                            sidebar.setAttribute('data-currency', 'UZS');
+                            currentLotCurrency = 'UZS';
+                            event.target.textContent = t.changeToUsd;
+                            updateSidebarContent(currentOpenLot, false);
+                        }
+                    }
+                }
+            });
+        }
+
+        function handleDistricts(map) {
+            const defaultColor = '#c7a5a594';
+            const highlightColor = '#EEF5FF';
+            const kmlFiles = [
+                'bektemir.xml', 'chilonzor.xml', 'mirabod.xml', 'mirzo_ulugbek.xml', 'olmazor.xml',
+                'sergeli.xml', 'shayhontaxur.xml', 'uchtepa.xml', 'yakkasaroy.xml', 'yashnabod.xml',
+                'yunusabod.xml', 'yangihayot.xml'
+            ];
+
+            Promise.all(kmlFiles.map(file => fetchKML(file)))
+                .then(kmlDataList => {
+                    kmlDataList.forEach((kmlPaths, idx) => {
+                        addPolygon(kmlFiles[idx], [kmlPaths], defaultColor, map);
+                    });
+                })
+                .catch(err => console.error('Error loading KML files:', err));
+
+            async function fetchKML(fileName) {
+                const res = await fetch(`https://projects.toshkentinvest.uz/xml-map/${fileName}`);
+                const text = await res.text();
+                return parseKML(text);
+            }
+
+            function parseKML(kmlText) {
+                const parser = new DOMParser();
+                const xmlDoc = parser.parseFromString(kmlText, "application/xml");
+                const coordsText = xmlDoc.querySelector('coordinates')?.textContent.trim() || '';
+                return coordsText.split(' ').map(coordStr => {
+                    const [lng, lat] = coordStr.split(',').map(Number);
+                    return {
+                        lat,
+                        lng
+                    };
+                });
+            }
+
+            function addPolygon(fileName, paths, fillColor, map) {
+                if (polygons[fileName]) {
+                    polygons[fileName].forEach(poly => poly.setMap(null));
+                }
+                polygons[fileName] = paths.map(path => new google.maps.Polygon({
+                    paths: path,
+                    strokeColor: '#fff',
+                    strokeOpacity: 0.8,
+                    strokeWeight: 2,
+                    fillColor,
+                    fillOpacity: 0.35,
+                    map
+                }));
+            }
+        }
+
+        function setPolygonColor(fileName, color, polygonsObj) {
+            if (polygonsObj[fileName]) {
+                polygonsObj[fileName].forEach(poly => poly.setOptions({
+                    fillColor: color
+                }));
+            }
+        }
+
+        async function fetchDistrictInfo(districtFile) {
+            const districtInfoUrl = "https://projects.toshkentinvest.uz/districtInfo.json";
+            try {
+                const res = await fetch(districtInfoUrl);
+                const jsonData = await res.json();
+                const info = jsonData[districtFile] || {
+                    name: 'N/A',
+                    maydoni: 'N/A',
+                    aholiSoni: 'N/A',
+                    TumanlarSoni: 'N/A',
+                    MahallaSoni: 'N/A',
+                    savdodaTurganJamiSoni: 'N/A'
+                };
+
+                document.getElementById('district-name').textContent = info.name || 'N/A';
+                document.getElementById('maydoni').textContent = info.maydoni || 'N/A';
+                document.getElementById('aholiSoni').textContent = info.aholiSoni || 'N/A';
+                document.getElementById('TumanlarSoni').textContent = info.TumanlarSoni || 'N/A';
+                document.getElementById('MahallaSoni').textContent = info.MahallaSoni || 'N/A';
+                document.getElementById('savdodaTurganJamiSoni').textContent = info.savdodaTurganJamiSoni || 'N/A';
+
+                // Cache the district info for language switching
+                if (info.name) {
+                    districtInfoCache[info.name] = info;
+                }
+
+                // Update labels to match the current language
+                updateDistrictInfoLabels();
+            } catch (err) {
+                console.error('Error fetching district info:', err);
+            }
+        }
+    </script>
+</body>
+
+</html>

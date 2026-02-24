@@ -1528,6 +1528,47 @@
                 background: var(--gray-400);
             }
 
+            /* District Filter Control */
+            .district-filter-control {
+                bottom: 20px;
+                right: 20px;
+                width: 280px;
+                padding: 20px;
+            }
+
+            .district-select {
+                width: 100%;
+                padding: 10px 12px;
+                border: 2px solid var(--gray-200);
+                border-radius: var(--border-radius);
+                font-size: 14px;
+                outline: none;
+                transition: var(--transition);
+                background: var(--white);
+                cursor: pointer;
+                font-weight: 500;
+                color: var(--gray-800);
+            }
+
+            .district-select:focus {
+                border-color: var(--secondary-blue);
+                box-shadow: 0 0 0 3px rgba(59, 130, 246, 0.1);
+            }
+
+            .district-filter-stats {
+                font-size: 12px;
+                color: var(--gray-600);
+                margin-top: 10px;
+                padding: 8px 12px;
+                background: var(--gray-50);
+                border-radius: var(--border-radius);
+                border-left: 3px solid var(--secondary-blue);
+            }
+
+            .district-filter-stats strong {
+                color: var(--primary-blue);
+            }
+
             /* Responsive Design */
             @media (max-width: 768px) {
                 .app-title {
@@ -1714,6 +1755,120 @@
                 Qizil_chiziqlar: "#dc2626",
                 default: "#8e24aa",
             };
+
+            // ===== DISTRICT FILTER SYSTEM =====
+
+            // District display names (Uzbek Cyrillic)
+            const DISTRICT_DISPLAY_NAMES = {
+                tashkent: "Барча туманлар",
+                bektemir: "Бектемир",
+                chilonzor: "Чилонзор",
+                mirabod: "Миробод",
+                mirzo_ulugbek: "Мирзо Улуғбек",
+                olmazor: "Олмазор",
+                sergeli: "Сергели",
+                shayhontaxur: "Шайхонтоҳур",
+                uchtepa: "Учтепа",
+                yakkasaroy: "Яккасарой",
+                yashnabod: "Яшнабод",
+                yunusabod: "Юнусобод",
+                yangihayot: "Янгиҳаёт",
+            };
+
+            // XML file names for district boundaries
+            const DISTRICT_XML_FILES = [
+                "bektemir", "chilonzor", "mirabod", "mirzo_ulugbek",
+                "olmazor", "sergeli", "shayhontaxur", "uchtepa",
+                "yakkasaroy", "yashnabod", "yunusabod", "yangihayot"
+            ];
+
+            // Code prefix mapping for Реновация лойихалари names like "OLM-05", "YUN-29", "MU58"
+            const DISTRICT_CODE_PREFIXES = {
+                'OLM': 'olmazor',
+                'YUN': 'yunusabod',
+                'MU': 'mirzo_ulugbek',
+                'MIR': 'mirabod',
+                'YASH': 'yashnabod',
+                'BEK': 'bektemir',
+                'YAN': 'yangihayot',
+                'CHL': 'chilonzor',
+                'SERG': 'sergeli',
+                'SER': 'sergeli',
+                'UCH': 'uchtepa',
+                'SHAY': 'shayhontaxur',
+                'SHA': 'shayhontaxur',
+                'YAK': 'yakkasaroy',
+            };
+
+            // Russian district name keywords for TIC (Реновация) district_name matching
+            const DISTRICT_RUSSIAN_KEYWORDS = {
+                mirzo_ulugbek: ['мирзо улугбек', 'м.улугбек', 'мирзоулугбек', 'mirzo ulugbek'],
+                sergeli: ['сергели', 'sergeli'],
+                yashnabod: ['яшнабад', 'яшнобод', 'yashnabod', 'yashnabad'],
+                chilonzor: ['чиланзар', 'чилонзор', 'chilonzor', 'chilanzar'],
+                shayhontaxur: ['шайхонтохур', 'шайхантахур', 'shayxontohur', 'shayhontaxur'],
+                bektemir: ['бектемир', 'bektemir'],
+                olmazor: ['олмазор', 'алмазар', 'olmazor'],
+                mirabod: ['мирабад', 'мирободский', 'миробод', 'mirabod', 'mirobod'],
+                yunusabod: ['юнусабад', 'юнусобод', 'yunusobod', 'yunusabad'],
+                uchtepa: ['учтепа', 'учтепин', 'uchtepa'],
+                yakkasaroy: ['яккасарай', 'яккасарой', 'yakkasaroy'],
+                yangihayot: ['янгихаёт', 'янгихаят', 'yangihayot'],
+            };
+
+            // Extract district key from a Реновация лойихалари code name (e.g. "OLM-05" -> "olmazor")
+            function getDistrictFromCode(name) {
+                if (!name) return null;
+                const upperName = name.toUpperCase().trim();
+                // Sort prefixes by length descending so longer prefixes match first (e.g. SERG before SER)
+                const sortedPrefixes = Object.entries(DISTRICT_CODE_PREFIXES)
+                    .sort((a, b) => b[0].length - a[0].length);
+                for (const [prefix, district] of sortedPrefixes) {
+                    if (upperName.startsWith(prefix)) {
+                        return district;
+                    }
+                }
+                return null;
+            }
+
+            // Extract district key from a Russian district name (e.g. "Мирзо Улугбекский район" -> "mirzo_ulugbek")
+            function getDistrictFromRussianName(text) {
+                if (!text) return null;
+                const lowerText = text.toLowerCase().trim();
+                for (const [district, keywords] of Object.entries(DISTRICT_RUSSIAN_KEYWORDS)) {
+                    for (const keyword of keywords) {
+                        if (lowerText.includes(keyword)) {
+                            return district;
+                        }
+                    }
+                }
+                return null;
+            }
+
+            // Parse KML XML text and return array of {lat, lng} objects
+            function parseKMLCoordinates(kmlText) {
+                try {
+                    const parser = new DOMParser();
+                    const xmlDoc = parser.parseFromString(kmlText, "application/xml");
+                    const coordsEl = xmlDoc.querySelector('coordinates');
+                    if (!coordsEl) return [];
+                    const coordsText = coordsEl.textContent.trim();
+                    return coordsText.split(/\s+/).map(coordStr => {
+                        const parts = coordStr.split(',');
+                        if (parts.length >= 2) {
+                            const lng = parseFloat(parts[0]);
+                            const lat = parseFloat(parts[1]);
+                            if (!isNaN(lat) && !isNaN(lng)) {
+                                return [lat, lng];
+                            }
+                        }
+                        return null;
+                    }).filter(Boolean);
+                } catch (e) {
+                    console.warn('Error parsing KML:', e);
+                    return [];
+                }
+            }
 
             // Fixed KMZ Search Manager Class
             class KMZSearchManager {
@@ -3091,6 +3246,40 @@
                 );
             };
 
+            // District Filter Control Component
+            const DistrictFilterControl = ({ selectedDistrict, onDistrictChange, filterStats }) => {
+                return React.createElement(
+                    "div",
+                    { className: "control-panel district-filter-control" },
+                    React.createElement(
+                        "div",
+                        { className: "control-title" },
+                        React.createElement("i", { className: "fas fa-map-marked-alt" }),
+                        "Туман бўйича фильтр"
+                    ),
+                    React.createElement(
+                        "select",
+                        {
+                            className: "district-select",
+                            value: selectedDistrict,
+                            onChange: (e) => onDistrictChange(e.target.value),
+                        },
+                        Object.entries(DISTRICT_DISPLAY_NAMES).map(([key, name]) =>
+                            React.createElement("option", { key: key, value: key }, name)
+                        )
+                    ),
+                    filterStats && React.createElement(
+                        "div",
+                        { className: "district-filter-stats" },
+                        React.createElement("i", { className: "fas fa-filter", style: { marginRight: '6px' } }),
+                        React.createElement("strong", null, `TIC: ${filterStats.kmz}`),
+                        " | ",
+                        React.createElement("strong", null, `Реновация: ${filterStats.renovatsiya}`),
+                        " та объект"
+                    )
+                );
+            };
+
             // Toast Component
             const Toast = ({ toasts, removeToast }) =>
                 React.createElement(
@@ -3839,6 +4028,14 @@
                 const layerGroupsRef = useRef({});
                 const geoJsonLayersRef = useRef(new Map());
 
+                // District filter state and refs
+                const [selectedDistrict, setSelectedDistrict] = useState('tashkent');
+                const [districtFilterStats, setDistrictFilterStats] = useState({ kmz: 0, renovatsiya: 0 });
+                const allKmzLayersRef = useRef([]);
+                const allRenovatsiyaLayersRef = useRef([]);
+                const districtPolygonLayersRef = useRef({});
+                const districtBoundaryGroupRef = useRef(null);
+
                 // Make refs globally accessible
                 window.mapInstanceRef = mapInstanceRef;
                 window.layerGroupsRef = layerGroupsRef;
@@ -3859,6 +4056,152 @@
                         prev.filter((toast) => toast.id !== id)
                     );
                 }, []);
+
+                // ===== District Boundary Loading =====
+                const loadDistrictBoundaries = useCallback(async () => {
+                    const map = mapInstanceRef.current;
+                    if (!map) return;
+
+                    // Create a feature group for district boundaries
+                    if (!districtBoundaryGroupRef.current) {
+                        districtBoundaryGroupRef.current = L.featureGroup();
+                        map.addLayer(districtBoundaryGroupRef.current);
+                    }
+
+                    for (const districtKey of DISTRICT_XML_FILES) {
+                        try {
+                            const res = await fetch(`/assets/data/DISTRICTS/${districtKey}.xml`);
+                            const kmlText = await res.text();
+                            const coords = parseKMLCoordinates(kmlText);
+                            if (coords.length > 0) {
+                                const polygon = L.polygon(coords, {
+                                    fillColor: '#c7a5a594',
+                                    weight: 2,
+                                    opacity: 0.8,
+                                    color: '#ffffff',
+                                    fillOpacity: 0.15,
+                                    interactive: true,
+                                });
+                                polygon.bindTooltip(DISTRICT_DISPLAY_NAMES[districtKey] || districtKey, {
+                                    permanent: false,
+                                    direction: 'center',
+                                    className: 'district-tooltip',
+                                });
+                                districtPolygonLayersRef.current[districtKey] = polygon;
+                                districtBoundaryGroupRef.current.addLayer(polygon);
+                            }
+                        } catch (err) {
+                            console.warn(`Failed to load district boundary: ${districtKey}`, err);
+                        }
+                    }
+                }, []);
+
+                // ===== Snapshot all layers for district filtering =====
+                const snapshotLayersForFiltering = useCallback(() => {
+                    const kmzGroup = layerGroupsRef.current.kmz;
+                    const renovGroup = layerGroupsRef.current.renovatsiyaProjects;
+
+                    if (kmzGroup) {
+                        allKmzLayersRef.current = [];
+                        kmzGroup.eachLayer((layer) => {
+                            allKmzLayersRef.current.push(layer);
+                        });
+                    }
+
+                    if (renovGroup) {
+                        allRenovatsiyaLayersRef.current = [];
+                        renovGroup.eachLayer((layer) => {
+                            allRenovatsiyaLayersRef.current.push(layer);
+                        });
+                    }
+
+                    // Set initial stats
+                    setDistrictFilterStats({
+                        kmz: allKmzLayersRef.current.length,
+                        renovatsiya: allRenovatsiyaLayersRef.current.length,
+                    });
+                }, []);
+
+                // ===== District Filter Function =====
+                const filterByDistrict = useCallback((district) => {
+                    setSelectedDistrict(district);
+
+                    const map = mapInstanceRef.current;
+                    if (!map) return;
+
+                    const kmzGroup = layerGroupsRef.current.kmz;
+                    const renovGroup = layerGroupsRef.current.renovatsiyaProjects;
+
+                    // Reset district polygon highlights
+                    Object.entries(districtPolygonLayersRef.current).forEach(([key, poly]) => {
+                        if (district === 'tashkent') {
+                            poly.setStyle({ fillColor: '#c7a5a594', fillOpacity: 0.15 });
+                        } else if (key === district) {
+                            poly.setStyle({ fillColor: '#3b82f6', fillOpacity: 0.25 });
+                        } else {
+                            poly.setStyle({ fillColor: '#c7a5a594', fillOpacity: 0.08 });
+                        }
+                    });
+
+                    if (district === 'tashkent') {
+                        // Show all: restore all layers
+                        if (kmzGroup) {
+                            kmzGroup.clearLayers();
+                            allKmzLayersRef.current.forEach(layer => kmzGroup.addLayer(layer));
+                        }
+                        if (renovGroup) {
+                            renovGroup.clearLayers();
+                            allRenovatsiyaLayersRef.current.forEach(layer => renovGroup.addLayer(layer));
+                        }
+                        setDistrictFilterStats({
+                            kmz: allKmzLayersRef.current.length,
+                            renovatsiya: allRenovatsiyaLayersRef.current.length,
+                        });
+                        map.setView([41.311, 69.279], 11);
+                        addToast(`Барча туманлар кўрсатилди`, "info");
+                        return;
+                    }
+
+                    // Filter KMZ (TIC Реновация) layers by district_name (Russian keywords)
+                    let kmzCount = 0;
+                    if (kmzGroup) {
+                        kmzGroup.clearLayers();
+                        allKmzLayersRef.current.forEach(layer => {
+                            const layerDistrict = layer._kmzDistrict;
+                            if (layerDistrict === district) {
+                                kmzGroup.addLayer(layer);
+                                kmzCount++;
+                            }
+                        });
+                    }
+
+                    // Filter Реновация лойихалари layers by code prefix
+                    let renovCount = 0;
+                    if (renovGroup) {
+                        renovGroup.clearLayers();
+                        allRenovatsiyaLayersRef.current.forEach(layer => {
+                            const layerDistrict = layer._renovatsiyaDistrict;
+                            if (layerDistrict === district) {
+                                renovGroup.addLayer(layer);
+                                renovCount++;
+                            }
+                        });
+                    }
+
+                    setDistrictFilterStats({ kmz: kmzCount, renovatsiya: renovCount });
+
+                    // Zoom to selected district polygon
+                    const districtPoly = districtPolygonLayersRef.current[district];
+                    if (districtPoly) {
+                        try {
+                            map.fitBounds(districtPoly.getBounds(), { padding: [50, 50], maxZoom: 14 });
+                        } catch (e) {
+                            console.warn('Could not zoom to district:', e);
+                        }
+                    }
+
+                    addToast(`${DISTRICT_DISPLAY_NAMES[district]}: TIC ${kmzCount}, Реновация ${renovCount}`, "success");
+                }, [addToast]);
 
                 // Map Initialization
                 const initializeMap = useCallback(() => {
@@ -4055,6 +4398,8 @@
     `;
                             layer.bindPopup(popup, { maxWidth: 450 });
                             layer.kmzData = { ...lotData, kmzFeature: feature };
+                            // Tag KMZ layer with resolved district for filtering
+                            layer._kmzDistrict = getDistrictFromRussianName(lotData.district_name);
 
                             // IMMEDIATELY register with KMZ search manager
                             if (
@@ -4603,6 +4948,9 @@
     </div>
 `;
                                     layer.bindPopup(popup, { maxWidth: 300 });
+                                    // Tag layer with name and resolved district for filtering
+                                    layer._renovatsiyaName = properties.Name || properties.name || "";
+                                    layer._renovatsiyaDistrict = getDistrictFromCode(layer._renovatsiyaName);
                                     group.addLayer(layer);
                                     processed++;
                                 }
@@ -5134,6 +5482,12 @@
                                     loadGeoJSON('./TOSHKENT_CADASTRAL_COMPLETE.geojson');
                                 }, 1500);
 
+                                // Snapshot layers and load district boundaries after data is ready
+                                setTimeout(() => {
+                                    snapshotLayersForFiltering();
+                                    loadDistrictBoundaries();
+                                }, 2000);
+
                                 mapInstanceRef.current.setView(
                                     [41.311, 69.279],
                                     11
@@ -5177,6 +5531,8 @@
                     fetchRenovatsiyaProjects,
                     loadGeoJSON,
                     addToast,
+                    snapshotLayersForFiltering,
+                    loadDistrictBoundaries,
                 ]);
 
                 // Memoized components
@@ -5229,6 +5585,16 @@
                         removeGeoJSONLayer,
                         clearAllGeoJSON,
                     ]
+                );
+
+                const memoizedDistrictFilterControl = useMemo(
+                    () =>
+                        React.createElement(DistrictFilterControl, {
+                            selectedDistrict: selectedDistrict,
+                            onDistrictChange: filterByDistrict,
+                            filterStats: districtFilterStats,
+                        }),
+                    [selectedDistrict, filterByDistrict, districtFilterStats]
                 );
 
                 return React.createElement(
@@ -5309,7 +5675,8 @@
                             memoizedLocationSearchControl,
                             memoizedKMZSearchControl,
                             memoizedLayerControls,
-                            memoizedGeoJSONControls
+                            memoizedGeoJSONControls,
+                            memoizedDistrictFilterControl
                         ),
 
                         // Sidebar
