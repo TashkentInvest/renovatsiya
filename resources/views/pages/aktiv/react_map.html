@@ -1569,6 +1569,22 @@
                 color: var(--primary-blue);
             }
 
+            /* GeoJSON Tooltip */
+            .geojson-tooltip {
+                background: rgba(30, 58, 138, 0.95);
+                color: #fff;
+                border: 1px solid rgba(255, 255, 255, 0.3);
+                border-radius: 6px;
+                padding: 6px 10px;
+                font-size: 12px;
+                font-weight: 500;
+                box-shadow: 0 2px 8px rgba(0, 0, 0, 0.3);
+                max-width: 250px;
+            }
+            .geojson-tooltip strong {
+                color: #fbbf24;
+            }
+
             /* Responsive Design */
             @media (max-width: 768px) {
                 .app-title {
@@ -3742,6 +3758,151 @@
                                                         )} сум`
                                                     )
                                                 )
+                                            // ===== GeoJSON / Master Plan fields =====
+                                            // Qavatlilik (floors from GeoJSON)
+                                            ,item.qavatlilik &&
+                                                React.createElement(
+                                                    "tr", null,
+                                                    React.createElement("td", null, "Қаватлилик:"),
+                                                    React.createElement("td", null, item.qavatlilik)
+                                                ),
+                                            // Seismic zone
+                                            item.seysmologik_zonasi &&
+                                                React.createElement(
+                                                    "tr", null,
+                                                    React.createElement("td", null, "Сейсмик зона:"),
+                                                    React.createElement("td", null, item.seysmologik_zonasi)
+                                                ),
+                                            // Territory (hudud)
+                                            item.hudud &&
+                                                React.createElement(
+                                                    "tr", null,
+                                                    React.createElement("td", null, "Ҳудуд:"),
+                                                    React.createElement("td", null, item.hudud.replace(/_/g, ' '))
+                                                ),
+                                            // Strategy work type
+                                            item.strategiya_ishlari_turi &&
+                                                React.createElement(
+                                                    "tr", null,
+                                                    React.createElement("td", null, "Стратегия иши тури:"),
+                                                    React.createElement("td", null, item.strategiya_ishlari_turi.replace(/_/g, ' '))
+                                                ),
+                                            // Layer name
+                                            item.layerName &&
+                                                React.createElement(
+                                                    "tr", null,
+                                                    React.createElement("td", null, "Қатлам номи:"),
+                                                    React.createElement("td", null, item.layerName)
+                                                ),
+                                            // Code
+                                            item.code &&
+                                                React.createElement(
+                                                    "tr", null,
+                                                    React.createElement("td", null, "Код:"),
+                                                    React.createElement("td", null, item.code)
+                                                ),
+                                            // Global ID
+                                            item.globalid &&
+                                                React.createElement(
+                                                    "tr", null,
+                                                    React.createElement("td", null, "Глобал ID:"),
+                                                    React.createElement("td", null, String(item.globalid))
+                                                ),
+                                            // Object ID
+                                            item.objectid &&
+                                                React.createElement(
+                                                    "tr", null,
+                                                    React.createElement("td", null, "Объект ID:"),
+                                                    React.createElement("td", null, String(item.objectid))
+                                                ),
+                                            // Mahalla ID
+                                            item.mahalla_id &&
+                                                React.createElement(
+                                                    "tr", null,
+                                                    React.createElement("td", null, "Маҳалла ID:"),
+                                                    React.createElement("td", null, String(item.mahalla_id))
+                                                ),
+                                            // Parent code
+                                            item.parent_code &&
+                                                React.createElement(
+                                                    "tr", null,
+                                                    React.createElement("td", null, "Ота код:"),
+                                                    React.createElement("td", null, String(item.parent_code))
+                                                ),
+                                            // SHAPE__Area
+                                            item.SHAPE__Area &&
+                                                React.createElement(
+                                                    "tr", null,
+                                                    React.createElement("td", null, "Шакл майдони:"),
+                                                    React.createElement("td", null, `${Number(item.SHAPE__Area).toFixed(2)} м²`)
+                                                ),
+                                            // SHAPE__Length
+                                            item.SHAPE__Length &&
+                                                React.createElement(
+                                                    "tr", null,
+                                                    React.createElement("td", null, "Шакл узунлиги:"),
+                                                    React.createElement("td", null, `${Number(item.SHAPE__Length).toFixed(2)} м`)
+                                                ),
+                                            // Umumiy/Qurilish ratios
+                                            (item.umumiy_maydonning_yer_maydoniga !== undefined && item.umumiy_maydonning_yer_maydoniga !== null) &&
+                                                React.createElement(
+                                                    "tr", null,
+                                                    React.createElement("td", null, "Умумий/ер нисбати:"),
+                                                    React.createElement("td", null, String(item.umumiy_maydonning_yer_maydoniga))
+                                                ),
+                                            (item.qurilish_maydonining_yer_maydon !== undefined && item.qurilish_maydonining_yer_maydon !== null) &&
+                                                React.createElement(
+                                                    "tr", null,
+                                                    React.createElement("td", null, "Қурилиш/ер нисбати:"),
+                                                    React.createElement("td", null, String(item.qurilish_maydonining_yer_maydon))
+                                                ),
+                                            // Cadastral number
+                                            item.cadastral_number &&
+                                                React.createElement(
+                                                    "tr", null,
+                                                    React.createElement("td", null, "Кадастр рақами:"),
+                                                    React.createElement("td", null, item.cadastral_number)
+                                                ),
+                                            // Property kind
+                                            item.property_kind &&
+                                                React.createElement(
+                                                    "tr", null,
+                                                    React.createElement("td", null, "Мулк тури:"),
+                                                    React.createElement("td", null, item.property_kind.replace(/_/g, ' '))
+                                                ),
+                                            // Created/Edited dates
+                                            item.created_date &&
+                                                React.createElement(
+                                                    "tr", null,
+                                                    React.createElement("td", null, "Яратилган сана:"),
+                                                    React.createElement("td", null, new Date(item.created_date).toLocaleDateString("uz-UZ"))
+                                                ),
+                                            item.last_edited_date &&
+                                                React.createElement(
+                                                    "tr", null,
+                                                    React.createElement("td", null, "Охирги таҳрир:"),
+                                                    React.createElement("td", null, new Date(item.last_edited_date).toLocaleDateString("uz-UZ"))
+                                                ),
+                                            // Created/Edited users
+                                            item.created_user &&
+                                                React.createElement(
+                                                    "tr", null,
+                                                    React.createElement("td", null, "Яратувчи:"),
+                                                    React.createElement("td", null, item.created_user)
+                                                ),
+                                            item.last_edited_user &&
+                                                React.createElement(
+                                                    "tr", null,
+                                                    React.createElement("td", null, "Охирги таҳрирчи:"),
+                                                    React.createElement("td", null, item.last_edited_user)
+                                                ),
+                                            // Tekshirildi
+                                            item.tekshirildi &&
+                                                React.createElement(
+                                                    "tr", null,
+                                                    React.createElement("td", null, "Текширилди:"),
+                                                    React.createElement("td", null, item.tekshirildi)
+                                                )
                                         )
                                     )
                                 ),
@@ -4075,12 +4236,13 @@
                             const coords = parseKMLCoordinates(kmlText);
                             if (coords.length > 0) {
                                 const polygon = L.polygon(coords, {
+                                    pane: 'districtPane',
                                     fillColor: '#c7a5a594',
                                     weight: 2,
                                     opacity: 0.8,
                                     color: '#ffffff',
                                     fillOpacity: 0.15,
-                                    interactive: true,
+                                    interactive: false,
                                 });
                                 polygon.bindTooltip(DISTRICT_DISPLAY_NAMES[districtKey] || districtKey, {
                                     permanent: false,
@@ -4214,6 +4376,12 @@
                         maxZoom: 18,
                         preferCanvas: true,
                     });
+
+                    // Create a custom pane for district boundaries BELOW the overlay pane (z=400)
+                    // so that GeoJSON features on top receive click events properly
+                    map.createPane('districtPane');
+                    map.getPane('districtPane').style.zIndex = 350;
+                    map.getPane('districtPane').style.pointerEvents = 'none';
 
                     // Initialize layer groups
                     const groups = {
@@ -5261,118 +5429,19 @@
                         "Номаълум";
                     const isRedLine = properties.funksiya === "Qizil_chiziqlar";
 
-                    layer.bindPopup(
-                        () => {
-                            let content = `
-                <div class="popup-header">${title}</div>
-                <div class="popup-details">
-                    <p><strong>${isRedLine ? "Тур" : "Стратегия"}:</strong>
-                        <span class="badge badge-${
-                            isRedLine
-                                ? "red-line"
-                                : strategy === "Konservatsiya"
-                                ? "conservation"
-                                : strategy === "Rekonstruktsiya"
-                                ? "reconstruction"
-                                : strategy === "Yangi_qurilish"
-                                ? "new-construction"
-                                : "investment"
-                        }">${
-                                isRedLine
-                                    ? TEXTS.redLines
-                                    : formatStrategy(strategy)
-                            }</span>
-                    </p>
-            `;
+                    // Store properties on layer for sidebar click
+                    layer._geoJsonProperties = properties;
 
-                            // Show all available properties with proper formatting
-                            if (properties.layerId)
-                                content += `<p><strong>Қатлам ID:</strong> ${properties.layerId}</p>`;
-                            if (properties.layerName)
-                                content += `<p><strong>Қатлам номи:</strong> ${properties.layerName}</p>`;
-                            if (properties.code)
-                                content += `<p><strong>Код:</strong> ${properties.code}</p>`;
-                            if (properties.objectid)
-                                content += `<p><strong>Объект ID:</strong> ${properties.objectid}</p>`;
-                            if (properties.globalid)
-                                content += `<p><strong>Глобал ID:</strong> ${properties.globalid}</p>`;
-                            if (properties.district)
-                                content += `<p><strong>${TEXTS.district}:</strong> ${properties.district}</p>`;
-                            if (properties.region_name)
-                                content += `<p><strong>Регион:</strong> ${properties.region_name}</p>`;
-                            if (properties.maydoni)
-                                content += `<p><strong>${TEXTS.area}:</strong> ${properties.maydoni} га</p>`;
-                            if (properties.SHAPE__Area)
-                                content += `<p><strong>Шакл майдони:</strong> ${properties.SHAPE__Area.toFixed(
-                                    2
-                                )} м²</p>`;
-                            if (properties.SHAPE__Length)
-                                content += `<p><strong>Шакл узунлиги:</strong> ${properties.SHAPE__Length.toFixed(
-                                    2
-                                )} м</p>`;
-                            if (properties.qavatlilik)
-                                content += `<p><strong>Қаватлилик:</strong> ${properties.qavatlilik}</p>`;
-                            if (properties.funksiya)
-                                content += `<p><strong>Функция:</strong> ${properties.funksiya}</p>`;
-                            if (properties.seysmologik_zonasi)
-                                content += `<p><strong>Сейсмик зона:</strong> ${properties.seysmologik_zonasi}</p>`;
-                            if (properties.hudud)
-                                content += `<p><strong>Ҳудуд:</strong> ${properties.hudud}</p>`;
-                            if (properties.strategiya_ishlari_turi)
-                                content += `<p><strong>Стратегия иши тури:</strong> ${properties.strategiya_ishlari_turi}</p>`;
-                            if (properties.mahalla_id)
-                                content += `<p><strong>Маҳалла ID:</strong> ${properties.mahalla_id}</p>`;
-                            if (properties.parent_code)
-                                content += `<p><strong>Ота код:</strong> ${properties.parent_code}</p>`;
-                            if (
-                                properties.umumiy_maydonning_yer_maydoniga !==
-                                undefined
-                            )
-                                content += `<p><strong>Умумий майдоннинг ер майдонига нисбати:</strong> ${properties.umumiy_maydonning_yer_maydoniga}</p>`;
-                            if (
-                                properties.qurilish_maydonining_yer_maydon !==
-                                undefined
-                            )
-                                content += `<p><strong>Қурилиш майдонининг ер майдонига нисбати:</strong> ${properties.qurilish_maydonining_yer_maydon}</p>`;
-                            if (properties.created_user)
-                                content += `<p><strong>Яратувчи:</strong> ${properties.created_user}</p>`;
-                            if (properties.last_edited_user)
-                                content += `<p><strong>Охирги таҳрирчи:</strong> ${properties.last_edited_user}</p>`;
-                            if (properties.created_date)
-                                content += `<p><strong>Яратилган сана:</strong> ${new Date(
-                                    properties.created_date
-                                ).toLocaleDateString("uz-UZ")}</p>`;
-                            if (properties.last_edited_date)
-                                content += `<p><strong>Охирги таҳрир санаси:</strong> ${new Date(
-                                    properties.last_edited_date
-                                ).toLocaleDateString("uz-UZ")}</p>`;
-                            if (properties.tekshirildi)
-                                content += `<p><strong>Текширилди:</strong> ${properties.tekshirildi}</p>`;
-                            if (properties.id_raqami)
-                                content += `<p><strong>ID рақами:</strong> ${properties.id_raqami}</p>`;
-                            if (isRedLine)
-                                content += `<p><strong>Маълумот:</strong> Қизил чизиқлар - муҳофаза қилинадиган ҳудудлар</p>`;
+                    // On click, open the sidebar with full property details
+                    layer.on('click', function(e) {
+                        setSelectedItem(properties);
+                        setSidebarOpen(true);
+                    });
 
-                            // Cadastral data fields
-                            if (properties.cadastral_number)
-                                content += `<p><strong>Кадастр рақами:</strong> ${properties.cadastral_number}</p>`;
-                            if (properties.district_name)
-                                content += `<p><strong>Туман:</strong> ${properties.district_name}</p>`;
-                            if (properties.region_name)
-                                content += `<p><strong>Вилоят:</strong> ${properties.region_name}</p>`;
-                            if (properties.sp_unit_type)
-                                content += `<p><strong>Тур:</strong> ${properties.sp_unit_type.replace(/_/g, ' ')}</p>`;
-                            if (properties.property_kind)
-                                content += `<p><strong>Мулк тури:</strong> ${properties.property_kind.replace(/_/g, ' ')}</p>`;
-                            if (properties.soato_region)
-                                content += `<p><strong>СОАТО регион:</strong> ${properties.soato_region}</p>`;
-                            if (properties.soato_district)
-                                content += `<p><strong>СОАТО туман:</strong> ${properties.soato_district}</p>`;
-
-                            content += `</div>`;
-                            return content;
-                        },
-                        { maxWidth: 400, className: "geojson-popup" }
+                    // Hover tooltip with summary info
+                    layer.bindTooltip(
+                        `<strong>${title}</strong>${properties.district ? '<br>' + properties.district : ''}${properties.strategiya ? '<br>' + formatStrategy(properties.strategiya) : ''}`,
+                        { sticky: true, direction: 'top', className: 'geojson-tooltip' }
                     );
                 }, []);
 
