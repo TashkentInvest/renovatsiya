@@ -1649,9 +1649,9 @@
                 mapStyle: "Харита услуби",
                 geojsonManager: "GeoJSON бошқарув",
                 apiData: "API маълумотлар",
-                jsonData: "Минстрой маълумотлар",
+                // jsonData: "Минстрой маълумотлар",
                 auctions: "Аукционлар",
-                soldProperties: "Сотилган мулклар",
+                // soldProperties: "Сотилган мулклар",
                 kmzData: "TIC (Реновация)",
                 renovatsiyaProjects: "Реновация лойихалари",
                 kmzSearch: "KMZ Қидириш ва Танлаш",
@@ -4146,21 +4146,6 @@
 
                 // Enhanced layer state
                 const [layers, setLayers] = useState({
-                    jsonData: {
-                        name: TEXTS.jsonData,
-                        icon: "fas fa-layer-group",
-                        visible: false,
-                    },
-                    auction: {
-                        name: TEXTS.auctions,
-                        icon: "fas fa-gavel",
-                        visible: false,
-                    },
-                    sold: {
-                        name: TEXTS.soldProperties,
-                        icon: "fas fa-check-circle",
-                        visible: false,
-                    },
                     kmz: {
                         name: TEXTS.kmzData,
                         icon: "fas fa-file-archive",
@@ -4175,9 +4160,6 @@
 
                 const [counts, setCounts] = useState({
                     aktivs: 0,
-                    jsonData: 0,
-                    auction: 0,
-                    sold: 0,
                     kmz: 0,
                     renovatsiyaProjects: 0,
                     geojson: 0,
