@@ -319,7 +319,7 @@
                 --success-green: #10b981;
                 --warning-orange: #f97316;
                 --error-red: #ef4444;
-                --red-line-color: #dc2626;
+                --red-line-color: #b91c1c;
                 --white: #ffffff;
                 --gray-50: #f9fafb;
                 --gray-100: #f3f4f6;
@@ -1755,7 +1755,7 @@
                 Savdo_xizmat: "#059669",
                 Sanoat: "#dc2626",
                 Madaniy_tarixiy: "#7c3aed",
-                Qizil_chiziqlar: "#dc2626",
+                Qizil_chiziqlar: "#b91c1c",
                 default: "#6b7280",
             };
 
@@ -1768,7 +1768,7 @@
                 Rekreatsiya: "#10b981",
                 Transport: "#f59e0b",
                 Kommunal: "#6b7280",
-                Qizil_chiziqlar: "#dc2626",
+                Qizil_chiziqlar: "#b91c1c",
                 default: "#8e24aa",
             };
 
@@ -2995,7 +2995,7 @@
                     conservation: "#0277bd",
                     reconstruction: "#f57c00",
                     "new-construction": "#8e24aa",
-                    "red-line": "#dc2626",
+                    "red-line": "#b91c1c",
                 };
 
                 return L.divIcon({
@@ -5342,9 +5342,9 @@
 
                                 return L.polygon(rings, {
                                     fillColor: getStrategyColor(properties),
-                                    weight: isRedPolygon ? 3 : 1.5,
+                                    weight: isRedPolygon ? 4 : 1.5,
                                     opacity: isRedPolygon ? 1 : 0.8,
-                                    color: isRedPolygon ? "#dc2626" : "#ffffff",
+                                    color: isRedPolygon ? "#b91c1c" : "#ffffff",
                                     fillOpacity: isRedPolygon ? 0.3 : 0.7,
                                     dashArray: isRedPolygon ? "5, 5" : null,
                                 });
@@ -5372,10 +5372,10 @@
 
                                 return L.polygon(multiLatLngs, {
                                     fillColor: getStrategyColor(properties),
-                                    weight: isRedMultiPolygon ? 3 : 1.5,
+                                    weight: isRedMultiPolygon ? 4 : 1.5,
                                     opacity: isRedMultiPolygon ? 1 : 0.8,
                                     color: isRedMultiPolygon
-                                        ? "#dc2626"
+                                        ? "#b91c1c"
                                         : "#ffffff",
                                     fillOpacity: isRedMultiPolygon ? 0.3 : 0.7,
                                     dashArray: isRedMultiPolygon
